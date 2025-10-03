@@ -1,0 +1,280 @@
+import express from 'express';
+import { createServer } from 'http';
+import { Server, Socket } from 'socket.io';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import helmet from 'helmet';
+import jwt from 'jsonwebtoken';
+import { config } from './config/config';
+
+// Extend Socket type for authentication
+interface AuthenticatedSocket extends Socket {
+  userId?: string;
+  companyId?: string;
+}
+
+import authRoutes from './routes/auth';
+import userRoutes from './routes/users';
+import companyRoutes from './routes/companies';
+import invoiceRoutes from './routes/invoices';
+import transactionRoutes from './routes/transactions';
+import reportRoutes from './routes/reports';
+import taxRoutes from './routes/tax';
+import inventoryRoutes from './routes/inventory';
+import dashboardRoutes from './routes/dashboard';
+import settingsRoutes from './routes/settings';
+import bankingRoutes from './routes/banking';
+import einvoiceRoutes from './routes/einvoice';
+import notificationRoutes from './routes/notifications';
+import reconciliationRoutes from './routes/reconciliation';
+import auditRoutes from './routes/audit';
+import receiptRoutes from './routes/receipts';
+import telegramRoutes from './routes/telegram';
+import posRoutes from './routes/pos';
+import systemRoutes from './routes/system';
+import PosSyncScheduler from './services/PosSyncScheduler';
+import loyversePosService from './services/LoyversePosService';
+import { errorHandler } from './middleware/errorHandler';
+import { authorize } from './middleware/rbac';
+import { logger } from './utils/logger';
+import NotificationService from './services/NotificationService';
+
+const app = express();
+const server = createServer(app);
+
+// Initialize Socket.IO
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST'],
+    credentials: true
+  },
+  transports: ['websocket', 'polling']
+});
+
+// Socket.IO authentication middleware
+io.use((socket: AuthenticatedSocket, next) => {
+  const token = socket.handshake.auth.token;
+  
+  if (!token) {
+    return next(new Error('Authentication error'));
+  }
+
+  try {
+    const decoded = jwt.verify(token, config.JWT_SECRET) as any;
+    socket.userId = decoded.userId;
+    socket.companyId = decoded.companyId;
+    next();
+  } catch (err) {
+    next(new Error('Authentication error'));
+  }
+});
+
+// Socket.IO connection handling
+io.on('connection', (socket: AuthenticatedSocket) => {
+  console.log(`🔌 User ${socket.userId} connected to notifications`);
+  
+  // Join user to their own room for targeted notifications
+  socket.join(`user_${socket.userId}`);
+  if (socket.companyId) {
+    socket.join(`company_${socket.companyId}`);
+  }
+
+  socket.on('disconnect', () => {
+    console.log(`🔌 User ${socket.userId} disconnected from notifications`);
+  });
+
+  // Test notification endpoint
+  socket.on('test_notification', () => {
+    socket.emit('notification', {
+      id: `test_${Date.now()}`,
+      type: 'system_alert',
+      title: 'Test Notification',
+      message: 'This is a test notification from HAFJET system',
+      timestamp: new Date(),
+      priority: 'medium',
+      companyId: socket.companyId,
+      userId: socket.userId,
+      read: false
+    });
+  });
+});
+
+// Middleware
+app.use(helmet());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/companies', companyRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/tax', taxRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/banking', bankingRoutes);
+app.use('/api/einvoice', einvoiceRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/reconciliation', reconciliationRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api/receipts', receiptRoutes);
+app.use('/api/telegram', telegramRoutes);
+app.use('/api/pos', posRoutes);
+app.use('/api/system', systemRoutes);
+
+// Health endpoint (general status) and readiness endpoint.
+app.get('/api/health', (_req, res) => {
+  const started = (server as any)._startedAt || Date.now();
+  (server as any)._startedAt = started;
+  let dbStatus: 'connected' | 'disconnected' | 'connecting' | 'error' = 'disconnected';
+  try {
+    const state = mongoose.connection.readyState; // 0=disconnected,1=connected,2=connecting,3=disconnecting
+    dbStatus = state === 1 ? 'connected' : state === 2 ? 'connecting' : 'disconnected';
+  } catch (e) {
+    logger.warn('Health check failed to read mongoose state', e);
+    dbStatus = 'error';
+  }
+  res.json({
+    status: 'OK',
+    message: 'HAFJET Bukku API is running',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    uptimeSeconds: Math.round((Date.now() - started) / 1000),
+    db: dbStatus
+  });
+});
+
+// Readiness endpoint: return 200 only when DB connection is established.
+app.get('/api/ready', (_req, res) => {
+  const state = mongoose.connection.readyState;
+  if (state === 1) {
+    return res.json({ ready: true, db: 'connected' });
+  }
+  return res.status(503).json({ ready: false, db: state === 2 ? 'connecting' : 'disconnected' });
+});
+// Basic metrics (expand later with prom-client if needed)
+app.get('/api/metrics', authorize('system.metrics'), (req, res) => {
+  const memory = process.memoryUsage();
+  res.json({
+    success: true,
+    pid: process.pid,
+    rssMB: +(memory.rss / 1024 / 1024).toFixed(2),
+    heapUsedMB: +(memory.heapUsed / 1024 / 1024).toFixed(2),
+    heapTotalMB: +(memory.heapTotal / 1024 / 1024).toFixed(2),
+    externalMB: +(memory.external / 1024 / 1024).toFixed(2),
+    cpuUsage: process.cpuUsage(),
+    uptimeSeconds: Math.round(process.uptime()),
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Test notification endpoint
+app.post('/api/test-notification', (req, res) => {
+  const { userId, companyId } = req.body;
+  
+  if (!userId || !companyId) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'userId and companyId are required' 
+    });
+  }
+
+  try {
+    NotificationService.sendTestNotification(userId, companyId);
+    res.json({ 
+      success: true, 
+      message: 'Test notification sent successfully' 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to send test notification' 
+    });
+  }
+});
+
+// Error handling
+app.use(errorHandler);
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
+// Initialize notification service
+// Export io instance for use in other modules
+export { io };
+
+// Connect NotificationService with Socket.IO
+NotificationService.setSocketIO(io);
+
+let notificationService = NotificationService;
+
+// Start server only once (prevent EADDRINUSE with multiple nodemon restarts overlapping)
+const startServer = () => {
+  if ((server as any)._started) return; // simple guard
+  (server as any)._started = true;
+  const PORT = config.PORT || 3001;
+  const tryListen = (port: number, attempt = 0) => {
+    server.listen(port, () => {
+      logger.info(`Server running on port ${port}`);
+      console.log(`🚀 HAFJET Bukku API Server running on http://localhost:${port}`);
+      console.log(`📊 Health check: http://localhost:${port}/api/health`);
+      console.log(`🔐 Auth endpoints available at http://localhost:${port}/api/auth`);
+      console.log(`🔔 Real-time notification service initialized`);
+      // Start POS sync scheduler (simple single-company placeholder)
+      try {
+        if (config.LOYVERSE_SYNC_SCHEDULER_ENABLED && loyversePosService.isEnabled()) {
+          // For now we need a company context; future: iterate active companies
+          // Placeholder: environment variable or skip if not provided
+          const defaultCompanyId = process.env.DEFAULT_COMPANY_ID;
+          if (defaultCompanyId) {
+            PosSyncScheduler.start(defaultCompanyId);
+            console.log('⏱️  POS sync scheduler started');
+          } else {
+            console.log('⏱️  POS sync scheduler enabled but DEFAULT_COMPANY_ID not set; scheduler idle');
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to start POS sync scheduler', (e as Error).message);
+      }
+    }).on('error', (err: any) => {
+      if (err.code === 'EADDRINUSE' && attempt < 5) {
+        const next = port + 1;
+        logger.warn(`Port ${port} in use, trying ${next}...`);
+        tryListen(next, attempt + 1);
+      } else {
+        logger.error('Server failed to start:', err);
+      }
+    });
+  };
+  tryListen(Number(PORT));
+};
+
+// Start server after DB connection to ensure health/readiness is accurate
+const init = async () => {
+  try {
+    await mongoose.connect(config.MONGO_URI);
+    logger.info('Connected to MongoDB');
+    // Now start the HTTP server
+    startServer();
+  } catch (err) {
+    logger.error('MongoDB connection error:', (err as Error).message || err);
+    // Exit so orchestration (docker) can restart the container if desired
+    process.exit(1);
+  }
+};
+
+init();
+
+export { notificationService };
+
+export default app;
