@@ -1,0 +1,334 @@
+Attached HTML and CSS Context
+
+<button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50">Log Masuk</button>
+
+
+/* Matched Rule from user-agent */
+button {
+  appearance: auto;
+}
+
+/* Matched Rule from user-agent */
+input, textarea, select, button {
+  margin-top: 0em;
+  margin-right: 0em;
+  margin-bottom: 0em;
+  margin-left: 0em;
+  text-rendering: auto;
+  color: fieldtext;
+  letter-spacing: normal;
+  word-spacing: normal;
+  line-height: normal;
+  text-transform: none;
+  text-indent: 0px;
+  text-shadow: none;
+  display: inline-block;
+  text-align: start;
+}
+
+/* Matched Rule from user-agent */
+input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i]::-webkit-file-upload-button, button {
+  text-align: center;
+  cursor: default;
+  padding-block-start: 1px;
+  padding-block-end: 1px;
+  padding-inline-start: 6px;
+  padding-inline-end: 6px;
+  border-top-width: 2px;
+  border-right-width: 2px;
+  border-bottom-width: 2px;
+  border-left-width: 2px;
+  border-top-style: outset;
+  border-right-style: outset;
+  border-bottom-style: outset;
+  border-left-style: outset;
+  border-top-color: buttonborder;
+  border-right-color: buttonborder;
+  border-bottom-color: buttonborder;
+  border-left-color: buttonborder;
+  border-image-source: initial;
+  border-image-slice: initial;
+  border-image-width: initial;
+  border-image-outset: initial;
+  border-image-repeat: initial;
+  box-sizing: border-box;
+  background-color: buttonface;
+  color: buttontext;
+}
+
+/* Matched Rule from regular */
+* {
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, 
+              transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  transition-behavior: normal, normal, normal, normal, normal, normal;
+  transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
+  transition-timing-function: ease, ease, ease, ease, ease, ease;
+  transition-delay: 0s, 0s, 0s, 0s, 0s, 0s;
+  transition-property: color, background-color, border-color, transform, box-shadow, opacity;
+}
+
+/* Matched Rule from regular */
+.w-full {
+  width: 100%;
+  width: 100%;
+}
+
+/* Matched Rule from regular */
+.bg-gradient-to-r {
+  --tw-gradient-position: to right in oklab;
+  background-image: linear-gradient(var(--tw-gradient-stops));
+  --tw-gradient-position: to right in oklab;
+  background-image: linear-gradient(var(--tw-gradient-stops));
+}
+
+/* Matched Rule from regular */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: var(--tw-ease, ease);
+  transition-duration: var(--tw-duration, 0s);
+  transition-property: all;
+  transition-timing-function: var(--tw-ease, ease);
+  transition-duration: var(--tw-duration, 0s);
+}
+
+/* Matched Rule from regular */
+.duration-300 {
+  --tw-duration: 300ms;
+  transition-duration: 300ms;
+  --tw-duration: 300ms;
+  transition-duration: 300ms;
+}
+
+/* Matched Rule from regular */
+.disabled\:opacity-50 {
+}
+
+/* Inherited from ancestor level 1 (user-agent) */
+form {
+  display: block;
+  margin-top: 0em;
+}
+
+/* Inherited from ancestor level 1 (user-agent) */
+address, blockquote, center, div, figure, figcaption, footer, form, header, hr, legend, listing, main, p, plaintext, pre, summary, xmp, article, aside, h1, h2, h3, h4, h5, h6, hgroup, nav, section, search, table, caption, colgroup, col, thead, tbody, tfoot, tr, td, th, dir, dd, dl, dt, menu, ol, ul, li, bdi, output, [dir="ltr" i], [dir="rtl" i], [dir="auto" i] {
+  unicode-bidi: isolate;
+}
+
+/* Inherited from ancestor level 1 (regular) */
+* {
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, 
+              transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  transition-behavior: normal, normal, normal, normal, normal, normal;
+  transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
+  transition-timing-function: ease, ease, ease, ease, ease, ease;
+  transition-delay: 0s, 0s, 0s, 0s, 0s, 0s;
+  transition-property: color, background-color, border-color, transform, box-shadow, opacity;
+}
+
+/* Inherited from ancestor level 2 (user-agent) */
+div {
+  display: block;
+}
+
+/* Inherited from ancestor level 2 (user-agent) */
+address, blockquote, center, div, figure, figcaption, footer, form, header, hr, legend, listing, main, p, plaintext, pre, summary, xmp, article, aside, h1, h2, h3, h4, h5, h6, hgroup, nav, section, search, table, caption, colgroup, col, thead, tbody, tfoot, tr, td, th, dir, dd, dl, dt, menu, ol, ul, li, bdi, output, [dir="ltr" i], [dir="rtl" i], [dir="auto" i] {
+  unicode-bidi: isolate;
+}
+
+/* Inherited from ancestor level 2 (regular) */
+* {
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, 
+              transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  transition-behavior: normal, normal, normal, normal, normal, normal;
+  transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
+  transition-timing-function: ease, ease, ease, ease, ease, ease;
+  transition-delay: 0s, 0s, 0s, 0s, 0s, 0s;
+  transition-property: color, background-color, border-color, transform, box-shadow, opacity;
+}
+
+/* Inherited from ancestor level 2 (regular) */
+.border {
+  border-style: var(--tw-border-style);
+  border-width: 1px;
+  border-top-width: 1px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+}
+
+/* Inherited from ancestor level 3 (user-agent) */
+div {
+  display: block;
+}
+
+/* Inherited from ancestor level 3 (user-agent) */
+address, blockquote, center, div, figure, figcaption, footer, form, header, hr, legend, listing, main, p, plaintext, pre, summary, xmp, article, aside, h1, h2, h3, h4, h5, h6, hgroup, nav, section, search, table, caption, colgroup, col, thead, tbody, tfoot, tr, td, th, dir, dd, dl, dt, menu, ol, ul, li, bdi, output, [dir="ltr" i], [dir="rtl" i], [dir="auto" i] {
+  unicode-bidi: isolate;
+}
+
+/* Inherited from ancestor level 3 (regular) */
+* {
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, 
+              transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  transition-behavior: normal, normal, normal, normal, normal, normal;
+  transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
+  transition-timing-function: ease, ease, ease, ease, ease, ease;
+  transition-delay: 0s, 0s, 0s, 0s, 0s, 0s;
+  transition-property: color, background-color, border-color, transform, box-shadow, opacity;
+}
+
+/* Inherited from ancestor level 3 (regular) */
+.w-full {
+  width: 100%;
+  width: 100%;
+}
+
+/* Inherited from ancestor level 4 (user-agent) */
+div {
+  display: block;
+}
+
+/* Inherited from ancestor level 4 (user-agent) */
+address, blockquote, center, div, figure, figcaption, footer, form, header, hr, legend, listing, main, p, plaintext, pre, summary, xmp, article, aside, h1, h2, h3, h4, h5, h6, hgroup, nav, section, search, table, caption, colgroup, col, thead, tbody, tfoot, tr, td, th, dir, dd, dl, dt, menu, ol, ul, li, bdi, output, [dir="ltr" i], [dir="rtl" i], [dir="auto" i] {
+  unicode-bidi: isolate;
+}
+
+/* Inherited from ancestor level 4 (regular) */
+* {
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, 
+              transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  transition-behavior: normal, normal, normal, normal, normal, normal;
+  transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
+  transition-timing-function: ease, ease, ease, ease, ease, ease;
+  transition-delay: 0s, 0s, 0s, 0s, 0s, 0s;
+  transition-property: color, background-color, border-color, transform, box-shadow, opacity;
+}
+
+/* Inherited from ancestor level 4 (regular) */
+.flex {
+  display: flex;
+  display: flex;
+}
+
+/* Inherited from ancestor level 4 (regular) */
+.min-h-screen {
+  min-height: 100vh;
+  min-height: 100vh;
+}
+
+/* Inherited from ancestor level 4 (regular) */
+.items-center {
+  align-items: center;
+  align-items: center;
+}
+
+/* Inherited from ancestor level 4 (regular) */
+.justify-center {
+  justify-content: center;
+  justify-content: center;
+}
+
+/* Inherited from ancestor level 4 (regular) */
+.bg-gradient-to-br {
+  --tw-gradient-position: to bottom right in oklab;
+  background-image: linear-gradient(var(--tw-gradient-stops));
+  --tw-gradient-position: to bottom right in oklab;
+  background-image: linear-gradient(var(--tw-gradient-stops));
+}
+
+/* Inherited from ancestor level 5 (user-agent) */
+div {
+  display: block;
+}
+
+/* Inherited from ancestor level 5 (user-agent) */
+address, blockquote, center, div, figure, figcaption, footer, form, header, hr, legend, listing, main, p, plaintext, pre, summary, xmp, article, aside, h1, h2, h3, h4, h5, h6, hgroup, nav, section, search, table, caption, colgroup, col, thead, tbody, tfoot, tr, td, th, dir, dd, dl, dt, menu, ol, ul, li, bdi, output, [dir="ltr" i], [dir="rtl" i], [dir="auto" i] {
+  unicode-bidi: isolate;
+}
+
+/* Inherited from ancestor level 5 (regular) */
+* {
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, 
+              transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  transition-behavior: normal, normal, normal, normal, normal, normal;
+  transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
+  transition-timing-function: ease, ease, ease, ease, ease, ease;
+  transition-delay: 0s, 0s, 0s, 0s, 0s, 0s;
+  transition-property: color, background-color, border-color, transform, box-shadow, opacity;
+}
+
+/* Inherited from ancestor level 5 (regular) */
+.min-h-screen {
+  min-height: 100vh;
+  min-height: 100vh;
+}
+
+/* Inherited from ancestor level 5 (regular) */
+.bg-gradient-to-br {
+  --tw-gradient-position: to bottom right in oklab;
+  background-image: linear-gradient(var(--tw-gradient-stops));
+  --tw-gradient-position: to bottom right in oklab;
+  background-image: linear-gradient(var(--tw-gradient-stops));
+}
+
+/* Inherited from ancestor level 6 (user-agent) */
+div {
+  display: block;
+}
+
+/* Inherited from ancestor level 6 (user-agent) */
+address, blockquote, center, div, figure, figcaption, footer, form, header, hr, legend, listing, main, p, plaintext, pre, summary, xmp, article, aside, h1, h2, h3, h4, h5, h6, hgroup, nav, section, search, table, caption, colgroup, col, thead, tbody, tfoot, tr, td, th, dir, dd, dl, dt, menu, ol, ul, li, bdi, output, [dir="ltr" i], [dir="rtl" i], [dir="auto" i] {
+  unicode-bidi: isolate;
+}
+
+/* Inherited from ancestor level 6 (regular) */
+* {
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, 
+              transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  transition-behavior: normal, normal, normal, normal, normal, normal;
+  transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
+  transition-timing-function: ease, ease, ease, ease, ease, ease;
+  transition-delay: 0s, 0s, 0s, 0s, 0s, 0s;
+  transition-property: color, background-color, border-color, transform, box-shadow, opacity;
+}
+
+/* Inherited from ancestor level 7 (user-agent) */
+body {
+  display: block;
+  margin-top: 8px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  margin-left: 8px;
+}
+
+/* Inherited from ancestor level 7 (regular) */
+* {
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, 
+              transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  transition-behavior: normal, normal, normal, normal, normal, normal;
+  transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
+  transition-timing-function: ease, ease, ease, ease, ease, ease;
+  transition-delay: 0s, 0s, 0s, 0s, 0s, 0s;
+  transition-property: color, background-color, border-color, transform, box-shadow, opacity;
+}
+
+/* Inherited from ancestor level 8 (user-agent) */
+html {
+  display: block;
+}
+
+/* Inherited from ancestor level 8 (user-agent) */
+:root {
+  view-transition-name: root;
+}
+
+/* Inherited from ancestor level 8 (regular) */
+* {
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, 
+              transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  transition-behavior: normal, normal, normal, normal, normal, normal;
+  transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
+  transition-timing-function: ease, ease, ease, ease, ease, ease;
+  transition-delay: 0s, 0s, 0s, 0s, 0s, 0s;
+  transition-property: color, background-color, border-color, transform, box-shadow, opacity;
+}

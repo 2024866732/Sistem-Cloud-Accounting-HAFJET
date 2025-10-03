@@ -9,6 +9,7 @@ COPY package.json package-lock.json* .npmrc* ./
 # Install including dev deps so tsc is available
 RUN npm ci --no-audit --no-fund --include=dev || npm install --no-audit --no-fund --include=dev
 COPY tsconfig.json ./
+COPY jest.config.cjs ./
 COPY src ./src
 RUN npm run build
 

@@ -1,0 +1,12 @@
+node_modules
+.git
+.gitignore
+Dockerfile*
+**/dist
+**/.env*
+README.md
+npm-debug.log*
+yarn-error.log*
+coverage
+frontend/test-results
+backend/coverage
