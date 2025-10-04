@@ -24,7 +24,60 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Fetch GHCR image digests
+        id: fetch_digests
+        run: |
+          set -euo pipefail
+          BACKEND_IMAGE=ghcr.io/2024866732/hafjet-bukku-backend:latest
+          FRONTEND_IMAGE=ghcr.io/2024866732/hafjet-bukku-frontend:latest
+
+          if docker pull "$BACKEND_IMAGE" >/dev/null 2>&1; then
+            BACKEND_DIGEST=$(docker image inspect "$BACKEND_IMAGE" --format '{{index .RepoDigests 0}}' || true)
+            echo "BACKEND_DIGEST=$BACKEND_DIGEST" >> $GITHUB_OUTPUT
+          else
+            echo "BACKEND_DIGEST=" >> $GITHUB_OUTPUT
+          fi
+
+          if docker pull "$FRONTEND_IMAGE" >/dev/null 2>&1; then
+            FRONTEND_DIGEST=$(docker image inspect "$FRONTEND_IMAGE" --format '{{index .RepoDigests 0}}' || true)
+            echo "FRONTEND_DIGEST=$FRONTEND_DIGEST" >> $GITHUB_OUTPUT
+          else
+            echo "FRONTEND_DIGEST=" >> $GITHUB_OUTPUT
+          fi
+        env:
+          DOCKER_BUILDKIT: 1
+
       - name: Run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
+
+      - name: Append image digests to semantic-release created release
+        if: always()
+        run: |
+          set -euo pipefail
+          REPO="${{ github.repository }}"
+          BACKEND_DIGEST='${{ steps.fetch_digests.outputs.BACKEND_DIGEST }}'
+          FRONTEND_DIGEST='${{ steps.fetch_digests.outputs.FRONTEND_DIGEST }}'
+
+          # Get latest release (semantic-release creates the newest release)
+          RELEASE_INFO=$(gh api repos/$REPO/releases --jq '.[0]')
+          if [ -z "$RELEASE_INFO" ] || [ "$RELEASE_INFO" = "null" ]; then
+            echo "No releases found to edit" && exit 0
+          fi
+
+          TAG_NAME=$(echo "$RELEASE_INFO" | jq -r '.tag_name')
+          EXISTING_BODY=$(gh release view "$TAG_NAME" --repo "$REPO" --json body -q '.body' || echo "")
+
+          NEW_BODY="$EXISTING_BODY\n\n"
+          if [ -n "$BACKEND_DIGEST" ]; then
+            NEW_BODY+="### Backend image\n$BACKEND_DIGEST\n\n"
+          fi
+          if [ -n "$FRONTEND_DIGEST" ]; then
+            NEW_BODY+="### Frontend image\n$FRONTEND_DIGEST\n\n"
+          fi
+
+          echo "Updating release $TAG_NAME with image digests"
+          gh release edit "$TAG_NAME" --repo "$REPO" --notes "$NEW_BODY"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
