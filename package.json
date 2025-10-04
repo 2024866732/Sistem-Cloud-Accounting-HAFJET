@@ -1,6 +1,6 @@
 {
   "name": "hafjet-cloud-accounting-system",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "HAFJET Cloud Accounting System for Malaysia - Enterprise-ready accounting solution",
   "main": "index.js",
   "workspaces": [
@@ -39,13 +39,13 @@
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2",
-  "semantic-release": "^20.1.0",
-  "@semantic-release/commit-analyzer": "^11.0.0",
-  "@semantic-release/release-notes-generator": "^11.0.0",
-  "@semantic-release/changelog": "^6.0.0",
-  "@semantic-release/git": "^10.0.0",
-  "@semantic-release/github": "^10.0.0",
-  "@semantic-release/npm": "^10.0.0"
+    "semantic-release": "^20.1.0",
+    "@semantic-release/commit-analyzer": "^11.0.0",
+    "@semantic-release/release-notes-generator": "^11.0.0",
+    "@semantic-release/changelog": "^6.0.0",
+    "@semantic-release/git": "^10.0.0",
+    "@semantic-release/github": "^10.0.0",
+    "@semantic-release/npm": "^10.0.0"
   },
   "dependencies": {
     "@types/socket.io": "^3.0.1",
