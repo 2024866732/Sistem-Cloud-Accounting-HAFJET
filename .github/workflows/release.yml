@@ -107,28 +107,40 @@ jobs:
         id: lookup_digests
         run: |
           set -euo pipefail
-          echo "LOOKUP_REPO=2024866732" >> $GITHUB_OUTPUT
-          BACKEND_IMAGE=ghcr.io/2024866732/hafjet-bukku-backend:latest
-          FRONTEND_IMAGE=ghcr.io/2024866732/hafjet-bukku-frontend:latest
+          REPO="${{ github.repository }}"
+          BACKEND_NAME="2024866732/hafjet-bukku-backend"
+          FRONTEND_NAME="2024866732/hafjet-bukku-frontend"
 
-          # Try to pull and inspect backend image
-          echo "Checking backend image: $BACKEND_IMAGE"
-          if docker pull "$BACKEND_IMAGE" >/dev/null 2>&1; then
-            BACKEND_DIGEST=$(docker image inspect "$BACKEND_IMAGE" --format '{{index .RepoDigests 0}}' || true)
-            echo "BACKEND_DIGEST=$BACKEND_DIGEST" >> $GITHUB_OUTPUT
-          else
-            echo "BACKEND_DIGEST=" >> $GITHUB_OUTPUT
-          fi
+          # Helper to query GHCR manifest list for tag 'latest' using gh API
+          get_digest() {
+            OWNER_REPO=$1
+            TAG=latest
+            # Query the registry api to list tags and manifest
+            DIGEST=$(gh api -H "Accept: application/vnd.oci.image.manifest.v1+json" \
+              "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq '.[0].metadata.container.digest' 2>/dev/null || true)
+            if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ]; then
+              echo "$DIGEST"
+              return 0
+            fi
 
-          # Try to pull and inspect frontend image
-          echo "Checking frontend image: $FRONTEND_IMAGE"
-          if docker pull "$FRONTEND_IMAGE" >/dev/null 2>&1; then
-            FRONTEND_DIGEST=$(docker image inspect "$FRONTEND_IMAGE" --format '{{index .RepoDigests 0}}' || true)
-            echo "FRONTEND_DIGEST=$FRONTEND_DIGEST" >> $GITHUB_OUTPUT
-          else
-            echo "FRONTEND_DIGEST=" >> $GITHUB_OUTPUT
-          fi
+            # Fallback: try to pull and inspect with docker
+            IMAGE=ghcr.io/${OWNER_REPO}:latest
+            if docker pull "$IMAGE" >/dev/null 2>&1; then
+              docker image inspect "$IMAGE" --format '{{index .RepoDigests 0}}' || true
+              return 0
+            fi
+
+            echo ""
+            return 1
+          }
+
+          BACKEND_DIGEST=$(get_digest "$BACKEND_NAME" || true)
+          FRONTEND_DIGEST=$(get_digest "$FRONTEND_NAME" || true)
+
+          echo "BACKEND_DIGEST=$BACKEND_DIGEST" >> $GITHUB_OUTPUT
+          echo "FRONTEND_DIGEST=$FRONTEND_DIGEST" >> $GITHUB_OUTPUT
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_BUILDKIT: 1
 
       - name: Append image digests to release body
