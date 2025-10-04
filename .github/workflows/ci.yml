@@ -135,3 +135,48 @@
                   if [ -z "$DIGEST" ]; then echo "Frontend image inspect failed" && exit 1; fi
                   echo "Frontend image: $DIGEST"
                   echo "### Frontend image\n$DIGEST" >> $GITHUB_STEP_SUMMARY
+
+              - name: Write image metadata artifact
+                id: write_image_metadata
+                run: |
+                  mkdir -p image-metadata
+                  TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+                  BACKEND_TAG="ghcr.io/2024866732/hafjet-bukku-backend:latest"
+                  FRONTEND_TAG="ghcr.io/2024866732/hafjet-bukku-frontend:latest"
+                  BACKEND_DIGEST=$(docker image inspect "$BACKEND_TAG" --format '{{index .RepoDigests 0}}' || true)
+                  FRONTEND_DIGEST=$(docker image inspect "$FRONTEND_TAG" --format '{{index .RepoDigests 0}}' || true)
+                  cat > image-metadata/${{ github.sha }}.json <<EOF
+                  {
+                    "github_sha": "${{ github.sha }}",
+                    "timestamp": "${TIMESTAMP}",
+                    "backend": { "tag": "${BACKEND_TAG}", "digest": "${BACKEND_DIGEST}" },
+                    "frontend": { "tag": "${FRONTEND_TAG}", "digest": "${FRONTEND_DIGEST}" }
+                  }
+                  EOF
+
+              - name: Upload image metadata artifact
+                uses: actions/upload-artifact@v4
+                with:
+                  name: image-metadata-${{ github.sha }}
+                  path: image-metadata/${{ github.sha }}.json
+
+              - name: Run Trivy vulnerability scans (backend + frontend)
+                run: |
+                  mkdir -p trivy-reports
+                  echo "Scanning backend image..."
+                  docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image \
+                    --format json --output trivy-reports/trivy-backend.json --exit-code 0 ghcr.io/2024866732/hafjet-bukku-backend:latest || true
+                  docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image \
+                    --format sarif --output trivy-reports/trivy-backend.sarif --exit-code 0 ghcr.io/2024866732/hafjet-bukku-backend:latest || true
+                  echo "Scanning frontend image..."
+                  docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image \
+                    --format json --output trivy-reports/trivy-frontend.json --exit-code 0 ghcr.io/2024866732/hafjet-bukku-frontend:latest || true
+                  docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image \
+                    --format sarif --output trivy-reports/trivy-frontend.sarif --exit-code 0 ghcr.io/2024866732/hafjet-bukku-frontend:latest || true
+                continue-on-error: true
+
+              - name: Upload Trivy reports artifact
+                uses: actions/upload-artifact@v4
+                with:
+                  name: trivy-reports-${{ github.sha }}
+                  path: trivy-reports
