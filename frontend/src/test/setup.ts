@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+import { vi } from 'vitest'
 
 // Polyfill matchMedia if needed
 if (!window.matchMedia) {
@@ -24,7 +25,7 @@ export * from '@testing-library/react'
 export { customRender as render }
 
 // Mock socket.io-client to prevent real network connections during unit tests
-jest.mock('socket.io-client', () => ({
+vi.mock('socket.io-client', () => ({
   io: () => ({
     on: () => {},
     emit: () => {},
