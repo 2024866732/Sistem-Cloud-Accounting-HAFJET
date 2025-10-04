@@ -158,6 +158,25 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_BUILDKIT: 1
 
+      - name: Write image-metadata artifact for release
+        run: |
+          mkdir -p image-metadata
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          cat > image-metadata/${{ github.sha }}.json <<EOF
+          {
+            "github_sha": "${{ github.sha }}",
+            "timestamp": "${TIMESTAMP}",
+            "backend": { "digest": "${{ steps.lookup_digests.outputs.BACKEND_DIGEST }}" },
+            "frontend": { "digest": "${{ steps.lookup_digests.outputs.FRONTEND_DIGEST }}" }
+          }
+          EOF
+
+      - name: Upload image-metadata artifact for release
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-metadata-${{ github.sha }}
+          path: image-metadata/${{ github.sha }}.json
+
       - name: Append image digests to release body
         if: always()
         run: |
