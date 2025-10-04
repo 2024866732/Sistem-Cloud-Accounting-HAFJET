@@ -3,6 +3,12 @@ name: Semantic Release
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run semantic-release in dry-run mode'
+        required: false
+        default: 'false'
 
 permissions:
   contents: write
@@ -64,7 +70,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BACKEND_DIGEST: ${{ steps.fetch_digests.outputs.BACKEND_DIGEST }}
           FRONTEND_DIGEST: ${{ steps.fetch_digests.outputs.FRONTEND_DIGEST }}
-        run: npx semantic-release
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = 'true' ]; then
+            echo "Running semantic-release in dry-run mode"
+            npx semantic-release --dry-run
+          else
+            npx semantic-release
+          fi
 
       - name: Append image digests to semantic-release created release
         if: always()
