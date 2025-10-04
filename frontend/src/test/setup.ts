@@ -2,20 +2,21 @@ import '@testing-library/jest-dom'
 
 // Polyfill matchMedia if needed
 if (!window.matchMedia) {
-  // @ts-ignore
-  window.matchMedia = () => ({ matches: false, addListener: () => {}, removeListener: () => {} })
+  // Provide a minimal matchMedia polyfill for the test environment
+  (window as any).matchMedia = () => ({ matches: false, addListener: () => {}, removeListener: () => {} })
 }
 
 // Provide NotificationProvider globally for tests so hooks depending on it don't throw
-import React from 'react'
-import { render } from '@testing-library/react'
-import { NotificationProvider } from '../hooks/useNotifications'
+import React, { ReactElement } from 'react'
+import { render, RenderOptions } from '@testing-library/react'
+import NotificationProvider from '../hooks/useNotifications'
 
 // Wrapper without JSX so this file can remain .ts
-const AllProviders = ({ children }: { children: React.ReactNode }) =>
-  React.createElement(NotificationProvider as any, null, children)
+type ProviderProps = { children: React.ReactNode }
+const AllProviders = ({ children }: ProviderProps) =>
+  React.createElement(NotificationProvider, null, children)
 
-const customRender = (ui: React.ReactElement, options: any = {}) =>
+const customRender = (ui: ReactElement, options?: RenderOptions) =>
   render(ui, { wrapper: AllProviders as any, ...options })
 
 // re-export everything from testing-library and override render
