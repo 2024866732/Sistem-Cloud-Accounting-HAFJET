@@ -102,3 +102,64 @@ jobs:
           asset_path: release-artifacts/backend-${{ steps.get_version.outputs.VERSION }}.tar.gz
           asset_name: backend-${{ steps.get_version.outputs.VERSION }}.tar.gz
           asset_content_type: application/gzip
+
+      - name: Lookup pushed image digests (GHCR)
+        id: lookup_digests
+        run: |
+          set -euo pipefail
+          echo "LOOKUP_REPO=2024866732" >> $GITHUB_OUTPUT
+          BACKEND_IMAGE=ghcr.io/2024866732/hafjet-bukku-backend:latest
+          FRONTEND_IMAGE=ghcr.io/2024866732/hafjet-bukku-frontend:latest
+
+          # Try to pull and inspect backend image
+          echo "Checking backend image: $BACKEND_IMAGE"
+          if docker pull "$BACKEND_IMAGE" >/dev/null 2>&1; then
+            BACKEND_DIGEST=$(docker image inspect "$BACKEND_IMAGE" --format '{{index .RepoDigests 0}}' || true)
+            echo "BACKEND_DIGEST=$BACKEND_DIGEST" >> $GITHUB_OUTPUT
+          else
+            echo "BACKEND_DIGEST=" >> $GITHUB_OUTPUT
+          fi
+
+          # Try to pull and inspect frontend image
+          echo "Checking frontend image: $FRONTEND_IMAGE"
+          if docker pull "$FRONTEND_IMAGE" >/dev/null 2>&1; then
+            FRONTEND_DIGEST=$(docker image inspect "$FRONTEND_IMAGE" --format '{{index .RepoDigests 0}}' || true)
+            echo "FRONTEND_DIGEST=$FRONTEND_DIGEST" >> $GITHUB_OUTPUT
+          else
+            echo "FRONTEND_DIGEST=" >> $GITHUB_OUTPUT
+          fi
+        env:
+          DOCKER_BUILDKIT: 1
+
+      - name: Append image digests to release body
+        if: always()
+        run: |
+          VERSION=${{ steps.get_version.outputs.VERSION }}
+          RELEASE_ID=${{ steps.create_release.outputs.id }}
+          BACKEND_DIGEST='${{ steps.lookup_digests.outputs.BACKEND_DIGEST }}'
+          FRONTEND_DIGEST='${{ steps.lookup_digests.outputs.FRONTEND_DIGEST }}'
+
+          # Build new body content
+          BODY="Automated draft release for v${VERSION}\n\n"
+          if [ -n "$BACKEND_DIGEST" ]; then
+            BODY+="### Backend image\n$BACKEND_DIGEST\n\n"
+          fi
+          if [ -n "$FRONTEND_DIGEST" ]; then
+            BODY+="### Frontend image\n$FRONTEND_DIGEST\n\n"
+          fi
+
+          # Append existing short message
+          BODY+="(Artifacts attached if available)"
+
+          # Update the release using gh (falls back to curl if gh not available)
+          if command -v gh >/dev/null 2>&1; then
+            echo "Updating release $RELEASE_ID body with image digests"
+            gh release edit "v${VERSION}" --repo "${{ github.repository }}" --notes "$BODY"
+          else
+            echo "gh CLI not found, using curl to update release"
+            API_JSON=$(jq -n --arg body "$BODY" '{body: $body}')
+            curl -s -X PATCH -H "Authorization: Bearer $GITHUB_TOKEN" -H "Content-Type: application/json" \
+              -d "$API_JSON" "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
