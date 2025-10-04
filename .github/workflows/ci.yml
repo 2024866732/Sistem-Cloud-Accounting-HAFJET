@@ -92,8 +92,12 @@
                   context: ./backend
                   file: ./backend/Dockerfile
                   push: true
-                  cache-from: type=local,src=/tmp/.buildx-cache
-                  cache-to: type=local,dest=/tmp/.buildx-cache
+                  cache-from: |
+                    type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-${{ github.ref_name }}
+                    type=local,src=/tmp/.buildx-cache
+                  cache-to: |
+                    type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-${{ github.ref_name }},mode=max
+                    type=local,dest=/tmp/.buildx-cache,mode=max
                   tags: |
                     ghcr.io/2024866732/hafjet-bukku-backend:${{ github.sha }}
                     ghcr.io/2024866732/hafjet-bukku-backend:latest
@@ -113,8 +117,12 @@
                   context: ./frontend
                   file: ./frontend/Dockerfile
                   push: true
-                  cache-from: type=local,src=/tmp/.buildx-cache
-                  cache-to: type=local,dest=/tmp/.buildx-cache
+                  cache-from: |
+                    type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-${{ github.ref_name }}
+                    type=local,src=/tmp/.buildx-cache
+                  cache-to: |
+                    type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-${{ github.ref_name }},mode=max
+                    type=local,dest=/tmp/.buildx-cache,mode=max
                   tags: |
                     ghcr.io/2024866732/hafjet-bukku-frontend:${{ github.sha }}
                     ghcr.io/2024866732/hafjet-bukku-frontend:latest
