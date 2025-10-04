@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20.19.0'
 
       - name: Read version from package.json
         id: get_version
@@ -59,10 +59,10 @@ jobs:
       - name: Set up Node (for build)
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20.19.0'
 
       - name: Install dependencies (root)
-        run: npm install
+        run: npm ci --legacy-peer-deps
 
       - name: Build frontend
         run: |
