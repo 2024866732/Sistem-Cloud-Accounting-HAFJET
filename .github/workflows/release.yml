@@ -118,6 +118,15 @@ jobs:
             attempts=3
             delay=2
             for i in $(seq 1 $attempts); do
+              # Prefer the version whose metadata.container.tags contains 'latest'
+              DIGEST=$(gh api -H "Accept: application/vnd.oci.image.manifest.v1+json" \
+                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq 'map(select(.metadata.container.tags[]? == "latest"))[0].metadata.container.digest' 2>/dev/null || true)
+              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ]; then
+                echo "$DIGEST"
+                return 0
+              fi
+
+              # Fallback: if no version labelled latest, try to use the first available digest
               DIGEST=$(gh api -H "Accept: application/vnd.oci.image.manifest.v1+json" \
                 "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq '.[0].metadata.container.digest' 2>/dev/null || true)
               if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ]; then
