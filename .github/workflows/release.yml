@@ -1,0 +1,53 @@
+name: Auto Release
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Read version from package.json
+        id: get_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check if tag exists
+        id: tag_check
+        run: |
+          if git ls-remote --tags origin refs/tags/v${{ steps.get_version.outputs.VERSION }} | grep -q "refs/tags/v${{ steps.get_version.outputs.VERSION }}"; then
+            echo "TAG_EXISTS=true" >> $GITHUB_OUTPUT
+          else
+            echo "TAG_EXISTS=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create and push tag
+        if: steps.tag_check.outputs.TAG_EXISTS == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a v${{ steps.get_version.outputs.VERSION }} -m "Release v${{ steps.get_version.outputs.VERSION }}"
+          git push origin v${{ steps.get_version.outputs.VERSION }}
+
+      - name: Create draft GitHub release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v${{ steps.get_version.outputs.VERSION }}
+          release_name: Release v${{ steps.get_version.outputs.VERSION }}
+          body: "Automated draft release for v${{ steps.get_version.outputs.VERSION }}"
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
