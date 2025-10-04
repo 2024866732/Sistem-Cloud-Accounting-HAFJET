@@ -115,13 +115,19 @@ jobs:
           get_digest() {
             OWNER_REPO=$1
             TAG=latest
-            # Query the registry api to list tags and manifest
-            DIGEST=$(gh api -H "Accept: application/vnd.oci.image.manifest.v1+json" \
-              "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq '.[0].metadata.container.digest' 2>/dev/null || true)
-            if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ]; then
-              echo "$DIGEST"
-              return 0
-            fi
+            attempts=3
+            delay=2
+            for i in $(seq 1 $attempts); do
+              DIGEST=$(gh api -H "Accept: application/vnd.oci.image.manifest.v1+json" \
+                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq '.[0].metadata.container.digest' 2>/dev/null || true)
+              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ]; then
+                echo "$DIGEST"
+                return 0
+              fi
+              echo "Attempt $i: GHCR API did not return a digest for ${OWNER_REPO}; retrying in ${delay}s..." >&2
+              sleep $delay
+              delay=$((delay * 2))
+            done
 
             # Fallback: try to pull and inspect with docker
             IMAGE=ghcr.io/${OWNER_REPO}:latest
