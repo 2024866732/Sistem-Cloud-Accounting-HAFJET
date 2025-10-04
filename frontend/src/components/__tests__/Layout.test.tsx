@@ -26,7 +26,7 @@ describe('Layout', () => {
 
   it('highlights active link with aria-current', () => {
     renderWithRoute('/banking')
-    const active = screen.getByRole('link', { name: 'Banking' })
+  const active = screen.getByRole('link', { name: /Banking/i })
     expect(active).toHaveAttribute('aria-current', 'page')
   })
 

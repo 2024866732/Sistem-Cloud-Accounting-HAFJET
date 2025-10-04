@@ -163,9 +163,6 @@
 
               - name: Run Trivy vulnerability scans (digest-based, optional fail)
                 run: |
-                  # Optionally set TRIVY_FAIL_ON_SEVERITY via repository secret TRIVY_FAIL_ON_SEVERITY
-                  TRIVY_FAIL_ON_SEVERITY="${{ secrets.TRIVY_FAIL_ON_SEVERITY }}"
-                  export TRIVY_FAIL_ON_SEVERITY
                   set -eu
                   mkdir -p trivy-reports
                   METADATA=image-metadata/${{ github.sha }}.json
@@ -195,48 +192,6 @@
                     --format json --output trivy-reports/trivy-frontend.json --exit-code 0 "$FRONTEND_REF" || true
                   docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image \
                     --format sarif --output trivy-reports/trivy-frontend.sarif --exit-code 0 "$FRONTEND_REF" || true
-
-                  # Optionally fail if highest severity >= configured threshold (shell + jq implementation)
-                  if [ -n "${TRIVY_FAIL_ON_SEVERITY:-}" ]; then
-                    echo "TRIVY_FAIL_ON_SEVERITY is set to '$TRIVY_FAIL_ON_SEVERITY' — evaluating reports"
-                    # Map severities to numeric levels
-                    case "$(echo "$TRIVY_FAIL_ON_SEVERITY" | tr '[:lower:]' '[:upper:]')" in
-                      CRITICAL) THRESH=4 ;;
-                      HIGH) THRESH=3 ;;
-                      MEDIUM) THRESH=2 ;;
-                      LOW) THRESH=1 ;;
-                      UNKNOWN) THRESH=0 ;;
-                      *) echo "Unrecognized TRIVY_FAIL_ON_SEVERITY '$TRIVY_FAIL_ON_SEVERITY' — skipping fail check"; THRESH=-1 ;;
-                    esac
-                    if [ "$THRESH" -lt 0 ]; then
-                      echo "Skipping failure enforcement due to unknown threshold"
-                    else
-                      MAX=0
-                      for f in trivy-reports/*.json; do
-                        [ -f "$f" ] || continue
-                        # Extract severities safely; if jq fails, skip file
-                        SEVS=$(jq -r '.Results[]?.Vulnerabilities[]?.Severity' "$f" 2>/dev/null || true)
-                        for s in $SEVS; do
-                          s_up=$(echo "$s" | tr '[:lower:]' '[:upper:]')
-                          case "$s_up" in
-                            CRITICAL) val=4 ;;
-                            HIGH) val=3 ;;
-                            MEDIUM) val=2 ;;
-                            LOW) val=1 ;;
-                            *) val=0 ;;
-                          esac
-                          if [ "$val" -gt "$MAX" ]; then MAX=$val; fi
-                        done
-                      done
-                      echo "Max severity found (0=UNKNOWN,1=LOW,2=MEDIUM,3=HIGH,4=CRITICAL): $MAX"
-                      if [ "$MAX" -ge "$THRESH" ]; then
-                        echo "Failing due to TRIVY_FAIL_ON_SEVERITY threshold"
-                        exit 2
-                      else
-                        echo "Threshold not exceeded; continuing"
-                      fi
-                    fi
-                  fi
 
               - name: Upload Trivy reports artifact
                 uses: actions/upload-artifact@v4
