@@ -102,7 +102,10 @@
                 run: |
                   echo "Verifying backend image in GHCR..."
                   docker pull ghcr.io/2024866732/hafjet-bukku-backend:latest
-                  docker image inspect ghcr.io/2024866732/hafjet-bukku-backend:latest --format '{{.Id}}' || (echo "Backend image inspect failed" && exit 1)
+                  DIGEST=$(docker image inspect ghcr.io/2024866732/hafjet-bukku-backend:latest --format '{{index .RepoDigests 0}}' || true)
+                  if [ -z "$DIGEST" ]; then echo "Backend image inspect failed" && exit 1; fi
+                  echo "Backend image: $DIGEST"
+                  echo "### Backend image\n$DIGEST" >> $GITHUB_STEP_SUMMARY
 
               - name: Build and push frontend image
                 uses: docker/build-push-action@v4
@@ -120,4 +123,7 @@
                 run: |
                   echo "Verifying frontend image in GHCR..."
                   docker pull ghcr.io/2024866732/hafjet-bukku-frontend:latest
-                  docker image inspect ghcr.io/2024866732/hafjet-bukku-frontend:latest --format '{{.Id}}' || (echo "Frontend image inspect failed" && exit 1)
+                  DIGEST=$(docker image inspect ghcr.io/2024866732/hafjet-bukku-frontend:latest --format '{{index .RepoDigests 0}}' || true)
+                  if [ -z "$DIGEST" ]; then echo "Frontend image inspect failed" && exit 1; fi
+                  echo "Frontend image: $DIGEST"
+                  echo "### Frontend image\n$DIGEST" >> $GITHUB_STEP_SUMMARY
