@@ -1,5 +1,3 @@
-// @ts-nocheck
-/// <reference types="vitest" />
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
@@ -10,8 +8,8 @@ if (!window.matchMedia) {
 }
 
 // Provide NotificationProvider globally for tests so hooks depending on it don't throw
-import React, { ReactElement } from 'react'
-import { render, RenderOptions } from '@testing-library/react'
+import React, { type ReactElement } from 'react'
+import { render, type RenderOptions } from '@testing-library/react'
 import NotificationProvider from '../hooks/useNotifications'
 
 // Wrapper without JSX so this file can remain .ts
@@ -20,7 +18,7 @@ const AllProviders = ({ children }: ProviderProps) =>
   React.createElement(NotificationProvider, null, children)
 
 const customRender = (ui: ReactElement, options?: RenderOptions) =>
-  render(ui, { wrapper: AllProviders as any, ...options })
+  render(ui, { wrapper: AllProviders, ...options })
 
 // re-export everything from testing-library and override render
 export * from '@testing-library/react'

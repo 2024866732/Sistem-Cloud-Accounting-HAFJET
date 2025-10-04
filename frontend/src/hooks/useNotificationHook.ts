@@ -12,10 +12,10 @@ export function useNotifications() {
         notifications: [],
         unreadCount: 0,
         isConnected: false,
-        markAsRead: (_id: string) => {},
+        markAsRead: () => {},
         markAllAsRead: () => {},
         sendTestNotification: () => {},
-      } as any
+      }
     }
     throw new Error('useNotifications must be used within a NotificationProvider')
   }
