@@ -268,6 +268,13 @@ const init = async () => {
     startServer();
   } catch (err) {
     logger.error('MongoDB connection error:', (err as Error).message || err);
+    // During tests we should not abort the whole process because Jest runs workers
+    // which will fail the suite if the process exits. Instead, log and return so
+    // test runners can handle the error gracefully.
+    if (process.env.JEST_WORKER_ID || process.env.NODE_ENV === 'test') {
+      logger.warn('MongoDB connection failed in test mode — skipping process.exit to avoid aborting test runner');
+      return;
+    }
     // Exit so orchestration (docker) can restart the container if desired
     process.exit(1);
   }
