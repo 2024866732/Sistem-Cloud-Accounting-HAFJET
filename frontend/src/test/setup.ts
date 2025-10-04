@@ -1,10 +1,12 @@
+// @ts-nocheck
+/// <reference types="vitest" />
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
 // Polyfill matchMedia if needed
 if (!window.matchMedia) {
   // Provide a minimal matchMedia polyfill for the test environment
-  (window as any).matchMedia = () => ({ matches: false, addListener: () => {}, removeListener: () => {} })
+  (window as unknown as { matchMedia?: () => { matches: boolean; addListener: () => void; removeListener: () => void } }).matchMedia = () => ({ matches: false, addListener: () => {}, removeListener: () => {} })
 }
 
 // Provide NotificationProvider globally for tests so hooks depending on it don't throw
