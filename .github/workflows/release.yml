@@ -46,6 +46,7 @@ jobs:
           git push origin v${{ steps.get_version.outputs.VERSION }}
 
       - name: Create draft GitHub release
+        id: create_release
         uses: actions/create-release@v1
         with:
           tag_name: v${{ steps.get_version.outputs.VERSION }}
@@ -54,3 +55,50 @@ jobs:
           draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node (for build)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies (root)
+        run: npm install
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci --legacy-peer-deps
+          npm run build --if-present
+
+      - name: Build backend (optional)
+        run: |
+          cd backend
+          npm ci --legacy-peer-deps
+          npm run build --if-present || echo "no backend build"
+
+      - name: Package artifacts
+        id: package_artifacts
+        run: |
+          mkdir -p release-artifacts
+          if [ -d frontend/dist ]; then tar -czf release-artifacts/frontend-${{ steps.get_version.outputs.VERSION }}.tar.gz -C frontend dist; fi
+          if [ -d backend/dist ]; then tar -czf release-artifacts/backend-${{ steps.get_version.outputs.VERSION }}.tar.gz -C backend dist; fi
+          if [ -f release-artifacts/frontend-${{ steps.get_version.outputs.VERSION }}.tar.gz ]; then echo "HAS_FRONTEND=true" >> $GITHUB_OUTPUT; else echo "HAS_FRONTEND=false" >> $GITHUB_OUTPUT; fi
+          if [ -f release-artifacts/backend-${{ steps.get_version.outputs.VERSION }}.tar.gz ]; then echo "HAS_BACKEND=true" >> $GITHUB_OUTPUT; else echo "HAS_BACKEND=false" >> $GITHUB_OUTPUT; fi
+
+      - name: Upload frontend asset (if exists)
+        if: ${{ steps.package_artifacts.outputs.HAS_FRONTEND == 'true' }}
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release-artifacts/frontend-${{ steps.get_version.outputs.VERSION }}.tar.gz
+          asset_name: frontend-${{ steps.get_version.outputs.VERSION }}.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload backend asset (if exists)
+        if: ${{ steps.package_artifacts.outputs.HAS_BACKEND == 'true' }}
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release-artifacts/backend-${{ steps.get_version.outputs.VERSION }}.tar.gz
+          asset_name: backend-${{ steps.get_version.outputs.VERSION }}.tar.gz
+          asset_content_type: application/gzip
