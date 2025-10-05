@@ -273,3 +273,18 @@
                 with:
                   name: trivy-reports-${{ github.sha }}
                   path: trivy-reports
+
+              # Optional: upload frontend source maps to Sentry (uncomment and provide SENTRY_AUTH_TOKEN in repo secrets)
+              - name: Upload frontend source maps to Sentry (optional)
+                if: env.SENTRY_AUTH_TOKEN != ''
+                env:
+                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                  RELEASE: ${{ github.sha }}
+                run: |
+                  echo "SENTRY_AUTH_TOKEN detected, uploading source maps"
+                  # Install sentry-cli in the workflow runner
+                  curl -sL https://sentry.io/get-cli/ | bash
+                  # Create a release and upload source maps from the frontend build
+                  sentry-cli releases -o 2024866732 -p hafjet-bukku create $RELEASE || true
+                  sentry-cli releases -o 2024866732 -p hafjet-bukku files $RELEASE upload-sourcemaps frontend/dist --rewrite || true
+                  sentry-cli releases -o 2024866732 -p hafjet-bukku finalize $RELEASE || true
