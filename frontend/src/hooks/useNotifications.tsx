@@ -68,7 +68,10 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
           userId: user.id,
           userEmail: user.email
         },
-        transports: ['polling', 'websocket'], // Try polling first, then websocket
+        // Prefer websocket first to avoid CORS/polling transport XHR issues in some dev setups
+        transports: ['websocket', 'polling'],
+        // Ensure cookies/credentials are sent if server requires them for CORS
+        withCredentials: true,
         timeout: 20000,
         retries: 3,
         autoConnect: true,
@@ -105,18 +108,29 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       })
 
       newSocket.on('connect_error', (error) => {
-        console.error('🔴 Connection error:', error)
+        // Surface error details for easier debugging (CORS, auth, network)
+        console.error('🔴 Connection error (socket.io):', error, '\n', {
+          message: (error as any)?.message,
+          stack: (error as any)?.stack,
+          transportError: (error as any)?.transport
+        })
         setIsConnected(false)
-        
-        // Try polling if websocket fails
-        if (error.message.includes('websocket') || error.message.includes('Transport')) {
-          console.log('🔄 WebSocket failed, trying polling transport...')
-          newSocket.io.opts.transports = ['polling']
-          setTimeout(() => {
-            newSocket.connect()
-          }, 1000)
+
+        // If websocket transport failed due to environment/CORS, fall back to polling
+        const msg = (error && error.message) ? String(error.message).toLowerCase() : ''
+        if (msg.includes('websocket') || msg.includes('transport') || msg.includes('xhr') || msg.includes('poll')) {
+          console.log('🔄 WebSocket/polling issue detected, falling back to polling transport and retrying...')
+          try {
+            newSocket.io.opts.transports = ['polling']
+            setTimeout(() => {
+              newSocket.connect()
+            }, 1000)
+          } catch (e) {
+            console.error('Failed to switch transport:', e)
+            toast.error(`Failed to connect to notification service: ${(error as any)?.message || (e as any)?.message}`)
+          }
         } else {
-          toast.error(`Failed to connect to notification service: ${error.message}`)
+          toast.error(`Failed to connect to notification service: ${error?.message || 'Unknown error'}`)
         }
       })
 

@@ -1,3 +1,45 @@
+# Changelog
+
+## [Unreleased]
+
+### Fixed
+- **Socket.IO Connection**: Fixed "xhr poll error" by prioritizing WebSocket transport over polling and enabling credentials support
+  - Updated client to prefer `['websocket', 'polling']` transport order instead of `['polling', 'websocket']`
+  - Added `withCredentials: true` to match server CORS configuration
+  - Enhanced connect_error logging to surface detailed error messages, stack traces, and transport information for easier debugging
+  - Improved fallback logic to automatically retry with polling transport when WebSocket fails
+  - Files changed: `frontend/src/hooks/useNotifications.tsx`
+
+- **Backend Development Environment**: Fixed MongoDB connection errors in local development
+  - Updated `.env` to use `localhost` instead of Docker hostname `mongo` for `MONGO_URI`
+  - Changed `FRONTEND_URL` from port 5175 to 5173 to match Vite default
+  - Added `SKIP_DB=true` flag to allow server startup without MongoDB connection (useful for smoke tests and development)
+  - Added `SKIP_SOCKET_AUTH=true` flag to bypass JWT authentication during local development when DB is unavailable
+  - Backend now gracefully handles SKIP_DB mode with enhanced logging
+  - Files changed: `backend/.env`, `backend/src/index.ts` (auth bypass already existed)
+
+### Added
+- **Development Tools**: Created automated Socket.IO connection diagnostic tool
+  - HTML-based test page with real-time connection monitoring
+  - Visual status indicators for connection state (connected/disconnected/connecting)
+  - Live connection logs with color-coded messages (info/success/error/warning)
+  - Display of Socket ID, transport type, and connection metadata
+  - Interactive controls: reconnect, send test notification, disconnect, clear logs
+  - Transport upgrade detection and logging
+  - File: `tools/test-socket-connection.html`
+
+### Documentation
+- Added operational documentation for database backups and restore procedures
+  - Backup script with mongodump fallback to JSON export: `backend/scripts/db-backup.js`
+  - Restore script with mongorestore fallback to JSON import: `backend/scripts/db-restore.js`
+  - Documentation: `backend/README-backup.md`
+  
+- Added database migration scaffolding
+  - migrate-mongo configuration: `backend/migrate-mongo-config.js`
+  - Sample migration template: `backend/migrations/0001-sample-noop.js`
+  - Documentation: `backend/README-migrations.md`
+  - Package scripts: `db:backup`, `db:restore`, `migrate:create`, `migrate:up`, `migrate:down`
+
 # [1.1.0](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v1.0.0...v1.1.0) (2025-10-04)
 
 
