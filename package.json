@@ -20,7 +20,9 @@
     "test:backend": "cd backend && npm test",
     "lint": "npm run lint:frontend && npm run lint:backend",
     "lint:frontend": "cd frontend && npm run lint",
-    "lint:backend": "cd backend && npm run lint"
+    "lint:backend": "cd backend && npm run lint",
+    "validate:workflows": "python scripts/validate-workflows.py",
+    "prepare": "husky install"
   },
   "keywords": [
     "accounting",
@@ -45,7 +47,8 @@
     "@semantic-release/changelog": "^6.0.0",
     "@semantic-release/git": "^10.0.0",
     "@semantic-release/github": "^10.0.0",
-    "@semantic-release/npm": "^10.0.0"
+    "@semantic-release/npm": "^10.0.0",
+    "husky": "^8.0.3"
   },
   "dependencies": {
     "@types/socket.io": "^3.0.1",

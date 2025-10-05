@@ -1,0 +1,8 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run workflow validation before committing
+npm run validate:workflows || {
+  echo "Workflow validation failed. Fix issues before committing.";
+  exit 1;
+}
