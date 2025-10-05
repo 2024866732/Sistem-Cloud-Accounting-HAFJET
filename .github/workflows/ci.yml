@@ -59,6 +59,63 @@
                   npm run build --if-present || echo "Build completed"
                 continue-on-error: true
 
+          # Test database backup and restore functionality
+          test-backup-restore:
+            runs-on: ubuntu-latest
+            needs: setup-and-check
+            services:
+              mongo:
+                image: mongo:7
+                ports:
+                  - 27017:27017
+                options: >-
+                  --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+                  --health-interval 10s
+                  --health-timeout 5s
+                  --health-retries 5
+            steps:
+              - name: Checkout
+                uses: actions/checkout@v4
+
+              - name: Use Node.js 20
+                uses: actions/setup-node@v4
+                with:
+                  node-version: '20.19.0'
+
+              - name: Install backend dependencies
+                run: |
+                  cd backend
+                  npm ci --legacy-peer-deps
+
+              - name: Wait for MongoDB to be ready
+                run: |
+                  echo "Waiting for MongoDB to be ready..."
+                  for i in {1..30}; do
+                    if mongosh --eval "db.adminCommand('ping')" --quiet localhost:27017/admin; then
+                      echo "MongoDB is ready!"
+                      exit 0
+                    fi
+                    echo "Attempt $i: MongoDB not ready yet, waiting..."
+                    sleep 2
+                  done
+                  echo "MongoDB failed to become ready"
+                  exit 1
+
+              - name: Run backup/restore test
+                env:
+                  MONGO_URI: mongodb://localhost:27017/hafjet-bukku-test
+                run: |
+                  cd backend
+                  npm run test:backup-restore
+
+              - name: Upload backup test artifacts on failure
+                if: failure()
+                uses: actions/upload-artifact@v4
+                with:
+                  name: backup-restore-test-logs-${{ github.sha }}
+                  path: backend/backups/
+                  if-no-files-found: warn
+
           docker-builds:
             runs-on: ubuntu-latest
             needs: setup-and-check

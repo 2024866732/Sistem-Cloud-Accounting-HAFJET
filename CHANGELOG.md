@@ -28,6 +28,15 @@
   - Transport upgrade detection and logging
   - File: `tools/test-socket-connection.html`
 
+- **CI/CD**: Automated backup/restore validation in CI pipeline
+  - Added comprehensive backup/restore test script: `backend/scripts/test-backup-restore.js`
+  - Script seeds test data, creates backup, drops database, restores, and validates data integrity
+  - New CI job `test-backup-restore` runs after `setup-and-check` with dedicated MongoDB service
+  - NPM script `test:backup-restore` added to `backend/package.json`
+  - Test artifacts uploaded on failure for debugging
+  - Ensures backup/restore functionality is always validated before deployment
+  - Files: `.github/workflows/ci.yml`, `backend/scripts/test-backup-restore.js`, `backend/package.json`
+
 ### Documentation
 - Added operational documentation for database backups and restore procedures
   - Backup script with mongodump fallback to JSON export: `backend/scripts/db-backup.js`
