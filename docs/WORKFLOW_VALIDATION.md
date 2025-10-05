@@ -83,3 +83,41 @@ npx husky add .husky/pre-commit "npm run validate:workflows"
 - The validator script only parses YAML; it does not execute actions or run network calls.
 
 If you want, I can also add a short section showing how to re-register Python from python.org if you prefer an official installer over Chocolatey.
+
+## Installing Python from python.org (recommended alternative to Chocolatey)
+
+If you'd rather use the official Python installer (python.org) instead of Chocolatey, here are short steps and why you might prefer it:
+
+Why choose the official installer:
+- Official MSI installer places Python in `C:\Program Files\Python39` (or similar) and registers it in PATH for all users.
+- The installer is signed and widely-distributed; some security tools treat Chocolatey-managed binaries differently.
+- Easier to manage with Windows Store / registry entries and generally fewer surprises with antivirus hardened modes.
+
+Steps (PowerShell):
+
+1. Download the latest Windows installer from https://www.python.org/downloads/windows/ (choose the x86-64/Windows installer).
+
+2. Run the installer and check "Add Python to PATH" on the first screen. Choose "Install for all users" if you want a system-wide installation.
+
+3. After install, verify in PowerShell:
+
+```powershell
+python --version
+where.exe python
+```
+
+4. Re-run the validator and Husky setup if needed:
+
+```powershell
+npm install
+npx husky install
+python .\scripts\validate-workflows.py
+```
+
+If you switch from Chocolatey-installed Python to the official installer, you may want to remove the Chocolatey package:
+
+```powershell
+choco uninstall python -y
+```
+
+Note: Removing Chocolatey or its Python packages is optional — only do this if you prefer a single installation method.
