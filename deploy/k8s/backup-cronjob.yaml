@@ -24,6 +24,7 @@ spec:
                   set -euo pipefail
                   TIMESTAMP=$(date +"%F_%H%M%S")
                   FILE="/backup/backup-${TIMESTAMP}.gz"
+                  echo "Creating backup $FILE"
                   mongodump --uri="$MONGO_URI" --archive="$FILE" --gzip
             - name: uploader
               image: amazon/aws-cli:latest
@@ -48,6 +49,11 @@ spec:
                     secretKeyRef:
                       name: hafjet-backup-secrets
                       key: aws_region
+                - name: ENCRYPTION_PASSPHRASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: hafjet-backup-secrets
+                      key: backup_passphrase
               command:
                 - /bin/sh
                 - -c
@@ -59,14 +65,27 @@ spec:
                     sleep 1
                   done
                   for f in /backup/*.gz; do
-                    echo "Uploading $f to s3://$S3_BUCKET/"
-                    aws --region "$AWS_REGION" s3 cp "$f" "s3://$S3_BUCKET/"
-                    rm -f "$f"
+                    echo "Found $f"
+                    if [ -n "${ENCRYPTION_PASSPHRASE:-}" ]; then
+                      echo "Encrypting $f"
+                      ENC="$f.enc"
+                      # Ensure openssl exists; amazonlinux should have openssl
+                      openssl enc -aes-256-cbc -pbkdf2 -salt -in "$f" -out "$ENC" -pass pass:"$ENCRYPTION_PASSPHRASE"
+                      echo "Uploading $ENC to s3://$S3_BUCKET/"
+                      aws --region "$AWS_REGION" s3 cp "$ENC" "s3://$S3_BUCKET/"
+                      rm -f "$ENC" "$f"
+                    else
+                      echo "Uploading $f to s3://$S3_BUCKET/"
+                      aws --region "$AWS_REGION" s3 cp "$f" "s3://$S3_BUCKET/"
+                      rm -f "$f"
+                    fi
                   done
           volumes:
-            - name: backup-volume
-              emptyDir: {}
-          volumeMounts: []
+            - name: backup-pvc
+              persistentVolumeClaim:
+                claimName: hafjet-backup-pvc
+          volumeMounts:
+            - name: backup-pvc
+              mountPath: /backup
           # shared volume mounts for each container
-        
         metadata: {}

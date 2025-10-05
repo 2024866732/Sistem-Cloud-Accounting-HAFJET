@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hafjet-mongo-restore
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: restore
+          image: amazon/aws-cli:latest
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: hafjet-backup-secrets
+                  key: aws_access_key_id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hafjet-backup-secrets
+                  key: aws_secret_access_key
+            - name: S3_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: hafjet-backup-secrets
+                  key: s3_bucket
+            - name: AWS_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: hafjet-backup-secrets
+                  key: aws_region
+            - name: ENCRYPTION_PASSPHRASE
+              valueFrom:
+                secretKeyRef:
+                  name: hafjet-backup-secrets
+                  key: backup_passphrase
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -euo pipefail
+              FILE=$(aws --region "$AWS_REGION" s3 ls s3://$S3_BUCKET/ --recursive | sort | tail -n1 | awk '{print $4}')
+              echo "Latest file: $FILE"
+              aws --region "$AWS_REGION" s3 cp "s3://$S3_BUCKET/$FILE" /backup/$FILE
+              if [ -n "${ENCRYPTION_PASSPHRASE:-}" ]; then
+                openssl enc -d -aes-256-cbc -pbkdf2 -in /backup/$FILE -out /backup/restored.gz -pass pass:"$ENCRYPTION_PASSPHRASE"
+                FILE_TO_RESTORE=/backup/restored.gz
+              else
+                FILE_TO_RESTORE=/backup/$FILE
+              fi
+              mongorestore --uri="mongodb://mongo:27017/hafjet-bukku" --archive="$FILE_TO_RESTORE" --gzip --drop
+      volumes:
+        - name: backup-pvc
+          persistentVolumeClaim:
+            claimName: hafjet-backup-pvc
+      volumeMounts:
+        - name: backup-pvc
+          mountPath: /backup
