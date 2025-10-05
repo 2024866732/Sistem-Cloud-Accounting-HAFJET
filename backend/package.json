@@ -12,10 +12,10 @@
     "test:backup-restore": "node scripts/test-backup-restore.js",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
-    "seed": "node dist/utils/seed.js"
-    ,"db:backup": "node scripts/db-backup.js",
-    "db:restore": "node scripts/db-restore.js"
-    ,"migrate:create": "npx migrate-mongo create",
+    "seed": "node dist/utils/seed.js",
+    "db:backup": "node scripts/db-backup.js",
+    "db:restore": "node scripts/db-restore.js",
+    "migrate:create": "npx migrate-mongo create",
     "migrate:up": "npx migrate-mongo up",
     "migrate:down": "npx migrate-mongo down"
   },
@@ -32,6 +32,8 @@
   "author": "HAFJET Team",
   "license": "ISC",
   "dependencies": {
+    "@sentry/node": "^10.17.0",
+    "@sentry/tracing": "^7.120.4",
     "@types/bcrypt": "^6.0.0",
     "@types/socket.io": "^3.0.1",
     "axios": "^1.12.2",
@@ -51,11 +53,11 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.15",
     "pdfkit": "^0.15.0",
+    "prom-client": "^14.0.1",
     "socket.io": "^4.8.1",
     "winston": "^3.15.0",
     "xml2js": "^0.6.2",
-    "zod": "^4.1.11",
-    "prom-client": "^14.0.1"
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -80,4 +82,3 @@
     "typescript": "^5.6.3"
   }
 }
-

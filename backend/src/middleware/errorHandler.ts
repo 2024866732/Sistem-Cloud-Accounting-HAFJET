@@ -17,6 +17,16 @@ export const errorHandler = (
   // Log error (in production, use proper logging service)
   console.error(`Error ${statusCode}: ${message}`);
   console.error(err.stack);
+  try {
+    // Capture exception in Sentry if available
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const Sentry = require('@sentry/node');
+    if (Sentry && Sentry.captureException) {
+      Sentry.captureException(err);
+    }
+  } catch (e) {
+    // ignore if Sentry not available
+  }
 
   res.status(statusCode).json({
     success: false,

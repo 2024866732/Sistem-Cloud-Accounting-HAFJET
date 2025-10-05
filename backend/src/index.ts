@@ -1,4 +1,6 @@
 import express from 'express';
+import * as Sentry from '@sentry/node';
+import * as Tracing from '@sentry/tracing';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import mongoose from 'mongoose';
@@ -41,6 +43,22 @@ import NotificationService from './services/NotificationService';
 import { metricsHandler, notificationDeliveryCounter } from './middleware/metrics';
 
 const app = express();
+
+// Initialize Sentry if DSN provided
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || '0.0'),
+    release: process.env.GITHUB_SHA || undefined
+  });
+  // RequestHandler creates a separate execution context using domains, so that every
+  // transaction/span is attached to the right request.
+  // Use any-cast to avoid TS type mismatches between @sentry/node and @sentry/tracing types
+  const SentryAny = Sentry as any;
+  app.use(SentryAny.Handlers.requestHandler());
+  app.use(SentryAny.Handlers.tracingHandler());
+}
 const server = createServer(app);
 
 // Initialize Socket.IO
