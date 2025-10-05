@@ -49,4 +49,20 @@ Local restore helper
 --------------------
 Use `deploy/scripts/restore-from-s3.sh` to download the latest backup from S3 and restore to a local MongoDB instance. Provide `S3_BUCKET` (or pass as arg1) and set `BACKUP_PASSPHRASE` if backups are encrypted.
 
+GitHub Actions deploy note
+--------------------------
+The repository contains a `build-and-deploy` workflow that can push images and optionally apply Kubernetes manifests. To enable the manifest-apply step in `.github/workflows/deploy.yml` provide a repository secret named `KUBE_CONFIG` containing a base64-encoded kubeconfig file. The workflow will skip applying manifests if the secret is not present.
+
+To add the secret in GitHub:
+
+1. Go to your repository Settings → Secrets → Actions.
+2. Add a new secret `KUBE_CONFIG` with the base64-encoded contents of your kubeconfig.
+
+Example (locally):
+
+```bash
+cat $HOME/.kube/config | base64 | clip
+# Paste into the GitHub Secrets form for KUBE_CONFIG
+```
+
 

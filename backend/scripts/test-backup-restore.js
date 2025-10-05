@@ -12,9 +12,10 @@
  */
 
 const mongoose = require('mongoose');
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+let MongoMemoryServer;
 
 // Test configuration
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/hafjet-bukku-test';
@@ -56,7 +57,40 @@ function logWarning(message) {
 
 async function connectDB() {
   try {
-    await mongoose.connect(MONGO_URI);
+    // Determine whether to use in-memory MongoDB
+    const useInMemoryEnv = (process.env.USE_INMEMORY || '').toString().toLowerCase();
+    const useInMemory = ['1', 'true', 'yes'].includes(useInMemoryEnv);
+
+    let dockerAvailable = false;
+    try {
+      const r = spawnSync('docker', ['--version']);
+      dockerAvailable = r && r.status === 0;
+    } catch (e) {
+      dockerAvailable = false;
+    }
+
+    log(`USE_INMEMORY env: "${process.env.USE_INMEMORY}", dockerAvailable: ${dockerAvailable}`);
+
+    // If USE_INMEMORY is explicitly requested, or docker is not available, use in-memory mongo
+    if (useInMemory || !dockerAvailable) {
+      try {
+        MongoMemoryServer = MongoMemoryServer || require('mongodb-memory-server').MongoMemoryServer;
+      } catch (e) {
+        console.error('mongodb-memory-server not installed. Install dev dependency or run with Docker available.');
+        throw e;
+      }
+
+  // mongodb-memory-server v7+ exposes a create() helper which starts the server
+  const mongod = await MongoMemoryServer.create();
+  const uri = mongod.getUri();
+  // store mongod instance for cleanup
+  process._hf_mongod = mongod;
+  // ensure other child processes (db-backup.js) see the in-memory URI
+  process.env.MONGO_URI = uri;
+  await mongoose.connect(uri);
+    } else {
+      await mongoose.connect(MONGO_URI);
+    }
     logSuccess(`Connected to MongoDB: ${MONGO_URI}`);
   } catch (error) {
     logError(`Failed to connect to MongoDB: ${error.message}`);
@@ -89,7 +123,7 @@ async function runBackup() {
     const output = execSync('node backend/scripts/db-backup.js', {
       cwd: path.resolve(__dirname, '../..'),
       encoding: 'utf8',
-      env: { ...process.env, MONGO_URI }
+      env: { ...process.env }
     });
     
     log(output);
@@ -134,7 +168,7 @@ async function runRestore(backupDir) {
     const output = execSync(`node backend/scripts/db-restore.js "${backupDir}"`, {
       cwd: path.resolve(__dirname, '../..'),
       encoding: 'utf8',
-      env: { ...process.env, MONGO_URI }
+      env: { ...process.env }
     });
     
     log(output);
@@ -190,6 +224,15 @@ async function cleanup(backupDir) {
   }
   
   await mongoose.disconnect();
+  // Stop in-memory mongod if started
+  if (process._hf_mongod && typeof process._hf_mongod.stop === 'function') {
+    try {
+      await process._hf_mongod.stop();
+      logSuccess('Stopped in-memory mongod');
+    } catch (e) {
+      logWarning(`Failed to stop in-memory mongod: ${e.message}`);
+    }
+  }
   logSuccess('Disconnected from MongoDB');
 }
 

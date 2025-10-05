@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: hafjet-mongo
+spec:
+  serviceName: hafjet-mongo-headless
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: hafjet-mongo
+  template:
+    metadata:
+      labels:
+        app: hafjet-mongo
+    spec:
+      containers:
+        - name: mongo
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}

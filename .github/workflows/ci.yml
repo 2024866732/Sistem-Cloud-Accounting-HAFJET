@@ -276,7 +276,7 @@
 
               # Optional: upload frontend source maps to Sentry (uncomment and provide SENTRY_AUTH_TOKEN in repo secrets)
               - name: Upload frontend source maps to Sentry (optional)
-                if: env.SENTRY_AUTH_TOKEN != ''
+                if: ${{ secrets.SENTRY_AUTH_TOKEN != '' }}
                 env:
                   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
                   RELEASE: ${{ github.sha }}

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:9
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: provisioning
+              mountPath: /etc/grafana/provisioning
+            - name: dashboards
+              mountPath: /var/lib/grafana/dashboards/hafjet
+      volumes:
+        - name: provisioning
+          configMap:
+            name: grafana-provisioning
+        - name: dashboards
+          configMap:
+            name: grafana-dashboards

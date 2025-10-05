@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: hafjet-backend-servicemonitor
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: hafjet-backend
+  endpoints:
+    - port: http
+      path: /api/metrics
+      scheme: http
+      bearerTokenSecret:
+        name: hafjet-metrics-secret
+        key: bearer

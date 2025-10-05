@@ -1,0 +1,4 @@
+apiVersion: v2
+name: hafjet-mongo
+description: MongoDB StatefulSet chart
+version: 0.1.0

@@ -53,9 +53,9 @@ async function restoreByDriver() {
     }
     // Optional: drop collection first (commented out to be safe)
     // await db.collection(colName).drop().catch(()=>{});
-    // Insert documents - remove _id to avoid collision
-    const toInsert = content.map(d => { const copy = {...d}; delete copy._id; return copy; });
-    const res = await db.collection(colName).insertMany(toInsert);
+  // Insert documents; preserve _id when present (useful for test restores)
+  const toInsert = content.map(d => ({ ...d }));
+  const res = await db.collection(colName).insertMany(toInsert);
     console.log('Inserted', res.insertedCount, 'into', colName);
   }
   await client.close();

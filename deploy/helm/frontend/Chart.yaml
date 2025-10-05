@@ -1,0 +1,4 @@
+apiVersion: v2
+name: hafjet-frontend
+description: Frontend chart
+version: 0.1.0

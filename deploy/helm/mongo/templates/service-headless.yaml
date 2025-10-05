@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hafjet-mongo-headless
+spec:
+  clusterIP: None
+  selector:
+    app: hafjet-mongo
+  ports:
+    - port: {{ .Values.service.port }}

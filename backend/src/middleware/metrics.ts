@@ -15,16 +15,26 @@ export const notificationDeliveryCounter = new client.Counter({
 
 // Expose metrics endpoint handler with simple Basic Auth using METRICS_BASIC_AUTH
 export const metricsHandler = async (req: Request, res: Response) => {
-  const auth = process.env.METRICS_BASIC_AUTH
-  if (auth) {
+  const basicAuth = process.env.METRICS_BASIC_AUTH
+  const bearerToken = process.env.METRICS_BEARER_TOKEN
+
+  if (basicAuth || bearerToken) {
     const header = req.headers.authorization
-    if (!header || !header.startsWith('Basic ')) {
-      res.setHeader('WWW-Authenticate', 'Basic realm="metrics"')
+    if (!header) {
+      if (basicAuth) res.setHeader('WWW-Authenticate', 'Basic realm="metrics"')
       return res.status(401).send('Unauthorized')
     }
-    const provided = Buffer.from(header.split(' ')[1], 'base64').toString('utf8')
-    if (provided !== auth) {
-      return res.status(403).send('Forbidden')
+
+    // Bearer token takes precedence
+    if (bearerToken && header.startsWith('Bearer ')) {
+      const provided = header.split(' ')[1]
+      if (provided !== bearerToken) return res.status(403).send('Forbidden')
+    } else if (basicAuth && header.startsWith('Basic ')) {
+      const provided = Buffer.from(header.split(' ')[1], 'base64').toString('utf8')
+      if (provided !== basicAuth) return res.status(403).send('Forbidden')
+    } else {
+      if (basicAuth) res.setHeader('WWW-Authenticate', 'Basic realm="metrics"')
+      return res.status(401).send('Unauthorized')
     }
   }
 
