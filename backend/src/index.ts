@@ -38,6 +38,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { authorize } from './middleware/rbac';
 import { logger } from './utils/logger';
 import NotificationService from './services/NotificationService';
+import { metricsHandler, notificationDeliveryCounter } from './middleware/metrics';
 
 const app = express();
 const server = createServer(app);
@@ -175,21 +176,9 @@ app.get('/api/ready', (_req, res) => {
   }
   return res.status(503).json({ ready: false, db: state === 2 ? 'connecting' : 'disconnected' });
 });
-// Basic metrics (expand later with prom-client if needed)
-app.get('/api/metrics', authorize('system.metrics'), (req, res) => {
-  const memory = process.memoryUsage();
-  res.json({
-    success: true,
-    pid: process.pid,
-    rssMB: +(memory.rss / 1024 / 1024).toFixed(2),
-    heapUsedMB: +(memory.heapUsed / 1024 / 1024).toFixed(2),
-    heapTotalMB: +(memory.heapTotal / 1024 / 1024).toFixed(2),
-    externalMB: +(memory.external / 1024 / 1024).toFixed(2),
-    cpuUsage: process.cpuUsage(),
-    uptimeSeconds: Math.round(process.uptime()),
-    timestamp: new Date().toISOString()
-  });
-});
+// Prometheus metrics endpoint (protected by METRICS_BASIC_AUTH if set)
+// If you want RBAC protection instead, remove the basic auth env var and use authorize('system.metrics')
+app.get('/api/metrics', metricsHandler);
 
 // Test notification endpoint
 app.post('/api/test-notification', (req, res) => {
