@@ -14,6 +14,9 @@
         jobs:
           setup-and-check:
             runs-on: ubuntu-latest
+            env:
+              VITE_DISABLE_NOTIFICATIONS: 'true'
+              SKIP_SOCKET_AUTH: 'true'
             services:
               mongo:
                 image: mongo:7
