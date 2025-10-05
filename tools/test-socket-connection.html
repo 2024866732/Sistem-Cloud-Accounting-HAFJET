@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAFJET Socket.IO Connection Test</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ddd;
+        }
+        .status-card.connected {
+            border-left-color: #10b981;
+            background: #ecfdf5;
+        }
+        .status-card.disconnected {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        .status-card.connecting {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+        .status-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-icon {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-icon.green { background: #10b981; }
+        .status-icon.red { background: #ef4444; }
+        .status-icon.yellow { background: #f59e0b; animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .status-text {
+            font-size: 14px;
+            color: #666;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        .info-label {
+            font-size: 12px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 14px;
+            color: #374151;
+            font-weight: 600;
+            word-break: break-all;
+        }
+        .log-container {
+            background: #1f2937;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-title {
+            color: #9ca3af;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        .log-entry {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            background: #374151;
+        }
+        .log-entry.info { color: #60a5fa; }
+        .log-entry.success { color: #34d399; }
+        .log-entry.error { color: #f87171; }
+        .log-entry.warn { color: #fbbf24; }
+        .log-time {
+            color: #9ca3af;
+            margin-right: 8px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 HAFJET Socket.IO Connection Test</h1>
+        <p class="subtitle">Real-time notification service diagnostic tool</p>
+
+        <div id="statusCard" class="status-card connecting">
+            <div class="status-title">
+                <span id="statusIcon" class="status-icon yellow"></span>
+                <span id="statusTitle">Connecting...</span>
+            </div>
+            <div id="statusText" class="status-text">Initializing Socket.IO connection to backend server...</div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Server URL</div>
+                <div class="info-value" id="serverUrl">-</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Socket ID</div>
+                <div class="info-value" id="socketId">-</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Transport</div>
+                <div class="info-value" id="transport">-</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Connected</div>
+                <div class="info-value" id="connected">No</div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" onclick="reconnect()">🔄 Reconnect</button>
+            <button class="btn-success" onclick="sendTestNotification()">📨 Send Test Notification</button>
+            <button class="btn-danger" onclick="disconnect()">❌ Disconnect</button>
+            <button class="btn-secondary" onclick="clearLogs()">🧹 Clear Logs</button>
+        </div>
+
+        <div class="log-container">
+            <div class="log-title">📋 Connection Logs</div>
+            <div id="logOutput"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const SERVER_URL = 'http://localhost:3001';
+        const TRANSPORTS = ['websocket', 'polling'];
+        
+        let socket = null;
+        let logs = [];
+
+        // Logging functions
+        function addLog(message, type = 'info') {
+            const now = new Date();
+            const time = now.toTimeString().split(' ')[0];
+            logs.push({ time, message, type });
+            
+            const logOutput = document.getElementById('logOutput');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.innerHTML = `<span class="log-time">[${time}]</span>${message}`;
+            logOutput.appendChild(logEntry);
+            
+            // Auto-scroll to bottom
+            logOutput.scrollTop = logOutput.scrollHeight;
+            
+            // Console output
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function clearLogs() {
+            logs = [];
+            document.getElementById('logOutput').innerHTML = '';
+            addLog('Logs cleared', 'info');
+        }
+
+        // Status update functions
+        function updateStatus(title, text, state) {
+            const card = document.getElementById('statusCard');
+            const icon = document.getElementById('statusIcon');
+            const titleEl = document.getElementById('statusTitle');
+            const textEl = document.getElementById('statusText');
+
+            card.className = `status-card ${state}`;
+            titleEl.textContent = title;
+            textEl.textContent = text;
+
+            if (state === 'connected') {
+                icon.className = 'status-icon green';
+            } else if (state === 'disconnected') {
+                icon.className = 'status-icon red';
+            } else {
+                icon.className = 'status-icon yellow';
+            }
+        }
+
+        function updateInfo() {
+            document.getElementById('serverUrl').textContent = SERVER_URL;
+            document.getElementById('socketId').textContent = socket && socket.id ? socket.id : '-';
+            document.getElementById('transport').textContent = socket && socket.io.engine ? socket.io.engine.transport.name : '-';
+            document.getElementById('connected').textContent = socket && socket.connected ? 'Yes ✅' : 'No ❌';
+        }
+
+        // Socket.IO connection
+        function initSocket() {
+            addLog(`🚀 Initializing Socket.IO connection to ${SERVER_URL}`, 'info');
+            addLog(`📡 Transport priority: ${TRANSPORTS.join(', ')}`, 'info');
+
+            socket = io(SERVER_URL, {
+                transports: TRANSPORTS,
+                withCredentials: true,
+                timeout: 20000,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000,
+                autoConnect: true,
+                auth: {
+                    token: 'test-token-bypass-enabled',
+                    userId: 'test-user-1',
+                    userEmail: 'test@hafjet.com'
+                }
+            });
+
+            // Connection events
+            socket.on('connect', () => {
+                addLog(`✅ Connected successfully! Socket ID: ${socket.id}`, 'success');
+                addLog(`🔗 Using transport: ${socket.io.engine.transport.name}`, 'success');
+                updateStatus('Connected', `Successfully connected to notification service using ${socket.io.engine.transport.name}`, 'connected');
+                updateInfo();
+            });
+
+            socket.on('disconnect', (reason) => {
+                addLog(`❌ Disconnected. Reason: ${reason}`, 'error');
+                updateStatus('Disconnected', `Connection lost: ${reason}`, 'disconnected');
+                updateInfo();
+            });
+
+            socket.on('connect_error', (error) => {
+                addLog(`🔴 Connection error: ${error.message}`, 'error');
+                if (error.data) {
+                    addLog(`📋 Error details: ${JSON.stringify(error.data)}`, 'error');
+                }
+                updateStatus('Connection Failed', `Failed to connect: ${error.message}`, 'disconnected');
+                updateInfo();
+            });
+
+            socket.on('reconnect_attempt', (attempt) => {
+                addLog(`🔄 Reconnection attempt ${attempt}...`, 'warn');
+                updateStatus('Reconnecting...', `Attempting to reconnect (attempt ${attempt})`, 'connecting');
+            });
+
+            socket.on('reconnect', (attempt) => {
+                addLog(`✅ Reconnected after ${attempt} attempts`, 'success');
+            });
+
+            socket.on('reconnect_error', (error) => {
+                addLog(`🔴 Reconnection error: ${error.message}`, 'error');
+            });
+
+            socket.on('reconnect_failed', () => {
+                addLog(`❌ Reconnection failed after maximum attempts`, 'error');
+                updateStatus('Reconnection Failed', 'Unable to reconnect to server', 'disconnected');
+            });
+
+            // Transport upgrade
+            socket.io.engine.on('upgrade', (transport) => {
+                addLog(`⬆️ Transport upgraded to: ${transport.name}`, 'success');
+                updateInfo();
+            });
+
+            // Notification events
+            socket.on('notification', (data) => {
+                addLog(`📬 Notification received: ${data.title || data.message}`, 'success');
+                addLog(`📋 Data: ${JSON.stringify(data, null, 2)}`, 'info');
+            });
+
+            updateInfo();
+        }
+
+        // Action functions
+        function reconnect() {
+            if (socket) {
+                addLog('🔄 Manual reconnection triggered', 'info');
+                socket.disconnect();
+                setTimeout(() => {
+                    socket.connect();
+                }, 500);
+            }
+        }
+
+        function disconnect() {
+            if (socket) {
+                addLog('❌ Manual disconnect triggered', 'warn');
+                socket.disconnect();
+            }
+        }
+
+        function sendTestNotification() {
+            if (!socket || !socket.connected) {
+                addLog('❌ Cannot send test notification: not connected', 'error');
+                alert('Please connect to the server first!');
+                return;
+            }
+
+            addLog('📤 Sending test notification request...', 'info');
+            socket.emit('test_notification', {
+                message: 'Test notification from diagnostic tool'
+            });
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            addLog('🎯 HAFJET Socket.IO Diagnostic Tool initialized', 'info');
+            addLog('🌐 Page loaded and ready', 'success');
+            initSocket();
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (socket) {
+                socket.disconnect();
+            }
+        });
+    </script>
+</body>
+</html>

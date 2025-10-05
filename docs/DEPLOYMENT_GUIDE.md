@@ -1,5 +1,7 @@
 # HAFJET Cloud Accounting System - Production Deployment Guide
 
+> ⚠️ **Security Notice**: For production deployments, **never** hardcode secrets in configuration files. Use GitHub Secrets, environment variables, or a secrets management service. See [Secrets Management Guide](./SECRETS_MANAGEMENT.md) for detailed procedures.
+
 ## 📋 Pre-Deployment Checklist
 
 ### System Requirements

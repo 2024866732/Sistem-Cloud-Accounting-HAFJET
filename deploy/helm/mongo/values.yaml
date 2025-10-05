@@ -1,0 +1,10 @@
+replicaCount: 1
+image:
+  repository: mongo
+  tag: 7
+service:
+  name: mongo
+  port: 27017
+persistence:
+  enabled: true
+  size: 10Gi

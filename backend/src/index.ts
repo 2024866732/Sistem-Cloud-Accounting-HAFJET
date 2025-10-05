@@ -1,4 +1,6 @@
 import express from 'express';
+import * as Sentry from '@sentry/node';
+import * as Tracing from '@sentry/tracing';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import mongoose from 'mongoose';
@@ -38,8 +40,25 @@ import { errorHandler } from './middleware/errorHandler';
 import { authorize } from './middleware/rbac';
 import { logger } from './utils/logger';
 import NotificationService from './services/NotificationService';
+import { metricsHandler, notificationDeliveryCounter } from './middleware/metrics';
 
 const app = express();
+
+// Initialize Sentry if DSN provided
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || '0.0'),
+    release: process.env.GITHUB_SHA || undefined
+  });
+  // RequestHandler creates a separate execution context using domains, so that every
+  // transaction/span is attached to the right request.
+  // Use any-cast to avoid TS type mismatches between @sentry/node and @sentry/tracing types
+  const SentryAny = Sentry as any;
+  app.use(SentryAny.Handlers.requestHandler());
+  app.use(SentryAny.Handlers.tracingHandler());
+}
 const server = createServer(app);
 
 // Initialize Socket.IO
@@ -54,19 +73,34 @@ const io = new Server(server, {
 
 // Socket.IO authentication middleware
 io.use((socket: AuthenticatedSocket, next) => {
-  const token = socket.handshake.auth.token;
-  
+  // Allow bypassing socket auth in local/dev for faster debugging
+  if (process.env.SKIP_SOCKET_AUTH === 'true') {
+    logger.warn('SKIP_SOCKET_AUTH=true - skipping socket authentication (dev only)');
+    return next();
+  }
+
+  const token = (socket.handshake && (socket.handshake.auth as any) && (socket.handshake.auth.token)) || null;
+
   if (!token) {
-    return next(new Error('Authentication error'));
+    logger.warn('Socket authentication failed: no token provided', {
+      handshake: {
+        headers: socket.handshake.headers,
+        address: socket.conn.remoteAddress,
+        xForwardedFor: socket.handshake.headers['x-forwarded-for'] || null,
+        origin: socket.handshake.headers.origin || socket.handshake.address
+      }
+    });
+    return next(new Error('Authentication error: missing token'));
   }
 
   try {
-    const decoded = jwt.verify(token, config.JWT_SECRET) as any;
+    const decoded = jwt.verify(token as string, config.JWT_SECRET) as any;
     socket.userId = decoded.userId;
     socket.companyId = decoded.companyId;
     next();
   } catch (err) {
-    next(new Error('Authentication error'));
+    logger.warn('Socket authentication failed: token verification error', { error: (err as Error).message });
+    return next(new Error('Authentication error: invalid token'));
   }
 });
 
@@ -160,21 +194,9 @@ app.get('/api/ready', (_req, res) => {
   }
   return res.status(503).json({ ready: false, db: state === 2 ? 'connecting' : 'disconnected' });
 });
-// Basic metrics (expand later with prom-client if needed)
-app.get('/api/metrics', authorize('system.metrics'), (req, res) => {
-  const memory = process.memoryUsage();
-  res.json({
-    success: true,
-    pid: process.pid,
-    rssMB: +(memory.rss / 1024 / 1024).toFixed(2),
-    heapUsedMB: +(memory.heapUsed / 1024 / 1024).toFixed(2),
-    heapTotalMB: +(memory.heapTotal / 1024 / 1024).toFixed(2),
-    externalMB: +(memory.external / 1024 / 1024).toFixed(2),
-    cpuUsage: process.cpuUsage(),
-    uptimeSeconds: Math.round(process.uptime()),
-    timestamp: new Date().toISOString()
-  });
-});
+// Prometheus metrics endpoint (protected by METRICS_BASIC_AUTH if set)
+// If you want RBAC protection instead, remove the basic auth env var and use authorize('system.metrics')
+app.get('/api/metrics', metricsHandler);
 
 // Test notification endpoint
 app.post('/api/test-notification', (req, res) => {
@@ -262,6 +284,14 @@ const startServer = () => {
 // Start server after DB connection to ensure health/readiness is accurate
 const init = async () => {
   try {
+    // Allow skipping DB connection for local smoke tests (set SKIP_DB=true)
+    if (process.env.SKIP_DB === 'true') {
+      logger.warn('SKIP_DB=true set - starting server without connecting to MongoDB (smoke-test mode)');
+      // Start HTTP server even when DB is not available. Useful for local dev and CI smoke tests.
+      startServer();
+      return;
+    }
+
     await mongoose.connect(config.MONGO_URI);
     logger.info('Connected to MongoDB');
     // Now start the HTTP server

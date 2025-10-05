@@ -1,0 +1,156 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/2024866732/hafjet-bukku-backend:${{ github.sha }}
+            ghcr.io/2024866732/hafjet-bukku-backend:latest
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/2024866732/hafjet-bukku-frontend:${{ github.sha }}
+            ghcr.io/2024866732/hafjet-bukku-frontend:latest
+
+  deploy-k8s:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: '1.28.0'
+
+      # Ensure KUBE_CONFIG presence for protected branches (main/master).
+      # This step intentionally fails the job on main/master if KUBE_CONFIG is not set,
+      # preventing accidental silent skips of production deploys.
+
+      - name: Ensure KUBE_CONFIG present for protected branches
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+          GITHUB_REF: ${{ github.ref }}
+        run: |
+          # Only require KUBE_CONFIG for main/master branch deploys
+          if [ "$GITHUB_REF" = "refs/heads/main" ] || [ "$GITHUB_REF" = "refs/heads/master" ]; then
+            if [ -z "$KUBE_CONFIG" ]; then
+              echo "KUBE_CONFIG secret is required for deploys to main/master. Failing the job."
+              exit 1
+            fi
+          else
+            echo "Not a protected branch ($GITHUB_REF); KUBE_CONFIG is optional."
+          fi
+
+      - name: Kubeconfig fingerprint (redacted)
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          if [ -z "$KUBE_CONFIG" ]; then
+            echo "No kubeconfig present; fingerprint skipped"
+            exit 0
+          fi
+          # Print a short, redacted hash of the base64 payload so maintainers can verify which secret is in use without revealing it
+          FINGERPRINT=$(echo "$KUBE_CONFIG" | sha256sum | awk '{print substr($1,1,12)}')
+          echo "kubeconfig fingerprint: ${FINGERPRINT}"
+
+      - name: Kubeconfig masked sample (first/last 8 chars)
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          if [ -z "$KUBE_CONFIG" ]; then
+            echo "No kubeconfig present; masked sample skipped"
+            exit 0
+          fi
+          # Show a masked sample of the base64 payload: first 8 / last 8 characters
+          PREFIX=$(echo "$KUBE_CONFIG" | head -c 8)
+          SUFFIX=$(echo "$KUBE_CONFIG" | tail -c 8)
+          echo "kubeconfig (masked): ${PREFIX}...${SUFFIX}"
+
+      - name: Deploy secret smoke-check
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          if [ -z "$KUBE_CONFIG" ]; then
+            echo "KUBE_CONFIG secret not present (deploy apply will be skipped)"
+          else
+            echo "KUBE_CONFIG secret present (deploy apply will run)"
+          fi
+
+      - name: Configure kubeconfig (if provided)
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          if [ -z "$KUBE_CONFIG" ]; then
+            echo "KUBE_CONFIG secret not provided; skipping kubeconfig setup"
+            exit 0
+          fi
+          echo "Decoding KUBE_CONFIG and writing kubeconfig"
+          echo "$KUBE_CONFIG" | base64 --decode > kubeconfig
+          mkdir -p $HOME/.kube
+          mv kubeconfig $HOME/.kube/config
+
+      - name: Apply k8s manifests (if kubeconfig present)
+        run: |
+          if [ ! -f "$HOME/.kube/config" ]; then
+            echo "No kubeconfig found; skipping apply"
+            exit 0
+          fi
+          kubectl apply -f deploy/k8s
+
+  deploy-on-tag:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: '1.28.0'
+
+      - name: Configure kubeconfig (from secret)
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          if [ -z "$KUBE_CONFIG" ]; then
+            echo "KUBE_CONFIG secret not provided; cannot apply manifests on tag deploy"
+            exit 1
+          fi
+          echo "$KUBE_CONFIG" | base64 --decode > kubeconfig
+          mkdir -p $HOME/.kube
+          mv kubeconfig $HOME/.kube/config
+
+      - name: Apply k8s manifests
+        run: |
+          kubectl apply -f deploy/k8s

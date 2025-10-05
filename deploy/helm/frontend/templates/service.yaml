@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hafjet-frontend
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: hafjet-frontend
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 80

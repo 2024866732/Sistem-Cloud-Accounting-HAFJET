@@ -1,0 +1,20 @@
+[
+  {
+    "_id": "test1",
+    "name": "Test Document 1",
+    "value": 100,
+    "timestamp": "2025-10-05T18:15:16.657Z"
+  },
+  {
+    "_id": "test2",
+    "name": "Test Document 2",
+    "value": 200,
+    "timestamp": "2025-10-05T18:15:16.657Z"
+  },
+  {
+    "_id": "test3",
+    "name": "Test Document 3",
+    "value": 300,
+    "timestamp": "2025-10-05T18:15:16.657Z"
+  }
+]

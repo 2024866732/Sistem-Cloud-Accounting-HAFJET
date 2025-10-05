@@ -59,6 +59,63 @@
                   npm run build --if-present || echo "Build completed"
                 continue-on-error: true
 
+          # Test database backup and restore functionality
+          test-backup-restore:
+            runs-on: ubuntu-latest
+            needs: setup-and-check
+            services:
+              mongo:
+                image: mongo:7
+                ports:
+                  - 27017:27017
+                options: >-
+                  --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+                  --health-interval 10s
+                  --health-timeout 5s
+                  --health-retries 5
+            steps:
+              - name: Checkout
+                uses: actions/checkout@v4
+
+              - name: Use Node.js 20
+                uses: actions/setup-node@v4
+                with:
+                  node-version: '20.19.0'
+
+              - name: Install backend dependencies
+                run: |
+                  cd backend
+                  npm ci --legacy-peer-deps
+
+              - name: Wait for MongoDB to be ready
+                run: |
+                  echo "Waiting for MongoDB to be ready..."
+                  for i in {1..30}; do
+                    if mongosh --eval "db.adminCommand('ping')" --quiet localhost:27017/admin; then
+                      echo "MongoDB is ready!"
+                      exit 0
+                    fi
+                    echo "Attempt $i: MongoDB not ready yet, waiting..."
+                    sleep 2
+                  done
+                  echo "MongoDB failed to become ready"
+                  exit 1
+
+              - name: Run backup/restore test
+                env:
+                  MONGO_URI: mongodb://localhost:27017/hafjet-bukku-test
+                run: |
+                  cd backend
+                  npm run test:backup-restore
+
+              - name: Upload backup test artifacts on failure
+                if: failure()
+                uses: actions/upload-artifact@v4
+                with:
+                  name: backup-restore-test-logs-${{ github.sha }}
+                  path: backend/backups/
+                  if-no-files-found: warn
+
           docker-builds:
             runs-on: ubuntu-latest
             needs: setup-and-check
@@ -92,8 +149,12 @@
                   context: ./backend
                   file: ./backend/Dockerfile
                   push: true
-                  cache-from: type=local,src=/tmp/.buildx-cache
-                  cache-to: type=local,dest=/tmp/.buildx-cache
+                  cache-from: |
+                    type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-${{ github.ref_name }}
+                    type=local,src=/tmp/.buildx-cache
+                  cache-to: |
+                    type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-${{ github.ref_name }},mode=max
+                    type=local,dest=/tmp/.buildx-cache,mode=max
                   tags: |
                     ghcr.io/2024866732/hafjet-bukku-backend:${{ github.sha }}
                     ghcr.io/2024866732/hafjet-bukku-backend:latest
@@ -113,8 +174,12 @@
                   context: ./frontend
                   file: ./frontend/Dockerfile
                   push: true
-                  cache-from: type=local,src=/tmp/.buildx-cache
-                  cache-to: type=local,dest=/tmp/.buildx-cache
+                  cache-from: |
+                    type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-${{ github.ref_name }}
+                    type=local,src=/tmp/.buildx-cache
+                  cache-to: |
+                    type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-${{ github.ref_name }},mode=max
+                    type=local,dest=/tmp/.buildx-cache,mode=max
                   tags: |
                     ghcr.io/2024866732/hafjet-bukku-frontend:${{ github.sha }}
                     ghcr.io/2024866732/hafjet-bukku-frontend:latest
@@ -127,3 +192,99 @@
                   if [ -z "$DIGEST" ]; then echo "Frontend image inspect failed" && exit 1; fi
                   echo "Frontend image: $DIGEST"
                   echo "### Frontend image\n$DIGEST" >> $GITHUB_STEP_SUMMARY
+
+              - name: Write image metadata artifact
+                id: write_image_metadata
+                run: |
+                  mkdir -p image-metadata
+                  TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+                  BACKEND_TAG="ghcr.io/2024866732/hafjet-bukku-backend:latest"
+                  FRONTEND_TAG="ghcr.io/2024866732/hafjet-bukku-frontend:latest"
+                  BACKEND_DIGEST=$(docker image inspect "$BACKEND_TAG" --format '{{index .RepoDigests 0}}' || true)
+                  FRONTEND_DIGEST=$(docker image inspect "$FRONTEND_TAG" --format '{{index .RepoDigests 0}}' || true)
+                  cat > image-metadata/${{ github.sha }}.json <<EOF
+                  {
+                    "github_sha": "${{ github.sha }}",
+                    "timestamp": "${TIMESTAMP}",
+                    "backend": { "tag": "${BACKEND_TAG}", "digest": "${BACKEND_DIGEST}" },
+                    "frontend": { "tag": "${FRONTEND_TAG}", "digest": "${FRONTEND_DIGEST}" }
+                  }
+                  EOF
+
+              - name: Upload image metadata artifact
+                uses: actions/upload-artifact@v4
+                with:
+                  name: image-metadata-${{ github.sha }}
+                  path: image-metadata/${{ github.sha }}.json
+
+
+              - name: Run Trivy vulnerability scans (fail on HIGH/CRITICAL)
+                run: |
+                  # Run Trivy scans but capture exit codes so we can still upload reports.
+                  set -u
+                  mkdir -p trivy-reports
+                  METADATA=image-metadata/${{ github.sha }}.json
+                  BACKEND_REF="ghcr.io/2024866732/hafjet-bukku-backend:latest"
+                  FRONTEND_REF="ghcr.io/2024866732/hafjet-bukku-frontend:latest"
+                  if [ -f "$METADATA" ]; then
+                    echo "Reading image digests from $METADATA"
+                    BACKEND_DIGEST=$(python -c "import json,sys;print(json.load(open('$METADATA'))['backend'].get('digest','') or '')") || BACKEND_DIGEST=''
+                    FRONTEND_DIGEST=$(python -c "import json,sys;print(json.load(open('$METADATA'))['frontend'].get('digest','') or '')") || FRONTEND_DIGEST=''
+                    # Trim whitespace
+                    BACKEND_DIGEST=$(echo "$BACKEND_DIGEST" | xargs)
+                    FRONTEND_DIGEST=$(echo "$FRONTEND_DIGEST" | xargs)
+                    if [ -n "$BACKEND_DIGEST" ]; then BACKEND_REF="$BACKEND_DIGEST"; fi
+                    if [ -n "$FRONTEND_DIGEST" ]; then FRONTEND_REF="$FRONTEND_DIGEST"; fi
+                  else
+                    echo "Metadata file $METADATA not found, falling back to latest tags"
+                  fi
+
+                  # We want CI to fail if Trivy finds HIGH or CRITICAL issues. To allow
+                  # uploading artifacts afterwards we run trivy while capturing exit codes.
+                  set +e
+                  EXIT=0
+
+                  echo "Scanning backend ($BACKEND_REF)"
+                  docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image \
+                    --format json --output trivy-reports/trivy-backend.json --exit-code 1 --severity HIGH,CRITICAL "$BACKEND_REF"
+                  BACKEND_EXIT=$?
+                  # Always attempt to produce SARIF report (doesn't enforce exit code)
+                  docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image \
+                    --format sarif --output trivy-reports/trivy-backend.sarif "$BACKEND_REF" || true
+                  if [ $BACKEND_EXIT -ne 0 ]; then EXIT=1; fi
+
+                  echo "Scanning frontend ($FRONTEND_REF)"
+                  docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image \
+                    --format json --output trivy-reports/trivy-frontend.json --exit-code 1 --severity HIGH,CRITICAL "$FRONTEND_REF"
+                  FRONTEND_EXIT=$?
+                  docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image \
+                    --format sarif --output trivy-reports/trivy-frontend.sarif "$FRONTEND_REF" || true
+                  if [ $FRONTEND_EXIT -ne 0 ]; then EXIT=1; fi
+
+                  # If any scan detected HIGH/CRITICAL vulnerabilities, fail the job.
+                  if [ $EXIT -ne 0 ]; then
+                    echo "Trivy detected HIGH or CRITICAL vulnerabilities. See trivy-reports/ for details."
+                    exit 1
+                  fi
+                  set -e
+
+              - name: Upload Trivy reports artifact
+                uses: actions/upload-artifact@v4
+                with:
+                  name: trivy-reports-${{ github.sha }}
+                  path: trivy-reports
+
+              # Optional: upload frontend source maps to Sentry (uncomment and provide SENTRY_AUTH_TOKEN in repo secrets)
+              - name: Upload frontend source maps to Sentry (optional)
+                if: ${{ secrets.SENTRY_AUTH_TOKEN != '' }}
+                env:
+                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                  RELEASE: ${{ github.sha }}
+                run: |
+                  echo "SENTRY_AUTH_TOKEN detected, uploading source maps"
+                  # Install sentry-cli in the workflow runner
+                  curl -sL https://sentry.io/get-cli/ | bash
+                  # Create a release and upload source maps from the frontend build
+                  sentry-cli releases -o 2024866732 -p hafjet-bukku create $RELEASE || true
+                  sentry-cli releases -o 2024866732 -p hafjet-bukku files $RELEASE upload-sourcemaps frontend/dist --rewrite || true
+                  sentry-cli releases -o 2024866732 -p hafjet-bukku finalize $RELEASE || true

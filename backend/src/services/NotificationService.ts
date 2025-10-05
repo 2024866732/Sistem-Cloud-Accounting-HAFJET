@@ -1,5 +1,7 @@
 import { Server as SocketIOServer } from 'socket.io';
 import NotificationModel, { Notification as PersistedNotification, INotification } from '../models/Notification';
+import { notificationDeliveryCounter } from '../middleware/metrics';
+import client from '../middleware/metrics';
 
 interface Notification {
   id: string;
@@ -79,16 +81,40 @@ export class NotificationService {
         data: notification.data,
         read: false
       });
+      notificationDeliveryCounter.inc({ status: 'persisted' }, 1);
     } catch (err) {
       console.warn('Failed to persist notification:', err);
+      notificationDeliveryCounter.inc({ status: 'persist_error' }, 1);
     }
 
-    // Send via Socket.IO if available
+    // Send via Socket.IO if available; measure latency using a histogram
     if (this.io) {
-      this.io.to(`user_${userId}`).emit('notification', fullNotification);
-      console.log(`✅ Real-time notification sent to user ${userId}`);
+      const start = Date.now();
+      try {
+        this.io.to(`user_${userId}`).emit('notification', fullNotification);
+        const latencyMs = Date.now() - start;
+        // Use a histogram if available, fallback to counter labels
+        try {
+          const h = client.register.getSingleMetric('notification_delivery_latency_ms') as client.Histogram | undefined;
+          if (h) {
+            h.observe(latencyMs);
+          } else {
+            // create a histogram on-the-fly if missing
+            const hist = new client.Histogram({ name: 'notification_delivery_latency_ms', help: 'Notification delivery latency (ms)', buckets: [10,50,100,200,500,1000,2000] });
+            hist.observe(latencyMs);
+          }
+        } catch (e) {
+          // ignore metric failures
+        }
+        notificationDeliveryCounter.inc({ status: 'delivered' }, 1);
+        console.log(`✅ Real-time notification sent to user ${userId}`);
+      } catch (e) {
+        notificationDeliveryCounter.inc({ status: 'emit_error' }, 1);
+        console.warn('Failed to emit notification via Socket.IO:', e);
+      }
     } else {
       console.warn('⚠️ Socket.IO not available, notification queued');
+      notificationDeliveryCounter.inc({ status: 'queued' }, 1);
     }
 
     return fullNotification;
@@ -137,10 +163,7 @@ export class NotificationService {
     console.log(`Getting notifications for user: ${userId}`);
     const query: any = { $or: [{ userId }, { userId: null } ] };
     if (companyId) query.companyId = companyId;
-    // Use .lean().exec() and assert the result to INotification[] to avoid
-    // Mongoose's FlattenMaps type incompatibilities with strict TS settings.
-    const docs = await NotificationModel.find(query).sort({ createdAt: -1 }).limit(100).lean().exec();
-    return docs as unknown as INotification[];
+    return NotificationModel.find(query).sort({ createdAt: -1 }).limit(100).lean();
   }
 
   static async markAsRead(notificationId: string, userId?: string): Promise<{ success: boolean }> {

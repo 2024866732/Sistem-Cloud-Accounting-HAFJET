@@ -1,0 +1,7 @@
+{ "dashboard": {
+    "id": null,
+    "title": "Notification Service Metrics",
+    "panels": []
+  },
+  "overwrite": true
+}

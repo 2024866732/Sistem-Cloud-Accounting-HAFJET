@@ -3,6 +3,12 @@ name: Semantic Release
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run semantic-release in dry-run mode'
+        required: false
+        default: 'false'
 
 permissions:
   contents: write
@@ -24,7 +30,114 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Fetch GHCR image digests
+        id: fetch_digests
+        run: |
+          set -euo pipefail
+          BACKEND_NAME="2024866732/hafjet-bukku-backend"
+          FRONTEND_NAME="2024866732/hafjet-bukku-frontend"
+
+          get_digest() {
+            OWNER_REPO=$1
+            attempts=3
+            delay=2
+            for i in $(seq 1 $attempts); do
+              DIGEST=$(gh api -H "Accept: application/vnd.oci.image.manifest.v1+json" \
+                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq 'map(select(.metadata.container.tags[]? == "latest"))[0].metadata.container.digest' 2>/dev/null || true)
+              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ]; then
+                echo "$DIGEST"
+                return 0
+              fi
+
+              # fallback to first entry if no 'latest' tag found
+              DIGEST=$(gh api -H "Accept: application/vnd.oci.image.manifest.v1+json" \
+                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq '.[0].metadata.container.digest' 2>/dev/null || true)
+              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ]; then
+                echo "$DIGEST"
+                return 0
+              fi
+              echo "Attempt $i: GHCR API did not return a digest for ${OWNER_REPO}; retrying in ${delay}s..." >&2
+              sleep $delay
+              delay=$((delay * 2))
+            done
+
+            IMAGE=ghcr.io/${OWNER_REPO}:latest
+            if docker pull "$IMAGE" >/dev/null 2>&1; then
+              docker image inspect "$IMAGE" --format '{{index .RepoDigests 0}}' || true
+              return 0
+            fi
+
+            echo ""
+            return 1
+          }
+
+          BACKEND_DIGEST=$(get_digest "$BACKEND_NAME" || true)
+          FRONTEND_DIGEST=$(get_digest "$FRONTEND_NAME" || true)
+
+          echo "BACKEND_DIGEST=$BACKEND_DIGEST" >> $GITHUB_OUTPUT
+          echo "FRONTEND_DIGEST=$FRONTEND_DIGEST" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_BUILDKIT: 1
+
+      - name: Write image-metadata artifact
+        run: |
+          mkdir -p image-metadata
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          cat > image-metadata/${{ github.sha }}.json <<EOF
+          {
+            "github_sha": "${{ github.sha }}",
+            "timestamp": "${TIMESTAMP}",
+            "backend": { "digest": "${{ steps.fetch_digests.outputs.BACKEND_DIGEST }}" },
+            "frontend": { "digest": "${{ steps.fetch_digests.outputs.FRONTEND_DIGEST }}" }
+          }
+          EOF
+
+      - name: Upload image-metadata artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-metadata-${{ github.sha }}
+          path: image-metadata/${{ github.sha }}.json
+
       - name: Run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+          BACKEND_DIGEST: ${{ steps.fetch_digests.outputs.BACKEND_DIGEST }}
+          FRONTEND_DIGEST: ${{ steps.fetch_digests.outputs.FRONTEND_DIGEST }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = 'true' ]; then
+            echo "Running semantic-release in dry-run mode"
+            npx semantic-release --dry-run
+          else
+            npx semantic-release
+          fi
+
+      - name: Append image digests to semantic-release created release
+        if: always()
+        run: |
+          set -euo pipefail
+          REPO="${{ github.repository }}"
+          BACKEND_DIGEST='${{ steps.fetch_digests.outputs.BACKEND_DIGEST }}'
+          FRONTEND_DIGEST='${{ steps.fetch_digests.outputs.FRONTEND_DIGEST }}'
+
+          # Get latest release (semantic-release creates the newest release)
+          RELEASE_INFO=$(gh api repos/$REPO/releases --jq '.[0]')
+          if [ -z "$RELEASE_INFO" ] || [ "$RELEASE_INFO" = "null" ]; then
+            echo "No releases found to edit" && exit 0
+          fi
+
+          TAG_NAME=$(echo "$RELEASE_INFO" | jq -r '.tag_name')
+          EXISTING_BODY=$(gh release view "$TAG_NAME" --repo "$REPO" --json body -q '.body' || echo "")
+
+          NEW_BODY="$EXISTING_BODY\n\n"
+          if [ -n "$BACKEND_DIGEST" ]; then
+            NEW_BODY+="### Backend image\n$BACKEND_DIGEST\n\n"
+          fi
+          if [ -n "$FRONTEND_DIGEST" ]; then
+            NEW_BODY+="### Frontend image\n$FRONTEND_DIGEST\n\n"
+          fi
+
+          echo "Updating release $TAG_NAME with image digests"
+          gh release edit "$TAG_NAME" --repo "$REPO" --notes "$NEW_BODY"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
