@@ -163,7 +163,7 @@ export class NotificationService {
     console.log(`Getting notifications for user: ${userId}`);
     const query: any = { $or: [{ userId }, { userId: null } ] };
     if (companyId) query.companyId = companyId;
-    return NotificationModel.find(query).sort({ createdAt: -1 }).limit(100).lean();
+    return NotificationModel.find(query).sort({ createdAt: -1 }).limit(100).lean() as Promise<INotification[]>;
   }
 
   static async markAsRead(notificationId: string, userId?: string): Promise<{ success: boolean }> {
