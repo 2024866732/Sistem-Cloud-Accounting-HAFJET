@@ -1,5 +1,5 @@
 # Backend Dockerfile (multi-stage)
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 WORKDIR /app
 
 # Build stage: install dependencies and compile TypeScript
@@ -7,14 +7,14 @@ FROM base AS build
 RUN apk add --no-cache python3 make g++
 COPY package.json package-lock.json* .npmrc* ./
 # Install including dev deps so tsc is available
-RUN npm ci --no-audit --no-fund --include=dev || npm install --no-audit --no-fund --include=dev
+RUN npm ci --legacy-peer-deps --no-audit --no-fund --include=dev || npm install --legacy-peer-deps --no-audit --no-fund --include=dev
 COPY tsconfig.json ./
 COPY jest.config.cjs ./
 COPY src ./src
 RUN npm run build
 
 # Runtime stage: production image with only production dependencies
-FROM node:18-alpine AS runtime
+FROM node:20-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
@@ -23,7 +23,7 @@ RUN addgroup -S app && adduser -S app -G app
 
 # Install production dependencies only
 COPY package.json package-lock.json* .npmrc* ./
-RUN npm ci --only=production --no-audit --no-fund || npm install --only=production --no-audit --no-fund
+RUN npm ci --legacy-peer-deps --only=production --no-audit --no-fund || npm install --legacy-peer-deps --only=production --no-audit --no-fund
 
 # Copy compiled output
 COPY --from=build /app/dist ./dist
