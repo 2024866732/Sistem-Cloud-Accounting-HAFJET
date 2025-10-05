@@ -55,6 +55,13 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
 
   // Initialize socket connection
   useEffect(() => {
+    // Do not initialize socket in test mode or when notifications are disabled via env
+    const disableNotifications = (import.meta.env.VITE_DISABLE_NOTIFICATIONS || 'false') === 'true' || import.meta.env.MODE === 'test' || (typeof process !== 'undefined' && process.env.NODE_ENV === 'test');
+    if (disableNotifications) {
+      console.log('🔕 Notifications disabled by environment, skipping socket initialization')
+      return
+    }
+
     if (token && user) {
       console.log('🔌 Connecting to notification service...')
       
