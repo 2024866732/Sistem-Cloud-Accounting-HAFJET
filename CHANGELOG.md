@@ -49,6 +49,18 @@
   - Documentation: `backend/README-migrations.md`
   - Package scripts: `db:backup`, `db:restore`, `migrate:create`, `migrate:up`, `migrate:down`
 
+- **Secrets Management Best Practices**: Added comprehensive secrets management documentation
+  - Complete secrets inventory with rotation schedules
+  - GitHub Secrets configuration guide
+  - Secret rotation procedures (JWT, MongoDB, API keys, etc.)
+  - Environment-specific secrets configuration
+  - Emergency compromise response procedures
+  - Secret generation commands for strong cryptographic keys
+  - Compliance alignment (ISO 27001, PDPA, SOC 2)
+  - Updated backend/.env.example with security notices
+  - Added reference in DEPLOYMENT_GUIDE.md
+  - File: `docs/SECRETS_MANAGEMENT.md`
+
 # [1.1.0](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v1.0.0...v1.1.0) (2025-10-04)
 
 
