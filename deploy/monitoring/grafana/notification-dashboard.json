@@ -1,0 +1,48 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 2,
+      "options": { "legend": { "displayMode": "list" } },
+      "title": "Notification Delivery Count",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum by(status) (notification_delivery_total)", "legendFormat": "{{status}}" }
+      ]
+    },
+    {
+      "datasource": null,
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 4,
+      "options": {},
+      "title": "Notification Delivery Latency (ms)",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum(rate(notification_delivery_latency_ms_bucket[5m])) by (le))", "legendFormat": "p95" }
+      ]
+    }
+  ],
+  "schemaVersion": 30,
+  "style": "dark",
+  "tags": ["notifications","observability"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Notification Service Metrics",
+  "version": 1
+}

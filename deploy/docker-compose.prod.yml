@@ -1,0 +1,71 @@
+version: '3.8'
+services:
+  backend:
+    image: ghcr.io/2024866732/hafjet-bukku-backend:latest
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - MONGO_URI=mongodb://mongo:27017/hafjet-bukku
+      - REDIS_URL=redis://redis:6379
+      - SENTRY_DSN=${SENTRY_DSN}
+    ports:
+      - '3001:3001'
+    depends_on:
+      - mongo
+      - redis
+
+  frontend:
+    image: ghcr.io/2024866732/hafjet-bukku-frontend:latest
+    restart: unless-stopped
+    environment:
+      - VITE_API_URL=https://api.hafjetaccounting.my/api
+      - VITE_APP_URL=https://app.hafjetaccounting.my
+      - VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
+    ports:
+      - '80:80'
+    depends_on:
+      - backend
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    volumes:
+      - ./deploy/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - '9090:9090'
+
+  grafana:
+    image: grafana/grafana:9.5.0
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./deploy/monitoring/grafana:/etc/grafana/provisioning
+    ports:
+      - '3000:3000'
+
+  backup:
+    image: alpine:3.18
+    entrypoint: ["/bin/sh","-c"]
+    command: "while true; do sleep 86400; done"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
+  redis_data:
+  grafana_data:
