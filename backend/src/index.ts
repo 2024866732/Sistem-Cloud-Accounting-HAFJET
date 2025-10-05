@@ -262,6 +262,14 @@ const startServer = () => {
 // Start server after DB connection to ensure health/readiness is accurate
 const init = async () => {
   try {
+    // Allow skipping DB connection for local smoke tests (set SKIP_DB=true)
+    if (process.env.SKIP_DB === 'true') {
+      logger.warn('SKIP_DB=true set - starting server without connecting to MongoDB (smoke-test mode)');
+      // Start HTTP server even when DB is not available. Useful for local dev and CI smoke tests.
+      startServer();
+      return;
+    }
+
     await mongoose.connect(config.MONGO_URI);
     logger.info('Connected to MongoDB');
     // Now start the HTTP server
