@@ -14,3 +14,20 @@ Notes:
 - `backend` and `frontend` images should be pushed to GHCR or your registry before starting.
 - Prometheus and Grafana are included for quick monitoring; secure Grafana in production.
 - Implement cron-style backups via host cron or a separate backup container that runs `mongodump` and stores artifacts externally.
+
+Backup (Kubernetes CronJob)
+---------------------------
+A Kubernetes `CronJob` has been added at `deploy/k8s/backup-cronjob.yaml`. It runs daily at 02:00 and performs a `mongodump` into an ephemeral volume, then uploads backups to S3 using the AWS CLI. To configure:
+
+- Create a K8s Secret `hafjet-backup-secrets` with keys: `aws_access_key_id`, `aws_secret_access_key`, `s3_bucket`, `aws_region`.
+- Apply the CronJob with `kubectl apply -f deploy/k8s/backup-cronjob.yaml`.
+
+Local backups
+-------------
+Use `deploy/scripts/mongo-backup-local.sh` for a one-off local backup. Example:
+
+```bash
+export MONGO_URI="mongodb://localhost:27017/hafjet-bukku"
+./deploy/scripts/mongo-backup-local.sh ./backups
+```
+

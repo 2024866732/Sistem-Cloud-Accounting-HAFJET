@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hafjet-mongo-backup
+spec:
+  schedule: "0 2 * * *" # daily at 02:00
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: mongodump
+              image: mongo:7
+              env:
+                - name: MONGO_URI
+                  value: mongodb://mongo:27017/hafjet-bukku
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -euo pipefail
+                  TIMESTAMP=$(date +"%F_%H%M%S")
+                  FILE="/backup/backup-${TIMESTAMP}.gz"
+                  mongodump --uri="$MONGO_URI" --archive="$FILE" --gzip
+            - name: uploader
+              image: amazon/aws-cli:latest
+              env:
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: hafjet-backup-secrets
+                      key: aws_access_key_id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: hafjet-backup-secrets
+                      key: aws_secret_access_key
+                - name: S3_BUCKET
+                  valueFrom:
+                    secretKeyRef:
+                      name: hafjet-backup-secrets
+                      key: s3_bucket
+                - name: AWS_REGION
+                  valueFrom:
+                    secretKeyRef:
+                      name: hafjet-backup-secrets
+                      key: aws_region
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -euo pipefail
+                  # Wait for a backup file to appear
+                  for i in $(seq 1 60); do
+                    if ls /backup/*.gz >/dev/null 2>&1; then break; fi
+                    sleep 1
+                  done
+                  for f in /backup/*.gz; do
+                    echo "Uploading $f to s3://$S3_BUCKET/"
+                    aws --region "$AWS_REGION" s3 cp "$f" "s3://$S3_BUCKET/"
+                    rm -f "$f"
+                  done
+          volumes:
+            - name: backup-volume
+              emptyDir: {}
+          volumeMounts: []
+          # shared volume mounts for each container
+        
+        metadata: {}
