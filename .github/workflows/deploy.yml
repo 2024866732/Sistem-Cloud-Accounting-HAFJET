@@ -84,7 +84,7 @@ jobs:
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: '1.28.0'
+          version: 'latest'
 
       # Ensure KUBE_CONFIG presence for protected branches (main/master).
       # This step intentionally fails the job on main/master if KUBE_CONFIG is not set,
@@ -170,7 +170,7 @@ jobs:
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: '1.28.0'
+          version: 'latest'
 
       - name: Configure kubeconfig (from secret)
         env:
