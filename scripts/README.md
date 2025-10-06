@@ -17,3 +17,5 @@ Download and install (system-wide — run PowerShell as Administrator):
 Notes
 - Use -Sha256 to verify installer integrity.
 - DryRun avoids network and execution steps so you can inspect the would-be actions.
+ - If you pass -InstallAllUsers, run PowerShell as Administrator. The script will
+	 refuse to run non-dry installs with -InstallAllUsers unless elevated.

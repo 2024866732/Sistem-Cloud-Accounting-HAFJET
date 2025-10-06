@@ -25,6 +25,23 @@ param(
 	[switch]$DryRun
 )
 
+function Test-IsElevated {
+	try {
+		$current = [Security.Principal.WindowsIdentity]::GetCurrent()
+		$principal = New-Object Security.Principal.WindowsPrincipal($current)
+		return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+	} catch {
+		return $false
+	}
+}
+
+if ($InstallAllUsers -and -not $DryRun) {
+	if (-not (Test-IsElevated)) {
+		Write-Output 'ERROR: -InstallAllUsers requires running PowerShell as Administrator.'
+		exit 2
+	}
+}
+
 function Write-Log([string]$Message, [string]$Level = 'INFO') {
 	$ts = (Get-Date).ToString('s')
 	if ($Level -eq 'DEBUG' -and -not $VerboseLog) { return }
