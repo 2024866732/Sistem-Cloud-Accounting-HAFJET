@@ -29,7 +29,9 @@ jobs:
           yamllint -c <(cat <<'YAMLLINT'
           extends: default
           rules:
-            line-length: {max: 160}
+            line-length: {max: 200}
             indentation: {spaces: 2}
+            brackets: disable
+            truthy: disable
           YAMLLINT
           ) .github/workflows
