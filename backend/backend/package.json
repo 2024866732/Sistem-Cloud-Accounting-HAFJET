@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "hafjet-cloud-accounting-backend": "file:.."
+  }
+}

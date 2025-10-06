@@ -51,14 +51,14 @@ jobs:
       - name: Backend - install and type-check
         working-directory: ./backend
         run: |
-          npm ci
+          npm ci --ignore-scripts
           # build (tsc) will run via npm run build if present; keep explicit check
           npx tsc --noEmit
 
       - name: Backend - run tests
         working-directory: ./backend
         run: |
-          npm ci
+          npm ci --ignore-scripts
           npm test
 
       - name: Frontend - install and build
@@ -89,7 +89,7 @@ jobs:
       - name: Install backend dependencies
         run: |
           cd backend
-          npm ci
+          npm ci --ignore-scripts
 
       - name: Run in-memory backup/restore test
         run: |

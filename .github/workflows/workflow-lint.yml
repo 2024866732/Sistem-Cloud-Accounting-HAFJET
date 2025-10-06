@@ -1,0 +1,35 @@
+name: Workflow YAML Lint
+
+on:
+  push:
+    paths:
+      - '.github/workflows/**'
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+
+jobs:
+  yamllint:
+    name: Lint workflow YAML files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install yamllint
+        run: python -m pip install --upgrade pip yamllint
+
+      - name: Run yamllint
+        run: |
+          yamllint -c <(cat <<'YAMLLINT'
+          extends: default
+          rules:
+            line-length: {max: 160}
+            indentation: {spaces: 2}
+          YAMLLINT
+          ) .github/workflows
