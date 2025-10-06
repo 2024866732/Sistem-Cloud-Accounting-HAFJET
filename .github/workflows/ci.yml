@@ -152,10 +152,10 @@ jobs:
           file: ./backend/Dockerfile
           push: ${{ steps.ghcr_check.outputs.push == 'true' }}
           cache-from: |
-            type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-${{ github.ref_name }}
+            ${{ steps.ghcr_check.outputs.push == 'true' && format('type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-{0}', github.ref_name) || '' }}
             type=local,src=/tmp/.buildx-cache
           cache-to: |
-            type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-${{ github.ref_name }},mode=max
+            ${{ steps.ghcr_check.outputs.push == 'true' && format('type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-{0},mode=max', github.ref_name) || '' }}
             type=local,dest=/tmp/.buildx-cache,mode=max
           tags: |
             ghcr.io/2024866732/hafjet-bukku-backend:${{ github.sha }}
@@ -179,10 +179,10 @@ jobs:
           file: ./frontend/Dockerfile
           push: ${{ steps.ghcr_check.outputs.push == 'true' }}
           cache-from: |
-            type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-${{ github.ref_name }}
+            ${{ steps.ghcr_check.outputs.push == 'true' && format('type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-{0}', github.ref_name) || '' }}
             type=local,src=/tmp/.buildx-cache
           cache-to: |
-            type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-${{ github.ref_name }},mode=max
+            ${{ steps.ghcr_check.outputs.push == 'true' && format('type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-{0},mode=max', github.ref_name) || '' }}
             type=local,dest=/tmp/.buildx-cache,mode=max
           tags: |
             ghcr.io/2024866732/hafjet-bukku-frontend:${{ github.sha }}
