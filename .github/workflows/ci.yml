@@ -124,8 +124,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
+      - name: Check GHCR push secret
+        env:
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+        run: |
+          if [ -z "$GHCR_PAT" ]; then
+            echo "GHCR_PAT not set — image push will be skipped. To enable pushing, add a personal access token (write:packages) to repository secrets as GHCR_PAT.";
+          else
+            echo "GHCR_PAT set — image push will be attempted.";
+          fi
+
       - name: Log in to GitHub Container Registry
-        if: ${{ secrets.GHCR_PAT }}
+        if: ${{ ne(secrets.GHCR_PAT, '') }}
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -137,7 +147,7 @@ jobs:
         with:
           context: ./backend
           file: ./backend/Dockerfile
-          push: ${{ secrets.GHCR_PAT }}
+          push: ${{ ne(secrets.GHCR_PAT, '') }}
           cache-from: |
             type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-${{ github.ref_name }}
             type=local,src=/tmp/.buildx-cache
@@ -149,7 +159,7 @@ jobs:
             ghcr.io/2024866732/hafjet-bukku-backend:latest
 
       - name: Verify backend image is available
-        if: ${{ secrets.GHCR_PAT }}
+        if: ${{ ne(secrets.GHCR_PAT, '') }}
         run: |
           echo "Verifying backend image in GHCR..."
           docker pull ghcr.io/2024866732/hafjet-bukku-backend:latest
@@ -164,7 +174,7 @@ jobs:
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
-          push: ${{ secrets.GHCR_PAT }}
+          push: ${{ ne(secrets.GHCR_PAT, '') }}
           cache-from: |
             type=registry,ref=ghcr.io/2024866732/hafjet-bukku-cache:buildx-${{ github.ref_name }}
             type=local,src=/tmp/.buildx-cache
@@ -176,7 +186,7 @@ jobs:
             ghcr.io/2024866732/hafjet-bukku-frontend:latest
 
       - name: Verify frontend image is available
-        if: ${{ secrets.GHCR_PAT }}
+        if: ${{ ne(secrets.GHCR_PAT, '') }}
         run: |
           echo "Verifying frontend image in GHCR..."
           docker pull ghcr.io/2024866732/hafjet-bukku-frontend:latest
