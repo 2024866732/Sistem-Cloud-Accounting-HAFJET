@@ -8,6 +8,21 @@ frontend/dist/
 # Environment files
 *.env
 *.env.local
+*.env.production
+*.env.*.local
+.env.production
+.env
+.env.local
+backend/.env
+backend/.env.production
+frontend/.env
+frontend/.env.production
+
+# Secrets and sensitive files
+.secrets-reference
+*.secrets
+password*.txt
+secret*.txt
 
 # OS
 .DS_Store
