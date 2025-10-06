@@ -2,7 +2,7 @@
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request: {}
 
 permissions:
@@ -64,7 +64,7 @@ jobs:
       - name: Frontend - install and build
         working-directory: ./frontend
         run: |
-          npm ci
+          npm ci --ignore-scripts
           npm run build --if-present
 
       - name: Lint (placeholder)
