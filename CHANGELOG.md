@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.0.0...v2.0.1) (2025-10-07)
+
+
+### Bug Fixes
+
+* **api:** add root '/' handler - redirect to FRONTEND_URL or show minimal landing page (prevents 404 on main app) ([070641e](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/070641ee9f14c1385e73700697b72c2683be8f60))
+
 # [2.0.0](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v1.1.0...v2.0.0) (2025-10-07)
 
 
@@ -116,3 +123,8 @@
 ### Published images
 - Backend: sha256:c842b461b2f42d333d4ac42eb42afa890a92fee1974e08882a0c9b259d5ce2b5
 - Frontend: sha256:1e3f5d43eed1ae4af1954659ff10c3732124a68af6b297fb9ca82651c4492898
+
+
+### Published images
+- Backend: sha256:5dbf29f4f78aefb615e37cdd24083435f9bb6a3e099518474ca7cc15409ba00a
+- Frontend: sha256:cfebacca39d10ad5fa5677f20c082d256e8c8993cf70c463d0c5fdb709bc1aaa
