@@ -5,19 +5,19 @@ nixPkgs = ["nodejs_22", "python3"]
 cmds = [
   "npm ci --legacy-peer-deps",
   "cd frontend && npm ci --legacy-peer-deps",
-  "cd ../backend && npm ci --include=dev"
+  "cd /app/backend && npm ci --include=dev"
 ]
 
 [phases.build]
 cmds = [
-  "cd frontend && npm run build",
-  "cd ../backend && npm run build",
-  "mkdir -p backend/public",
-  "cp -r frontend/dist/* backend/public/"
+  "cd /app/frontend && npm run build",
+  "cd /app/backend && npm run build",
+  "mkdir -p /app/backend/public",
+  "cp -r /app/frontend/dist/* /app/backend/public/"
 ]
 
 [start]
-cmd = "cd backend && node dist/index.js"
+cmd = "cd /app/backend && node dist/index.js"
 
 [variables]
 NODE_ENV = "production"
