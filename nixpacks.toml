@@ -1,19 +1,24 @@
 [phases.setup]
-nixPkgs = ["nodejs_22", "python3"]
+nixPkgs = ["nodejs_22_12", "python3"]
 
 [phases.install]
 cmds = [
-  "npm ci --legacy-peer-deps",
-  "cd frontend && npm ci --legacy-peer-deps",
-  "cd /app/backend && npm ci --include=dev"
+  # Install root workspace deps (if any)
+  "npm ci --omit=dev --legacy-peer-deps || npm ci --legacy-peer-deps",
+  # Install frontend deps using absolute path
+  "cd /app/frontend && npm ci --legacy-peer-deps || true",
+  # Install backend deps using absolute path (include dev for build)
+  "cd /app/backend && npm ci --include=dev --legacy-peer-deps || npm ci --include=dev"
 ]
 
 [phases.build]
 cmds = [
+  # Build frontend first with compatible Node
   "cd /app/frontend && npm run build",
+  # Build backend and copy frontend output into backend/public
   "cd /app/backend && npm run build",
   "mkdir -p /app/backend/public",
-  "cp -r /app/frontend/dist/* /app/backend/public/"
+  "cp -r /app/frontend/dist/* /app/backend/public/ || true"
 ]
 
 [start]
