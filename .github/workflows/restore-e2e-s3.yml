@@ -59,22 +59,43 @@ jobs:
           fi
 
       - name: Find backup and upload to S3
-        if: ${{ secrets.S3_BUCKET && secrets.AWS_ACCESS_KEY_ID && secrets.AWS_SECRET_ACCESS_KEY }}
+        id: upload-s3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
         run: |
+          # Check if secrets are available
+          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ] || [ -z "$S3_BUCKET" ]; then
+            echo "⚠️ AWS secrets not configured - skipping S3 upload"
+            echo "💡 Add AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and S3_BUCKET secrets to enable S3 backup"
+            exit 0
+          fi
+          
           BACKUP_DIR=$(ls -td backend/backups/* | head -n1)
           if [ -z "$BACKUP_DIR" ]; then echo "No backup found"; exit 1; fi
-          echo "Uploading $BACKUP_DIR to s3://${{ secrets.S3_BUCKET }}/backups/"
+          echo "Uploading $BACKUP_DIR to s3://$S3_BUCKET/backups/"
           tar -czf backup.tgz -C "$BACKUP_DIR" .
-          aws s3 cp backup.tgz s3://${{ secrets.S3_BUCKET }}/backups/backup-$(date -u +%Y%m%dT%H%M%SZ).tgz
+          aws s3 cp backup.tgz s3://$S3_BUCKET/backups/backup-$(date -u +%Y%m%dT%H%M%SZ).tgz
 
       - name: Download latest backup and restore
-        if: ${{ secrets.S3_BUCKET && secrets.AWS_ACCESS_KEY_ID && secrets.AWS_SECRET_ACCESS_KEY }}
+        id: restore-s3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
         run: |
-          aws s3 ls s3://${{ secrets.S3_BUCKET }}/backups/ --recursive | sort | tail -n1 | awk '{print $4}' > latest.txt
+          # Check if secrets are available
+          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ] || [ -z "$S3_BUCKET" ]; then
+            echo "⚠️ AWS secrets not configured - skipping S3 restore"
+            exit 0
+          fi
+          
+          aws s3 ls s3://$S3_BUCKET/backups/ --recursive | sort | tail -n1 | awk '{print $4}' > latest.txt
           LATEST=$(cat latest.txt)
           if [ -z "$LATEST" ]; then echo "No backup in bucket"; exit 1; fi
           echo "Downloading $LATEST"
-          aws s3 cp s3://${{ secrets.S3_BUCKET }}/$LATEST latest.tgz
+          aws s3 cp s3://$S3_BUCKET/$LATEST latest.tgz
           mkdir -p restore_dir
           tar -xzf latest.tgz -C restore_dir
           # Start a fresh mongo and restore

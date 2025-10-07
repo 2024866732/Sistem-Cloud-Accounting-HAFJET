@@ -81,12 +81,12 @@ jobs:
       - name: Check GHCR availability
         id: check-ghcr
         run: |
-          if [ -n "${{ secrets.GHCR_PAT }}" ]; then
+          if [ -n "${{ secrets.GHCR_TOKEN }}" ]; then
             echo "available=true" >> $GITHUB_OUTPUT
-            echo "✅ GHCR_PAT configured"
+            echo "✅ GHCR_TOKEN configured"
           else
             echo "available=false" >> $GITHUB_OUTPUT
-            echo "⚠️ GHCR_PAT not configured - will build only"
+            echo "⚠️ GHCR_TOKEN not configured - will build only"
           fi
 
       - name: Check Railway availability
@@ -107,7 +107,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
+          password: ${{ secrets.GHCR_TOKEN }}
 
       # Build Docker Images
       - name: Build backend Docker image
@@ -191,10 +191,16 @@ jobs:
           echo "⚠️ Migration skipped (not configured or failed)"
 
       - name: Health check backend
-        if: steps.check-railway.outputs.available == 'true' && secrets.RAILWAY_BACKEND_URL != ''
+        if: steps.check-railway.outputs.available == 'true'
         env:
           BACKEND_URL: ${{ secrets.RAILWAY_BACKEND_URL }}
         run: |
+          if [ -z "$BACKEND_URL" ]; then
+            echo "⚠️ RAILWAY_BACKEND_URL not configured - skipping health check"
+            echo "💡 Add RAILWAY_BACKEND_URL secret after first deployment"
+            exit 0
+          fi
+          
           echo "🏥 Health check: $BACKEND_URL/api/health"
           
           for i in {1..30}; do
@@ -253,8 +259,8 @@ jobs:
             echo "📋 Next Steps:"
             echo "  1️⃣  Check Railway dashboard for service status"
             echo "  2️⃣  Monitor logs: railway logs --service backend"
-            echo "  3️⃣  Test backend: curl ${{ secrets.RAILWAY_BACKEND_URL }}/api/health"
-            echo "  4️⃣  Access frontend: ${{ secrets.RAILWAY_FRONTEND_URL || 'Check Railway for URL' }}"
+            echo "  3️⃣  Get URLs from Railway dashboard and test health endpoints"
+            echo "  4️⃣  Add RAILWAY_BACKEND_URL and RAILWAY_FRONTEND_URL to GitHub secrets"
             echo ""
             echo "🔍 Monitoring:"
             echo "  • Backend logs:  railway logs --service backend --tail 100"

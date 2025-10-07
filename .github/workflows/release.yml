@@ -120,16 +120,16 @@ jobs:
             for i in $(seq 1 $attempts); do
               # Prefer the version whose metadata.container.tags contains 'latest'
               DIGEST=$(gh api -H "Accept: application/vnd.oci.image.manifest.v1+json" \
-                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq 'map(select(.metadata.container.tags[]? == "latest"))[0].metadata.container.digest' 2>/dev/null || true)
-              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ]; then
+                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq 'map(select(.metadata.container.tags[]? == "latest"))[0].metadata.container.digest' 2>/dev/null || echo "")
+              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ] && [ "$DIGEST" != "" ]; then
                 echo "$DIGEST"
                 return 0
               fi
 
               # Fallback: if no version labelled latest, try to use the first available digest
               DIGEST=$(gh api -H "Accept: application/vnd.oci.image.manifest.v1+json" \
-                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq '.[0].metadata.container.digest' 2>/dev/null || true)
-              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ]; then
+                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq '.[0].metadata.container.digest' 2>/dev/null || echo "")
+              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ] && [ "$DIGEST" != "" ]; then
                 echo "$DIGEST"
                 return 0
               fi
@@ -138,22 +138,39 @@ jobs:
               delay=$((delay * 2))
             done
 
-            # Fallback: try to pull and inspect with docker
+            # Fallback: try to pull and inspect with docker (skip if not authenticated)
             IMAGE=ghcr.io/${OWNER_REPO}:latest
             if docker pull "$IMAGE" >/dev/null 2>&1; then
-              docker image inspect "$IMAGE" --format '{{index .RepoDigests 0}}' || true
+              docker image inspect "$IMAGE" --format '{{index .RepoDigests 0}}' 2>/dev/null || echo ""
               return 0
             fi
 
+            # Return empty if all attempts fail (not an error - images might not exist yet)
             echo ""
-            return 1
+            return 0
           }
 
-          BACKEND_DIGEST=$(get_digest "$BACKEND_NAME" || true)
-          FRONTEND_DIGEST=$(get_digest "$FRONTEND_NAME" || true)
+          BACKEND_DIGEST=$(get_digest "$BACKEND_NAME")
+          FRONTEND_DIGEST=$(get_digest "$FRONTEND_NAME")
+          
+          # Sanitize output - ensure no JSON or multi-line content
+          BACKEND_DIGEST=$(echo "$BACKEND_DIGEST" | tr -d '\n\r' | grep -E '^sha256:[a-f0-9]{64}$' || echo "")
+          FRONTEND_DIGEST=$(echo "$FRONTEND_DIGEST" | tr -d '\n\r' | grep -E '^sha256:[a-f0-9]{64}$' || echo "")
 
           echo "BACKEND_DIGEST=$BACKEND_DIGEST" >> $GITHUB_OUTPUT
           echo "FRONTEND_DIGEST=$FRONTEND_DIGEST" >> $GITHUB_OUTPUT
+          
+          if [ -z "$BACKEND_DIGEST" ]; then
+            echo "⚠️ Backend digest not found - image may not be pushed yet"
+          else
+            echo "✅ Backend digest: $BACKEND_DIGEST"
+          fi
+          
+          if [ -z "$FRONTEND_DIGEST" ]; then
+            echo "⚠️ Frontend digest not found - image may not be pushed yet"
+          else
+            echo "✅ Frontend digest: $FRONTEND_DIGEST"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_BUILDKIT: 1
