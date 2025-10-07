@@ -22,7 +22,7 @@
     "lint:frontend": "cd frontend && npm run lint",
     "lint:backend": "cd backend && npm run lint",
     "validate:workflows": "python scripts/validate-workflows.py",
-    "prepare": "husky install"
+    "prepare": "node -e \"if (!process.env.CI) require('child_process').execSync('husky install', {stdio: 'inherit'})\""
   },
   "keywords": [
     "accounting",
