@@ -1,3 +1,10 @@
+## [2.2.4](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.3...v2.2.4) (2025-10-07)
+
+
+### Bug Fixes
+
+* **deploy:** remove buildCommand override to use nixpacks.toml build phases ([ed103f9](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/ed103f9005c8f8f0f421d9d521fa0ffee77d8911))
+
 ## [2.2.3](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.2...v2.2.3) (2025-10-07)
 
 
@@ -200,3 +207,8 @@
 ### Published images
 - Backend: sha256:a94c3d82819be4883804a9018bd1201ceaed85dcdb4d60cc7c7161ddbd7137c2
 - Frontend: sha256:e9668fd8d84e9a3893fafc529d2d040308f2ea92dcf4cf19fb9f9284793dc6cc
+
+
+### Published images
+- Backend: sha256:35e9dc9523f755db9ffd163e2bd2368af2936d0d3c3e39a12a6a62438c6acbce
+- Frontend: sha256:7c1d37f19f2dcecba084840dbea8eafaa20e3309788bdce5329ed0cb8de3f336
