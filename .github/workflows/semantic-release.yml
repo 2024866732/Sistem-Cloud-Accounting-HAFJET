@@ -42,17 +42,24 @@ jobs:
             attempts=3
             delay=2
             for i in $(seq 1 $attempts); do
+              # Filter out JSON error messages and validate format
               DIGEST=$(gh api -H "Accept: application/vnd.oci.image.manifest.v1+json" \
-                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq 'map(select(.metadata.container.tags[]? == "latest"))[0].metadata.container.digest' 2>/dev/null || true)
-              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ]; then
+                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" \
+                --jq 'map(select(.metadata.container.tags[]? == "latest"))[0].metadata.container.digest' 2>&1 | \
+                grep -v "message" | grep -v "Not Found" | tr -d '\n\r' || echo "")
+              # Validate it's actually a sha256 digest
+              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ] && echo "$DIGEST" | grep -qE '^sha256:[a-f0-9]{64}$'; then
                 echo "$DIGEST"
                 return 0
               fi
 
-              # fallback to first entry if no 'latest' tag found
+              # Fallback to first entry if no 'latest' tag found
               DIGEST=$(gh api -H "Accept: application/vnd.oci.image.manifest.v1+json" \
-                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq '.[0].metadata.container.digest' 2>/dev/null || true)
-              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ]; then
+                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" \
+                --jq '.[0].metadata.container.digest' 2>&1 | \
+                grep -v "message" | grep -v "Not Found" | tr -d '\n\r' || echo "")
+              # Validate it's actually a sha256 digest
+              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ] && echo "$DIGEST" | grep -qE '^sha256:[a-f0-9]{64}$'; then
                 echo "$DIGEST"
                 return 0
               fi
@@ -61,21 +68,42 @@ jobs:
               delay=$((delay * 2))
             done
 
+            # Fallback: try to pull and inspect with docker
             IMAGE=ghcr.io/${OWNER_REPO}:latest
             if docker pull "$IMAGE" >/dev/null 2>&1; then
-              docker image inspect "$IMAGE" --format '{{index .RepoDigests 0}}' || true
-              return 0
+              DIGEST=$(docker image inspect "$IMAGE" --format '{{index .RepoDigests 0}}' 2>/dev/null | grep -oE 'sha256:[a-f0-9]{64}' || echo "")
+              if [ -n "$DIGEST" ]; then
+                echo "$DIGEST"
+                return 0
+              fi
             fi
 
+            # Return empty if all attempts fail (not an error - images might not exist yet)
             echo ""
-            return 1
+            return 0
           }
 
-          BACKEND_DIGEST=$(get_digest "$BACKEND_NAME" || true)
-          FRONTEND_DIGEST=$(get_digest "$FRONTEND_NAME" || true)
+          BACKEND_DIGEST=$(get_digest "$BACKEND_NAME")
+          FRONTEND_DIGEST=$(get_digest "$FRONTEND_NAME")
+
+          # Ensure clean output - no JSON fragments
+          BACKEND_DIGEST=$(echo "$BACKEND_DIGEST" | tr -d '\n\r' | grep -E '^sha256:[a-f0-9]{64}$' || echo "")
+          FRONTEND_DIGEST=$(echo "$FRONTEND_DIGEST" | tr -d '\n\r' | grep -E '^sha256:[a-f0-9]{64}$' || echo "")
 
           echo "BACKEND_DIGEST=$BACKEND_DIGEST" >> $GITHUB_OUTPUT
           echo "FRONTEND_DIGEST=$FRONTEND_DIGEST" >> $GITHUB_OUTPUT
+          
+          if [ -z "$BACKEND_DIGEST" ]; then
+            echo "⚠️ Backend digest not found - image may not be pushed yet"
+          else
+            echo "✅ Backend digest: $BACKEND_DIGEST"
+          fi
+          
+          if [ -z "$FRONTEND_DIGEST" ]; then
+            echo "⚠️ Frontend digest not found - image may not be pushed yet"
+          else
+            echo "✅ Frontend digest: $FRONTEND_DIGEST"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_BUILDKIT: 1
