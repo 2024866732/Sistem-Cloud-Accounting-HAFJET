@@ -227,6 +227,33 @@ app.post('/api/test-notification', (req, res) => {
 app.use(errorHandler);
 
 // 404 handler
+// Root handler: serve a friendly landing page or redirect to frontend if configured
+app.get('/', (req, res) => {
+  const frontend = process.env.FRONTEND_URL;
+  if (frontend) {
+    // Redirect to the configured frontend host
+    return res.redirect(frontend);
+  }
+
+  // Minimal HTML landing page with link to health endpoint
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  return res.send(`<!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>HAFJET Bukku API</title>
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <style>body{font-family:Segoe UI, Roboto, Arial, sans-serif; padding:2rem; background:#f7f9fc;color:#0b1220} a{color:#0b66ff}</style>
+      </head>
+      <body>
+        <h1>HAFJET Bukku API</h1>
+        <p>The backend API is running. For health status visit <a href="/api/health">/api/health</a>.</p>
+        <p>If you expected the web application here, configure the FRONTEND_URL environment variable to redirect users to the hosted frontend.</p>
+      </body>
+    </html>`);
+});
+
+// 404 handler for all other routes
 app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
