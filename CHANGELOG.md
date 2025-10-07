@@ -1,3 +1,41 @@
+# [2.0.0](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v1.1.0...v2.0.0) (2025-10-07)
+
+
+### Bug Fixes
+
+* **backend:** add type assertion for Mongoose 8 FlattenMaps compatibility ([0175a6b](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/0175a6b8648ef382daec3c4b93f22966d6f2ac23))
+* **backend:** use double type assertion for Mongoose 8 lean() return type ([15557f2](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/15557f230bb2a51f37e64d869bf200d1fba3d657))
+* **ci:** add GHCR write permissions to workflow ([f2e93cd](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/f2e93cd0d9c59a9d8eff217885bd1b1086cd3a6d))
+* **ci:** correct MongoDB health check options format ([399e9be](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/399e9be2d2dca69ba915e8b4f8e1898708d89b10))
+* **ci:** filter JSON error messages from GHCR API responses ([b233908](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/b233908c1adbc03f6465712a10d6b785a98d9900))
+* **ci:** filter JSON errors in Semantic Release GHCR digest fetch ([1a04af6](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/1a04af6554d5005839c81ee92121e2fc9ce10a7b))
+* **ci:** improve deploy-railway workflow error handling ([b3fa2d8](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/b3fa2d8de1bfd4c6a1691a052d477d123a2e9d42))
+* **ci:** remediate failing CI runs - lockfile sync, workflow syntax, deploy guards ([14342cd](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/14342cdf15f40c3172d89f26cb83936822c520dd))
+* **ci:** remove invalid bash commands from YAML workflow ([9d812ba](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/9d812baa39851f34f60e99c49ad7e74406c8c4d4))
+* **ci:** repair all failing GitHub Actions workflows ([3e72306](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/3e7230608dfbb7f7f0f634d08eb439c2adf924bb))
+* **ci:** skip husky install in CI environment ([4cfbbf7](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/4cfbbf7d800be8e7c4db4fca6875c5ba8d04c494))
+* **ci:** use GITHUB_TOKEN for GHCR authentication ([174557c](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/174557c5fa0c1912689c5ea78580e98ec691d450))
+* configure Railway to build and deploy backend folder ([1b95e56](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/1b95e56c453e466414e2c93302a3057262551a0d))
+* **docker:** add legacy-peer-deps flag to frontend Dockerfile ([4d4d6d8](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/4d4d6d84a1849a379c12780f6e0e78a120dfa2c8))
+* **docker:** upgrade to Node 20 and add legacy-peer-deps flag for npm ci ([fb0cc91](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/fb0cc91e02d20deba9707f9eb371c44139b30530))
+* **frontend:** add notification disable check for CI/test environments ([7d919d1](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/7d919d13d0a8a44570dff5eb563e86643cd881b2))
+* MongoDB empty userinfo error - set proper connection string ([5b1c010](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/5b1c0102f640bc2797181cd9c8fe8c87a10db140))
+* restore ci.yml with proper YAML syntax and notification env vars ([fa94663](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/fa94663f9535b5c1693267ab19785340e6a86fc2))
+
+
+### Features
+
+* add production deployment automation scripts and secure templates ([f4ff023](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/f4ff02368e1f9d66b9ff8bfaf38f048aea2e709c))
+* **auto-complete:** 90% system completion with zero errors ([158b9e1](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/158b9e1ed73e7c4d7eae6489f7da44631eddc391))
+* Complete all 20 pre-deployment automation tasks (100%) ([38ebada](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/38ebada4ccac988bf66b8a87720a0e0b169d96a1))
+* **deploy:** add automated Railway deployment scripts with Malaysian compliance ([0b021af](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/0b021af17f20c67b28d1648e91d8b3017afa72f3))
+* **deploy:** complete automated Railway configuration ([3d50466](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/3d50466f92d14a06081c37d19b4473c13f18f387))
+
+
+### BREAKING CHANGES
+
+* None - All new automation scripts added
+
 # Changelog
 
 ## [Unreleased]
@@ -73,3 +111,8 @@
 ### Features
 
 * **release:** package and attach frontend/backend artifacts to draft release if present ([815738f](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/815738feb015834845b4ce50dc5bdb8061e10dc1))
+
+
+### Published images
+- Backend: sha256:c842b461b2f42d333d4ac42eb42afa890a92fee1974e08882a0c9b259d5ce2b5
+- Frontend: sha256:1e3f5d43eed1ae4af1954659ff10c3732124a68af6b297fb9ca82651c4492898
