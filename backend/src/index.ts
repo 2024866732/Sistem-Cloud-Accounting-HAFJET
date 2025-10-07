@@ -143,6 +143,15 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Serve frontend static files (if built frontend exists in public folder)
+import path from 'path';
+const publicPath = path.join(__dirname, '..', 'public');
+app.use(express.static(publicPath, { 
+  maxAge: '1d',
+  etag: true,
+  lastModified: true
+}));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
@@ -226,36 +235,15 @@ app.post('/api/test-notification', (req, res) => {
 // Error handling
 app.use(errorHandler);
 
-// 404 handler
-// Root handler: serve a friendly landing page or redirect to frontend if configured
-app.get('/', (req, res) => {
-  const frontend = process.env.FRONTEND_URL;
-  if (frontend) {
-    // Redirect to the configured frontend host
-    return res.redirect(frontend);
-  }
-
-  // Minimal HTML landing page with link to health endpoint
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  return res.send(`<!doctype html>
-    <html>
-      <head>
-        <meta charset="utf-8" />
-        <title>HAFJET Bukku API</title>
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <style>body{font-family:Segoe UI, Roboto, Arial, sans-serif; padding:2rem; background:#f7f9fc;color:#0b1220} a{color:#0b66ff}</style>
-      </head>
-      <body>
-        <h1>HAFJET Bukku API</h1>
-        <p>The backend API is running. For health status visit <a href="/api/health">/api/health</a>.</p>
-        <p>If you expected the web application here, configure the FRONTEND_URL environment variable to redirect users to the hosted frontend.</p>
-      </body>
-    </html>`);
-});
-
-// 404 handler for all other routes
-app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+// For any route not matched by API or static files, serve index.html (SPA fallback)
+app.get('*', (req, res) => {
+  const indexPath = path.join(__dirname, '..', 'public', 'index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      // If index.html doesn't exist, return 404 JSON (API mode)
+      res.status(404).json({ message: 'Route not found' });
+    }
+  });
 });
 
 // Initialize notification service
