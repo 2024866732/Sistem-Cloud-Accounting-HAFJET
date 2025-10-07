@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.0.1...v2.1.0) (2025-10-07)
+
+
+### Features
+
+* serve frontend static files from backend ([694ae2d](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/694ae2d042369ed5dec7c8ecef31905663ed2e74))
+
 ## [2.0.1](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.0.0...v2.0.1) (2025-10-07)
 
 
@@ -128,3 +135,8 @@
 ### Published images
 - Backend: sha256:5dbf29f4f78aefb615e37cdd24083435f9bb6a3e099518474ca7cc15409ba00a
 - Frontend: sha256:cfebacca39d10ad5fa5677f20c082d256e8c8993cf70c463d0c5fdb709bc1aaa
+
+
+### Published images
+- Backend: sha256:c17cad7143c73fe0151ea2b1418fb95c20f8a44680ff9937e7da7ab64e0d7d2d
+- Frontend: sha256:5d513406470c853f0ce882df2e5b72e0fc216b5261645f8586d62519209f6dcc
