@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/node';
 import * as Tracing from '@sentry/tracing';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
+import fs from 'fs';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
