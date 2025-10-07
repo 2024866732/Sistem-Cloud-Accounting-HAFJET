@@ -28,8 +28,13 @@ RUN npm ci --legacy-peer-deps --only=production --no-audit --no-fund || npm inst
 # Copy compiled output
 COPY --from=build /app/dist ./dist
 
+# Copy static frontend assets if present (built frontend copied into backend/public)
+# This ensures index.html and assets are available in the runtime image.
+COPY public ./public
+
 # Ensure uploads dir exists and is writable by the app user
 RUN mkdir -p /app/uploads && chown -R app:app /app/uploads
+RUN if [ -d /app/public ]; then chown -R app:app /app/public; fi
 
 # Expose port and HEALTHCHECK (readiness endpoint)
 ENV PORT=3000
