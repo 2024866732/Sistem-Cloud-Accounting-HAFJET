@@ -42,6 +42,12 @@ Nampaknya MongoDB services yang sedia ada tidak deploy. Mari add yang baru:
    - **Value:** (paste MONGO_URL yang di-copy tadi)
 5. Click **"Add"**
 
+   **⚠️ JIKA MUNCUL "Overwrite detected" WARNING:**
+   - **CLICK "YES"** atau **"OVERWRITE"** - Ini SELAMAT! ✅
+   - Bermakna MONGO_URI sudah wujud dengan value lama/salah
+   - Overwrite akan update dengan MongoDB URL yang betul
+   - Ini yang kita mahu - replace value lama dengan yang betul!
+
 **Step 4: Wait for Redeploy (1 minit)**
 - Railway akan automatically redeploy app
 - Tengok "Deployments" tab
