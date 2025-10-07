@@ -9,6 +9,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import jwt from 'jsonwebtoken';
 import { config } from './config/config';
+import generatedIndex from './generatedIndex';
 
 // Extend Socket type for authentication
 interface AuthenticatedSocket extends Socket {
@@ -152,6 +153,18 @@ app.use(express.static(publicPath, {
   etag: true,
   lastModified: true
 }));
+
+// Serve root explicitly: prefer actual index.html if present, otherwise provide a small
+// fallback HTML page so the public domain doesn't return a 302/Route not found.
+app.get('/', (req, res) => {
+  const indexPath = path.join(__dirname, '..', 'public', 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  // Serve the embedded index as a fallback so HTML is returned at root
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(generatedIndex);
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
