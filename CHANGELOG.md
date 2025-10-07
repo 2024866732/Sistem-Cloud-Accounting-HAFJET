@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.1.0...v2.1.1) (2025-10-07)
+
+
+### Bug Fixes
+
+* **build:** use absolute paths in nixpacks.toml and railway.json ([a800fe5](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/a800fe51baca188efdfc805ea6eb7e8c72ef166d))
+
 # [2.1.0](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.0.1...v2.1.0) (2025-10-07)
 
 
@@ -140,3 +147,8 @@
 ### Published images
 - Backend: sha256:c17cad7143c73fe0151ea2b1418fb95c20f8a44680ff9937e7da7ab64e0d7d2d
 - Frontend: sha256:5d513406470c853f0ce882df2e5b72e0fc216b5261645f8586d62519209f6dcc
+
+
+### Published images
+- Backend: sha256:641189baffa8bd620e3e807b7a4d03e9206eb924156340ea451b03ea3b18d82e
+- Frontend: sha256:e32304d9182c181d8e4bf0dfa3b2f1ebd0321a9405ba828aefae8d2762e636c9
