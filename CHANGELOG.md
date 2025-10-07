@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.1.1...v2.2.0) (2025-10-07)
+
+
+### Features
+
+* **web:** explicit root handler + SPA fallback to avoid redirect loop when frontend missing ([3952523](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/3952523f2506ea64cbb17470c64f1062c5995a21))
+
 ## [2.1.1](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.1.0...v2.1.1) (2025-10-07)
 
 
@@ -152,3 +159,8 @@
 ### Published images
 - Backend: sha256:641189baffa8bd620e3e807b7a4d03e9206eb924156340ea451b03ea3b18d82e
 - Frontend: sha256:e32304d9182c181d8e4bf0dfa3b2f1ebd0321a9405ba828aefae8d2762e636c9
+
+
+### Published images
+- Backend: sha256:86573c070a72b8e9d8fcac0893d694fd8cb4b6f7ba2bcf1f951328829121b480
+- Frontend: sha256:2aead10f560e3ec24c2bb7750c894be45ae812de474ac1e8ee4f3f39ae4241a6
