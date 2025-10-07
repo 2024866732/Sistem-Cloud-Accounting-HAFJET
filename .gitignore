@@ -24,6 +24,10 @@ frontend/.env.production
 password*.txt
 secret*.txt
 
+# Railway secrets backup
+.jwt-secret-backup
+.railway-urls
+
 # OS
 .DS_Store
 Thumbs.db
