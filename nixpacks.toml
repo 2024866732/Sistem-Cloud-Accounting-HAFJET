@@ -3,14 +3,17 @@ nixPkgs = ["nodejs_22", "python3"]
 
 [phases.install]
 cmds = [
-  "cd backend",
-  "npm ci --include=dev"
+  "npm ci --legacy-peer-deps",
+  "cd frontend && npm ci --legacy-peer-deps",
+  "cd ../backend && npm ci --include=dev"
 ]
 
 [phases.build]
 cmds = [
-  "cd backend",
-  "npm run build"
+  "cd frontend && npm run build",
+  "cd ../backend && npm run build",
+  "mkdir -p backend/public",
+  "cp -r frontend/dist/* backend/public/"
 ]
 
 [start]
