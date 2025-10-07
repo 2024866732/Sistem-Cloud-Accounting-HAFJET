@@ -1,7 +1,8 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "DOCKER"
+    "builder": "NIXPACKS",
+    "buildCommand": "cd /app/frontend && npm ci --legacy-peer-deps && npm run build && cd /app/backend && npm ci --include=dev --legacy-peer-deps && npm run build && mkdir -p /app/backend/public && cp -r /app/frontend/dist/* /app/backend/public/ || true"
   },
   "deploy": {
     "startCommand": "cd /app/backend && npm start",
