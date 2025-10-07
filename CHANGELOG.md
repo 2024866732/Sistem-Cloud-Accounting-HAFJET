@@ -1,3 +1,10 @@
+## [2.2.6](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.5...v2.2.6) (2025-10-07)
+
+
+### Bug Fixes
+
+* **nixpacks:** use nodejs (default stable) instead of versioned package ([1397dc0](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/1397dc0ce89d9db8b5b4ce537d723f79f9b9ad72))
+
 ## [2.2.5](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.4...v2.2.5) (2025-10-07)
 
 
@@ -224,3 +231,8 @@
 ### Published images
 - Backend: sha256:36a43fc99cd0b97e18c9debb15d5f39eb1d8d965ff43784fee8c23d19c724e35
 - Frontend: sha256:70a42464bdba3f8a3f6a2c901499879c02ba593e89d663ed613e241c615ef1f3
+
+
+### Published images
+- Backend: sha256:fa80211cd57fbdacacdd24d2f048864a580520c82588009e805c91a51818fadc
+- Frontend: sha256:fe5a4f16d0833fdd436e6626542afb2f27bb7deadeef3c064adfaa8336264e2e
