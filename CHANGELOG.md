@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.0...v2.2.1) (2025-10-07)
+
+
+### Bug Fixes
+
+* **ci:** restore valid railway build config (NIXPACKS) with frontend+backend build steps ([02cd2b1](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/02cd2b1d507b440f32f443819e6f7c7b49fe89db))
+
 # [2.2.0](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.1.1...v2.2.0) (2025-10-07)
 
 
@@ -164,3 +171,8 @@
 ### Published images
 - Backend: sha256:86573c070a72b8e9d8fcac0893d694fd8cb4b6f7ba2bcf1f951328829121b480
 - Frontend: sha256:2aead10f560e3ec24c2bb7750c894be45ae812de474ac1e8ee4f3f39ae4241a6
+
+
+### Published images
+- Backend: sha256:1726646177bfa6a8a072fcc137237b85f4ba494018c7accb4b0c650669daf324
+- Frontend: sha256:73c1f5878dc413214ff7a00afe80fef0be19d82ff22d74010bc182ff992aa2a0
