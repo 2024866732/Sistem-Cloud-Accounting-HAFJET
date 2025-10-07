@@ -1,3 +1,10 @@
+## [2.2.3](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.2...v2.2.3) (2025-10-07)
+
+
+### Bug Fixes
+
+* **deploy:** add healthcheck configuration to railway.json ([af981bc](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/af981bcd34ffa5cc40b8ddab3166dfd60dc8f1fc))
+
 ## [2.2.2](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.1...v2.2.2) (2025-10-07)
 
 
@@ -188,3 +195,8 @@
 ### Published images
 - Backend: sha256:90234315a7dc1394ef8d9ba04318f698615f0e5d9ea7bd893680e28a8d125c86
 - Frontend: sha256:13ad3b942ddce17fb4f417e0fa3bd3e5058d68b8bc73715a959220712cfa728b
+
+
+### Published images
+- Backend: sha256:a94c3d82819be4883804a9018bd1201ceaed85dcdb4d60cc7c7161ddbd7137c2
+- Frontend: sha256:e9668fd8d84e9a3893fafc529d2d040308f2ea92dcf4cf19fb9f9284793dc6cc
