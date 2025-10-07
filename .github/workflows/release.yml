@@ -119,17 +119,20 @@ jobs:
             delay=2
             for i in $(seq 1 $attempts); do
               # Prefer the version whose metadata.container.tags contains 'latest'
+              # Redirect stderr to filter out JSON error messages
               DIGEST=$(gh api -H "Accept: application/vnd.oci.image.manifest.v1+json" \
-                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq 'map(select(.metadata.container.tags[]? == "latest"))[0].metadata.container.digest' 2>/dev/null || echo "")
-              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ] && [ "$DIGEST" != "" ]; then
+                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq 'map(select(.metadata.container.tags[]? == "latest"))[0].metadata.container.digest' 2>&1 | grep -v "message" | grep -v "Not Found" | tr -d '\n\r' || echo "")
+              # Validate it's actually a digest before returning
+              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ] && [ "$DIGEST" != "" ] && echo "$DIGEST" | grep -qE '^sha256:[a-f0-9]{64}$'; then
                 echo "$DIGEST"
                 return 0
               fi
 
               # Fallback: if no version labelled latest, try to use the first available digest
               DIGEST=$(gh api -H "Accept: application/vnd.oci.image.manifest.v1+json" \
-                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq '.[0].metadata.container.digest' 2>/dev/null || echo "")
-              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ] && [ "$DIGEST" != "" ]; then
+                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq '.[0].metadata.container.digest' 2>&1 | grep -v "message" | grep -v "Not Found" | tr -d '\n\r' || echo "")
+              # Validate it's actually a digest before returning
+              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ] && [ "$DIGEST" != "" ] && echo "$DIGEST" | grep -qE '^sha256:[a-f0-9]{64}$'; then
                 echo "$DIGEST"
                 return 0
               fi
@@ -141,8 +144,11 @@ jobs:
             # Fallback: try to pull and inspect with docker (skip if not authenticated)
             IMAGE=ghcr.io/${OWNER_REPO}:latest
             if docker pull "$IMAGE" >/dev/null 2>&1; then
-              docker image inspect "$IMAGE" --format '{{index .RepoDigests 0}}' 2>/dev/null || echo ""
-              return 0
+              DIGEST=$(docker image inspect "$IMAGE" --format '{{index .RepoDigests 0}}' 2>/dev/null | grep -oE 'sha256:[a-f0-9]{64}' || echo "")
+              if [ -n "$DIGEST" ]; then
+                echo "$DIGEST"
+                return 0
+              fi
             fi
 
             # Return empty if all attempts fail (not an error - images might not exist yet)
