@@ -7,6 +7,8 @@
   "deploy": {
     "startCommand": "cd /app/backend && npm start",
     "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
+    "restartPolicyMaxRetries": 10,
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 100
   }
 }
