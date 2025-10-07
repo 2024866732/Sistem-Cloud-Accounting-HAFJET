@@ -81,13 +81,9 @@ jobs:
       - name: Check GHCR availability
         id: check-ghcr
         run: |
-          if [ -n "${{ secrets.GHCR_TOKEN }}" ]; then
-            echo "available=true" >> $GITHUB_OUTPUT
-            echo "✅ GHCR_TOKEN configured"
-          else
-            echo "available=false" >> $GITHUB_OUTPUT
-            echo "⚠️ GHCR_TOKEN not configured - will build only"
-          fi
+          # Always available - use GITHUB_TOKEN
+          echo "available=true" >> $GITHUB_OUTPUT
+          echo "✅ GHCR authentication available (using GITHUB_TOKEN)"
 
       - name: Check Railway availability
         id: check-railway
@@ -107,7 +103,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # Build Docker Images
       - name: Build backend Docker image
