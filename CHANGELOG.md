@@ -1,3 +1,10 @@
+## [2.2.12](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.11...v2.2.12) (2025-10-08)
+
+
+### Bug Fixes
+
+* **build:** clean npm caches before installs to avoid EBUSY; ensure frontend install+build atomic ([ce89f10](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/ce89f1011a623d767a751745d85623cf3c9ec221))
+
 ## [2.2.11](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.10...v2.2.11) (2025-10-08)
 
 
@@ -296,3 +303,8 @@
 ### Published images
 - Backend: sha256:9a091f8f283147e412724a6eadaa8a9461a69220e44e9cb0f82bf3df1f1f02cd
 - Frontend: sha256:f0458cd8f9d8869d40ef9593975b77ba5b223a0a8739758f57fbe665d12e0b0a
+
+
+### Published images
+- Backend: sha256:dc0b014cd5a9122c247d34955750f44a727a72ecd2f04d63e5b0cad939be7051
+- Frontend: sha256:ddbf19c195c7fcfe6dd7ebb600f4d7e2324d20368326e659f30189e29645caac
