@@ -156,14 +156,29 @@ app.use(express.static(publicPath, {
 
 // Serve root explicitly: prefer actual index.html if present, otherwise provide a small
 // fallback HTML page so the public domain doesn't return a 302/Route not found.
+// Serve index.html at root for both GET and HEAD requests to avoid redirects.
+// This ensures the root domain returns HTML (200) when frontend is present.
 app.get('/', (req, res) => {
   const indexPath = path.join(__dirname, '..', 'public', 'index.html');
   if (fs.existsSync(indexPath)) {
-    return res.sendFile(indexPath);
+    // Log for debugging when running in production to help trace responses
+    if (process.env.NODE_ENV === 'production') {
+      logger.info('Serving static index.html at root');
+    }
+    return res.status(200).sendFile(indexPath);
   }
   // Serve the embedded index as a fallback so HTML is returned at root
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.send(generatedIndex);
+  res.status(200).send(generatedIndex);
+});
+
+// Also respond to HEAD / so load balancers and health checks receive 200
+app.head('/', (req, res) => {
+  const indexPath = path.join(__dirname, '..', 'public', 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.status(200).end();
+  }
+  return res.status(200).end();
 });
 
 // Routes
@@ -250,14 +265,16 @@ app.post('/api/test-notification', (req, res) => {
 app.use(errorHandler);
 
 // For any route not matched by API or static files, serve index.html (SPA fallback)
+// SPA fallback: for any non-API route, serve index.html if it exists so client-side
+// routing works. Explicitly return 200 when serving index. If the file is missing,
+// return 404 JSON to indicate API-only mode.
 app.get('*', (req, res) => {
   const indexPath = path.join(__dirname, '..', 'public', 'index.html');
-  res.sendFile(indexPath, (err) => {
-    if (err) {
-      // If index.html doesn't exist, return 404 JSON (API mode)
-      res.status(404).json({ message: 'Route not found' });
-    }
-  });
+  if (fs.existsSync(indexPath)) {
+    return res.status(200).sendFile(indexPath);
+  }
+  // If index isn't present, this is likely an API-only deployment.
+  res.status(404).json({ message: 'Route not found' });
 });
 
 // Initialize notification service
