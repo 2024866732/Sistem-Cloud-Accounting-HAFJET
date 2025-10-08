@@ -16,8 +16,9 @@ cmds = [
 
 [phases.build]
 cmds = [
-  # Build frontend: install (including dev deps) then build in the same RUN so ./node_modules contains vite
-  "cd /app/frontend && rm -rf node_modules/.cache || true && npm ci --include=dev --legacy-peer-deps && npm run build",
+  # Build frontend: avoid deleting mounted cache (can cause EBUSY) by using a temporary npm cache
+  # Use NPM_CONFIG_CACHE=/tmp/.npm-cache so npm doesn't operate on the mounted cache directory
+  "cd /app/frontend && export NPM_CONFIG_CACHE=/tmp/.npm-cache && npm ci --include=dev --legacy-peer-deps --cache /tmp/.npm-cache && npm run build",
   # Build backend and copy frontend output into backend/public
   "cd /app/backend && npm run build",
   "mkdir -p /app/backend/public",
@@ -29,4 +30,4 @@ cmd = "cd /app/backend && node dist/index.js"
 
 [variables]
 NODE_ENV = "production"
-NIXPACKS_NODE_VERSION = "20"
+NIXPACKS_NODE_VERSION = "20.19.0"
