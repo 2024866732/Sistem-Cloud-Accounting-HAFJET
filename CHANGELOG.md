@@ -1,3 +1,10 @@
+## [2.2.11](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.10...v2.2.11) (2025-10-08)
+
+
+### Bug Fixes
+
+* **build:** run frontend npm ci+build atomically to ensure local vite binary ([8bc6428](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/8bc642895c299c90127bf52e9bdcee30327df04e))
+
 ## [2.2.10](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.9...v2.2.10) (2025-10-08)
 
 
@@ -284,3 +291,8 @@
 ### Published images
 - Backend: sha256:16e422e6d95b732847ff6dfd28caac848c3d8f1782a143a60c9254d3da4711ee
 - Frontend: sha256:fcfa1f6ac0292a1e53346f4593dcefd209fa56be1f0e4768b52c1ad142b79c03
+
+
+### Published images
+- Backend: sha256:9a091f8f283147e412724a6eadaa8a9461a69220e44e9cb0f82bf3df1f1f02cd
+- Frontend: sha256:f0458cd8f9d8869d40ef9593975b77ba5b223a0a8739758f57fbe665d12e0b0a
