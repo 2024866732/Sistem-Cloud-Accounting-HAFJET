@@ -3,6 +3,9 @@ nixPkgs = ["nodejs", "python3"]
 
 [phases.install]
 cmds = [
+  # Clean caches that might be locked to avoid EBUSY during npm ci
+  "rm -rf /app/node_modules/.cache || true",
+  "rm -rf /root/.npm/_cacache || true",
   # Install root workspace deps INCLUDING dev (vite will be hoisted here from frontend)
   "npm ci --include=dev --legacy-peer-deps || npm ci --legacy-peer-deps",
   # Install frontend deps WITH dev dependencies (vite, rolldown, etc needed for build)
@@ -14,7 +17,7 @@ cmds = [
 [phases.build]
 cmds = [
   # Build frontend: install (including dev deps) then build in the same RUN so ./node_modules contains vite
-  "cd /app/frontend && npm ci --include=dev --legacy-peer-deps && npm run build",
+  "cd /app/frontend && rm -rf node_modules/.cache || true && npm ci --include=dev --legacy-peer-deps && npm run build",
   # Build backend and copy frontend output into backend/public
   "cd /app/backend && npm run build",
   "mkdir -p /app/backend/public",
