@@ -1,3 +1,10 @@
+## [2.2.8](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.7...v2.2.8) (2025-10-08)
+
+
+### Bug Fixes
+
+* **build:** use hoisted vite binary for monorepo frontend build ([a5aa9f1](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/a5aa9f18a3294dc721bb52f89bc7152e20b68fa7))
+
 ## [2.2.7](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.6...v2.2.7) (2025-10-08)
 
 
@@ -248,3 +255,8 @@
 ### Published images
 - Backend: sha256:2f52d6842e7961b5e597b934a458b771f6f569d8aff43fbc129003d953cc2879
 - Frontend: sha256:4b0d183196b5d4610255d4ad7200db41a6a998d078e816865504cf845b344c6c
+
+
+### Published images
+- Backend: sha256:88e0108eecc4f2aba4193175a11e1c4aebef69647a0641e073a4ea59d9432392
+- Frontend: sha256:436dc218b9a568ad13497bbcb1b2492daddf69e0995dfec6f42eb05b7ece4665
