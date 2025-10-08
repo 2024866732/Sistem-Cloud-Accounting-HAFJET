@@ -5,8 +5,8 @@ nixPkgs = ["nodejs", "python3"]
 cmds = [
   # Install root workspace deps (if any)
   "npm ci --omit=dev --legacy-peer-deps || npm ci --legacy-peer-deps",
-  # Install frontend deps using absolute path
-  "cd /app/frontend && npm ci --legacy-peer-deps || true",
+  # Install frontend deps WITH dev dependencies (vite, rolldown, etc needed for build)
+  "cd /app/frontend && npm ci --include=dev --legacy-peer-deps || npm ci --legacy-peer-deps",
   # Install backend deps using absolute path (include dev for build)
   "cd /app/backend && npm ci --include=dev --legacy-peer-deps || npm ci --include=dev"
 ]
