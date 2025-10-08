@@ -1,3 +1,10 @@
+## [2.2.13](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.12...v2.2.13) (2025-10-08)
+
+
+### Bug Fixes
+
+* **build:** avoid EBUSY by using temporary npm cache; pin NIXPACKS_NODE_VERSION to 20.19.0 ([e1f776e](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/e1f776ed68c7810ead810103d1a499772a680e1e))
+
 ## [2.2.12](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.11...v2.2.12) (2025-10-08)
 
 
@@ -308,3 +315,8 @@
 ### Published images
 - Backend: sha256:dc0b014cd5a9122c247d34955750f44a727a72ecd2f04d63e5b0cad939be7051
 - Frontend: sha256:ddbf19c195c7fcfe6dd7ebb600f4d7e2324d20368326e659f30189e29645caac
+
+
+### Published images
+- Backend: sha256:856e8c2227124754a7fcbcc26e84588618d099c3b70f07c4d593f2ce3b33b4ca
+- Frontend: sha256:4a12143f851d6f2e49f47ead3dfcf4f15ef238b9be9f5af3853971da624cb6d0
