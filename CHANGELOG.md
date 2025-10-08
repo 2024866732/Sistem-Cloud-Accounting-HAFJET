@@ -1,3 +1,10 @@
+## [2.2.9](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.8...v2.2.9) (2025-10-08)
+
+
+### Bug Fixes
+
+* **build:** move Vite to dependencies, pin Node 20, fix build path ([18eef12](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/18eef12ce862c13247151c757f1127a115e48250))
+
 ## [2.2.8](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.7...v2.2.8) (2025-10-08)
 
 
@@ -260,3 +267,8 @@
 ### Published images
 - Backend: sha256:88e0108eecc4f2aba4193175a11e1c4aebef69647a0641e073a4ea59d9432392
 - Frontend: sha256:436dc218b9a568ad13497bbcb1b2492daddf69e0995dfec6f42eb05b7ece4665
+
+
+### Published images
+- Backend: sha256:db40d66c7394a7dc76db3aa6fe065afd37a06983284020f22dafd2236c71e9e6
+- Frontend: sha256:864c485469866daec8d76bdf1ebbae9a93c74cc7135808b24ccc978d64f3eea9
