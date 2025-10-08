@@ -13,8 +13,8 @@ cmds = [
 
 [phases.build]
 cmds = [
-  # Build frontend - use npx to find vite binary regardless of hoisting
-  "cd /app/frontend && npx vite build",
+  # Build frontend: install (including dev deps) then build in the same RUN so ./node_modules contains vite
+  "cd /app/frontend && npm ci --include=dev --legacy-peer-deps && npm run build",
   # Build backend and copy frontend output into backend/public
   "cd /app/backend && npm run build",
   "mkdir -p /app/backend/public",
