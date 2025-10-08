@@ -13,9 +13,8 @@ cmds = [
 
 [phases.build]
 cmds = [
-  # Build frontend first with compatible Node. Use hoisted vite binary from root node_modules if needed
-  # (workspaces may hoist devDeps to /app/node_modules/.bin which isn't in PATH during Docker RUN)
-  "cd /app/frontend && ../node_modules/.bin/vite build || npm run build",
+  # Build frontend first - Vite is now in dependencies and installed in /app/frontend/node_modules
+  "cd /app/frontend && ./node_modules/.bin/vite build || npm run build",
   # Build backend and copy frontend output into backend/public
   "cd /app/backend && npm run build",
   "mkdir -p /app/backend/public",
@@ -27,3 +26,4 @@ cmd = "cd /app/backend && node dist/index.js"
 
 [variables]
 NODE_ENV = "production"
+NIXPACKS_NODE_VERSION = "20"

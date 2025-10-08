@@ -39,6 +39,9 @@
   ],
   "author": "HAFJET",
   "license": "MIT",
+  "engines": {
+    "node": "20.x"
+  },
   "devDependencies": {
     "concurrently": "^8.2.2",
     "semantic-release": "^20.1.0",
