@@ -1,3 +1,10 @@
+## [2.2.10](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.9...v2.2.10) (2025-10-08)
+
+
+### Bug Fixes
+
+* **build:** install root deps with --include=dev and use npx vite ([ac13dfa](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/ac13dfae3c836087521e4e1e1e52183a08ba5fda))
+
 ## [2.2.9](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.8...v2.2.9) (2025-10-08)
 
 
@@ -272,3 +279,8 @@
 ### Published images
 - Backend: sha256:db40d66c7394a7dc76db3aa6fe065afd37a06983284020f22dafd2236c71e9e6
 - Frontend: sha256:864c485469866daec8d76bdf1ebbae9a93c74cc7135808b24ccc978d64f3eea9
+
+
+### Published images
+- Backend: sha256:16e422e6d95b732847ff6dfd28caac848c3d8f1782a143a60c9254d3da4711ee
+- Frontend: sha256:fcfa1f6ac0292a1e53346f4593dcefd209fa56be1f0e4768b52c1ad142b79c03
