@@ -44,4 +44,6 @@ COPY --from=builder /app/backend/dist ./dist
 COPY --from=builder /app/backend/public ./public
 
 EXPOSE 3000
-CMD ["node", "dist/index.js"]
+# Use npm start as the runtime entrypoint so platform run commands like
+# `npm start` work without needing to call shell builtins like `cd`.
+CMD ["npm", "start"]
