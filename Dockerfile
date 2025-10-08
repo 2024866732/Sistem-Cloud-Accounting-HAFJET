@@ -2,6 +2,10 @@ FROM node:20.19.0 AS builder
 
 WORKDIR /app
 
+# In CI/Docker builds we want to skip husky's install step which runs in the
+# 'prepare' lifecycle. Setting CI=true causes the prepare script to skip husky.
+ENV CI=true
+
 # Copy everything - using a full copy keeps builds simple in CI
 COPY . .
 
@@ -25,6 +29,10 @@ RUN mkdir -p /app/backend/public && cp -r /app/frontend/dist/* /app/backend/publ
 FROM node:20.19.0 AS runner
 
 WORKDIR /app/backend
+
+# Ensure CI=true in the runtime image during install steps as well so any
+# lifecycle scripts that check CI are skipped.
+ENV CI=true
 
 # Copy backend package manifest and install production deps
 COPY backend/package.json ./package.json
