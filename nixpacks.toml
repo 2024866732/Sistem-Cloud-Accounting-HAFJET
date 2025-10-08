@@ -3,8 +3,8 @@ nixPkgs = ["nodejs", "python3"]
 
 [phases.install]
 cmds = [
-  # Install root workspace deps (if any)
-  "npm ci --omit=dev --legacy-peer-deps || npm ci --legacy-peer-deps",
+  # Install root workspace deps INCLUDING dev (vite will be hoisted here from frontend)
+  "npm ci --include=dev --legacy-peer-deps || npm ci --legacy-peer-deps",
   # Install frontend deps WITH dev dependencies (vite, rolldown, etc needed for build)
   "cd /app/frontend && npm ci --include=dev --legacy-peer-deps || npm ci --legacy-peer-deps",
   # Install backend deps using absolute path (include dev for build)
@@ -13,8 +13,8 @@ cmds = [
 
 [phases.build]
 cmds = [
-  # Build frontend first - Vite is now in dependencies and installed in /app/frontend/node_modules
-  "cd /app/frontend && ./node_modules/.bin/vite build || npm run build",
+  # Build frontend - use npx to find vite binary regardless of hoisting
+  "cd /app/frontend && npx vite build",
   # Build backend and copy frontend output into backend/public
   "cd /app/backend && npm run build",
   "mkdir -p /app/backend/public",
