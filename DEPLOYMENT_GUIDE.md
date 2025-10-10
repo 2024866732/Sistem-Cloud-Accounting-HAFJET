@@ -67,6 +67,29 @@ Selepas workflow berjaya:
 3. Uji endpoint app: `https://sistem-cloud-accounting-hafjet-production.up.railway.app`
 4. Test API health check: `https://sistem-cloud-accounting-hafjet-production.up.railway.app/api/health`
 
+### 2.5 Remove AWS secrets (if you want to deploy only to Railway)
+
+If you no longer need AWS production secrets in this repository, you can remove them from GitHub Secrets either via GUI or using the GitHub CLI helpers we included.
+
+GUI (manual):
+1. Go to your repository on GitHub.
+2. Settings > Secrets and variables > Actions.
+3. Find `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `S3_BUCKET`.
+4. Click the trash icon to delete each secret.
+
+CLI (automatic):
+- Bash (Linux/macOS/WSL/Git Bash):
+```bash
+bash scripts/remove-aws-secrets.sh
+```
+- PowerShell (Windows PowerShell / PowerShell Core):
+```powershell
+.
+\scripts\remove-aws-secrets.ps1
+```
+
+Note: the `gh` CLI must be installed and you must be authenticated (`gh auth login`) with an account that has repository admin rights.
+
 ---
 
 ## 3. Manual/CLI Deployment
