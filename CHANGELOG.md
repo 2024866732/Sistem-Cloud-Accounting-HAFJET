@@ -1,3 +1,69 @@
+# [3.0.0](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.9...v3.0.0) (2025-10-10)
+
+
+### Bug Fixes
+
+* **api:** add root '/' handler - redirect to FRONTEND_URL or show minimal landing page (prevents 404 on main app) ([c26c6d9](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/c26c6d9bdc5d74b97e887cfa93ae4fa2208d4990))
+* **backend:** add .js extensions to all relative imports for Node16 ESM ([0db613e](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/0db613ef1a6a7f3533ff95c22561a8862849f186))
+* **backend:** exclude test files from production build and install vitest as devDependency ([04239c9](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/04239c92ea51969c78adf176b597857bfc5e05a7))
+* **build:** avoid EBUSY by using temporary npm cache; pin NIXPACKS_NODE_VERSION to 20.19.0 ([8bcf813](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/8bcf8130618a670871129e44e9e03340bf71096a))
+* **build:** clean npm caches before installs to avoid EBUSY; ensure frontend install+build atomic ([93023eb](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/93023eb82cdc73f2efe60e64ec7b9838af92cc4f))
+* **build:** install root deps with --include=dev and use npx vite ([f51e5d3](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/f51e5d318d940f6a55c83b44395f1ca28b14848a))
+* **build:** move Vite to dependencies, pin Node 20, fix build path ([58f4195](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/58f4195bd40ac87980c1b1e1dce933f09747707d))
+* **build:** run frontend npm ci+build atomically to ensure local vite binary ([2ec895f](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/2ec895f54683e1fbe46d83258f792dea1394e03f))
+* **build:** use absolute paths in nixpacks.toml and railway.json ([0b4fb51](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/0b4fb51f81226ab7cc781c24b18f29a6d6c6a9c4))
+* **build:** use hoisted vite binary for monorepo frontend build ([8152bc8](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/8152bc868e3d7873102fc8b6db799f45659dad32))
+* **ci:** add --service flag to railway commands to specify target service ([9016092](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/90160929b34e3cc67f30d0f9c1f3d998a30d5022))
+* **ci:** add GHCR write permissions to workflow ([5db241b](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/5db241be1c9c49d90699bfe8085ca0de0392df87))
+* **ci:** add issues:write permission to monitor workflow to prevent 403 errors ([9268cc7](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/9268cc7b193a3407f81a6199ac519bbbf3ebdd03))
+* **ci:** correct workflow syntax - replace ne() with proper step outputs ([7b76507](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/7b7650727c90c669f6ec607f3a69df64302054b8))
+* **ci:** filter JSON error messages from GHCR API responses ([48b3d1a](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/48b3d1a49b5309a5240c5256fd909771a1586523))
+* **ci:** filter JSON errors in Semantic Release GHCR digest fetch ([7b216b4](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/7b216b44046a7f244446cefa9c0a257a1ba4b347))
+* **ci:** improve deploy-railway workflow error handling ([1fca6c5](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/1fca6c5fae78c329c7ab3d79b6ebecf14925314b))
+* **ci:** install OpenSSL 1.1 for MongoDB memory server compatibility ([1256c24](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/1256c247c1b01c0ef89d2b6ebdefd0b764ea2709))
+* **ci:** make GHCR cache conditional to avoid registry errors without credentials ([37e7b30](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/37e7b301ecf73b32a754502fec7e679ed3601b8c))
+* **ci:** remove --project flag from railway commands, CLI uses env var or linked project ([2a4f7a8](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/2a4f7a83650c89ff82ca10afc660e702ac89ec5a))
+* **ci:** remove explicit railway login, use RAILWAY_TOKEN env var instead ([35fdf15](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/35fdf15d12614c9f12f439df6e23400c52298094))
+* **ci:** remove invalid bash commands from YAML workflow ([f970493](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/f97049320c73c05dd546ddd3c2e80eda19de3ce6))
+* **ci:** remove self-dependency and make KUBE_CONFIG check non-fatal; regenerate lockfile ([3963af3](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/3963af3722b7ff2e075b4a8af88cb303864c18f8))
+* **ci:** repair all failing GitHub Actions workflows ([e88cf95](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/e88cf95e9c316c79b2f985bba067f3e3e9e56e7e))
+* **ci:** restore valid railway build config (NIXPACKS) with frontend+backend build steps ([382f0d9](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/382f0d9cd1e4b3d3c5e1610317bbf1f17cabed8f))
+* **ci:** skip husky install in CI environment ([892074f](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/892074f3691ddf5dbc8be897a4499868419ce54a))
+* **ci:** upgrade Node.js from 18 to 20 for Vite 7.x compatibility ([b9d6b5e](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/b9d6b5eaea1951f74fb296266a98b7ce355b09a5))
+* **ci:** use GITHUB_TOKEN for GHCR authentication ([7569026](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/756902678cd5f173cf926a09def7867c26862fe7))
+* **ci:** use railway login --browserless for CI environment ([03603d6](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/03603d6cabcac10a8589ae8548f05fbb0b20c04a))
+* **ci:** use valid nixpkgs Node package name (nodejs-22_x instead of nodejs_22_12) ([05751c9](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/05751c9220efd92a5467d10c7a662b78e2c1894e))
+* configure Railway to build and deploy backend folder ([33ccab2](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/33ccab29840289bf4070bcd6c441eb0a5e2852e2))
+* **deploy:** add healthcheck configuration to railway.json ([05492a6](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/05492a6b3dba134d0e06ec479718d14361516b4d))
+* **deploy:** remove buildCommand override to use nixpacks.toml build phases ([829b9f2](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/829b9f2efa855cbe8f1cd32cd21d08e944c67361))
+* **deps:** regenerate lock files with cross-env dependency ([c68e3c5](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/c68e3c5262390e54d6bf4e34766ce8acea0b7748))
+* **frontend:** add Layout component with default export ([cebad2e](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/cebad2e68755035ace15b41c73b91c4188a0ccdf))
+* **login:** remove stray shell command and log errors; improve CI workflow and docs ([a67279f](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/a67279fe48204cfa810166864511b21a2a7cef88))
+* MongoDB empty userinfo error - set proper connection string ([d29a919](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/d29a91980a763506d83bb7d7e604e5c271c61bd6))
+* **nixpacks:** include dev dependencies for frontend build ([fa0917f](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/fa0917fa8a4573ab170d860f037753672a716802))
+* **nixpacks:** use nodejs (default stable) instead of versioned package ([e7ca58d](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/e7ca58de994d0a8fdafaf631e605ab36da87cd30))
+* **nixpacks:** use nodejs_22 (valid nixpkgs package name) ([0d48941](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/0d489411a8f71d15de4edcbb268b84427f4fbecb))
+* **test:** add cross-env and enable experimental-vm-modules for Jest ESM ([90c232b](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/90c232b7ad603d1f9a3bdaae435b5487eb8cc50c))
+* **test:** add isolatedModules for ts-jest and configure Jest ESM support ([70be1e8](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/70be1e84de471d2a140fd728d924bc4700f2f5fb))
+* **test:** resolve merge conflicts - add cross-env and Jest ESM support ([feef81b](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/feef81b7e5f7eaec926a35de6a9821449c0cbeed))
+
+
+### Features
+
+* add production deployment automation scripts and secure templates ([dec425b](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/dec425ba0b6d1c8692895852fbe401b25684b0fb))
+* **auto-complete:** 90% system completion with zero errors ([bd0937b](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/bd0937bde56bb0a1cc0c66b2d7cd96f74888f09e))
+* **ci:** complete Railway CI/CD deployment setup ([343b6f5](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/343b6f5b5af799d06411e026f67c991b0e6e1e11))
+* Complete all 20 pre-deployment automation tasks (100%) ([8efd2a5](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/8efd2a554f394f3a224f1aa40a0de0a6c9c7810d))
+* **deploy:** add automated Railway deployment scripts with Malaysian compliance ([93c74a3](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/93c74a3bf4ba5f41936febbc0a1f51243f63128a))
+* **deploy:** complete automated Railway configuration ([834afae](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/834afae1a4766c44887c843bef105debee6245e8))
+* serve frontend static files from backend ([d51f1bf](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/d51f1bf9f8d23cf072773fa4b8e8381596ecc757))
+* **web:** explicit root handler + SPA fallback to avoid redirect loop when frontend missing ([26ffba2](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/26ffba2fc376172f7a8f33839652934de4429b8b))
+
+
+### BREAKING CHANGES
+
+* None - All new automation scripts added
+
 ## [2.3.8](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.7...v2.3.8) (2025-10-10)
 
 
@@ -441,3 +507,8 @@
 ### Published images
 - Backend: sha256:d076a9648ed9265f83257e1717ef441ef6b5ebe8dcfe6f3786706728d082549b
 - Frontend: sha256:34121d10d5bec746fa7c37da29345bdad066c9aff7ab0cee9d05d0178280f8a4
+
+
+### Published images
+- Backend: sha256:c6995bf37e39d0059a6bd431517bbf477a36d4a5287a42e0cfaf9abf16eaac2b
+- Frontend: sha256:1290901c98682b24f7e48dcaeb023b6e8fc25559a8a7178874660b5ad9008a1e
