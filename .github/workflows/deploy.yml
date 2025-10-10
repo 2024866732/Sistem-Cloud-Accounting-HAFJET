@@ -66,12 +66,10 @@ jobs:
         run: npm install -g @railway/cli
 
       # -------------------------------------------------------------------------
-      # Step 5: Login ke Railway menggunakan token
+      # Step 5: Skip explicit login - Railway CLI uses RAILWAY_TOKEN env var
       # -------------------------------------------------------------------------
-      - name: Railway login
-        run: railway login --browserless
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      # Railway CLI automatically authenticates using RAILWAY_TOKEN environment
+      # variable set at job level, no explicit login needed
 
       # -------------------------------------------------------------------------
       # Step 6: Frontend - Install dependencies, run tests, build
