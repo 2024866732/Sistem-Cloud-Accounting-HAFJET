@@ -1,3 +1,10 @@
+## [2.3.8](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.7...v2.3.8) (2025-10-10)
+
+
+### Bug Fixes
+
+* **backend:** exclude test files from production build and install vitest as devDependency ([2b48f45](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/2b48f45afcb4bc8283c96d7462133ed83cd9e468))
+
 ## [2.3.7](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.6...v2.3.7) (2025-10-10)
 
 
@@ -429,3 +436,8 @@
 ### Published images
 - Backend: sha256:6a095f6f5a93b6b88506502bcdd865f0f14cf8cc56707c3acda37b70fc4dc301
 - Frontend: sha256:5d1fe6eb53c1391849f805ceb3a3ce7b12f1c2e08fcff56e97230213b0045a9a
+
+
+### Published images
+- Backend: sha256:d076a9648ed9265f83257e1717ef441ef6b5ebe8dcfe6f3786706728d082549b
+- Frontend: sha256:34121d10d5bec746fa7c37da29345bdad066c9aff7ab0cee9d05d0178280f8a4
