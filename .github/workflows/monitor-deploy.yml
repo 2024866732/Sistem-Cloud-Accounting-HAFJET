@@ -18,6 +18,10 @@ on:
     types:
       - completed
 
+permissions:
+  issues: write
+  contents: read
+
 jobs:
   create-issue-on-failure:
     name: Create Issue on Deploy Failure
