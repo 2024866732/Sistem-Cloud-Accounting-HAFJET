@@ -1,3 +1,10 @@
+## [2.2.14](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.13...v2.2.14) (2025-10-10)
+
+
+### Bug Fixes
+
+* **login:** remove stray shell command and log errors; improve CI workflow and docs ([6add1d4](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/6add1d4c78c2972354734ae149eafe55f95ce3bf))
+
 ## [2.2.13](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.2.12...v2.2.13) (2025-10-08)
 
 
@@ -320,3 +327,8 @@
 ### Published images
 - Backend: sha256:856e8c2227124754a7fcbcc26e84588618d099c3b70f07c4d593f2ce3b33b4ca
 - Frontend: sha256:4a12143f851d6f2e49f47ead3dfcf4f15ef238b9be9f5af3853971da624cb6d0
+
+
+### Published images
+- Backend: sha256:0fcb87726992e0349002f91a6bb50033e28dabffac2040018eb01d270159aaa9
+- Frontend: sha256:4c5d83f9aef8912a5cef7d7904e8c8f7c4f72b26dec6fb1598b369113adfe1cf
