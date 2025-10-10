@@ -1,3 +1,10 @@
+## [3.0.4](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v3.0.3...v3.0.4) (2025-10-10)
+
+
+### Bug Fixes
+
+* **deploy:** require RAILWAY_SERVICE secret and use RAILWAY_BACKEND_URL for health checks; remove fallback default ([3de9f70](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/3de9f70d6ca9760239c5ccb626cd5f8c7eb438aa))
+
 ## [3.0.3](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v3.0.2...v3.0.3) (2025-10-10)
 
 
@@ -548,3 +555,8 @@
 ### Published images
 - Backend: sha256:279a336db0aa3b8c4ecad67f68ce15a686111cc788c84537de717f1ccf64a9e1
 - Frontend: sha256:659635960fc51536b0450cd6549f44c68e974f83d845b78f94e42d04887fc9db
+
+
+### Published images
+- Backend: sha256:99d59b3fe222f994ab3f968ce6a876b398c2073781beea2bc56291e0618de649
+- Frontend: sha256:8d1f04c2cdff695e6765585c259a626a8f1336b8d9aa86486783b750e919adf7
