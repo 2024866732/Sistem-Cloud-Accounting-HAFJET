@@ -12,7 +12,6 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', { 
       diagnostics: false,
-      isolatedModules: true,
       useESM: true
     }]
   },
