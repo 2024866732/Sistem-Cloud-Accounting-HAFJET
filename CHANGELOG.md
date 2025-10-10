@@ -1,3 +1,10 @@
+## [2.3.3](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.2...v2.3.3) (2025-10-10)
+
+
+### Bug Fixes
+
+* **ci:** use railway login --browserless for CI environment ([23d01ae](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/23d01ae7cfb88a5c002bd2fef569b33d44b5e8b8))
+
 ## [2.3.2](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.1...v2.3.2) (2025-10-10)
 
 
@@ -368,3 +375,8 @@
 ### Published images
 - Backend: sha256:0fcb87726992e0349002f91a6bb50033e28dabffac2040018eb01d270159aaa9
 - Frontend: sha256:4c5d83f9aef8912a5cef7d7904e8c8f7c4f72b26dec6fb1598b369113adfe1cf
+
+
+### Published images
+- Backend: sha256:0b2f80ef5e753503c216e8eda1f17dcb3859df727848f958b39431f4c584f1fd
+- Frontend: sha256:f037e3c2980717796d01b20e69da802dcc4b6171d049e2ac566b87aa91b4bb33
