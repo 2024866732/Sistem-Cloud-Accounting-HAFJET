@@ -69,7 +69,9 @@ jobs:
       # Step 5: Login ke Railway menggunakan token
       # -------------------------------------------------------------------------
       - name: Railway login
-        run: echo "$RAILWAY_TOKEN" | railway login
+        run: railway login --browserless
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       # -------------------------------------------------------------------------
       # Step 6: Frontend - Install dependencies, run tests, build
