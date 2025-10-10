@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v3.0.0...v3.0.1) (2025-10-10)
+
+
+### Bug Fixes
+
+* **test:** configure Jest for CommonJS to resolve exports error ([6ef72e8](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/6ef72e89f0356838ad4eadbf035dc89774f7099c))
+
 # [3.0.0](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.9...v3.0.0) (2025-10-10)
 
 
@@ -512,3 +519,8 @@
 ### Published images
 - Backend: sha256:c6995bf37e39d0059a6bd431517bbf477a36d4a5287a42e0cfaf9abf16eaac2b
 - Frontend: sha256:1290901c98682b24f7e48dcaeb023b6e8fc25559a8a7178874660b5ad9008a1e
+
+
+### Published images
+- Backend: sha256:23ce62380ae57a1912d8dd2804a2b4c09a1da2cc579dce092589511bb61c1344
+- Frontend: sha256:40f25f332f994c5e8cb8269f824b562fb80ab9c4b4261f913bc8f084d20ec259
