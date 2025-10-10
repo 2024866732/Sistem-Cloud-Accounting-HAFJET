@@ -1,3 +1,10 @@
+## [2.3.2](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.1...v2.3.2) (2025-10-10)
+
+
+### Bug Fixes
+
+* **backend:** add .js extensions to all relative imports for Node16 ESM ([34adc38](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/34adc38f00b84e4f1aa16b00e29624c2d050d72e))
+
 ## [2.3.1](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.0...v2.3.1) (2025-10-10)
 
 
@@ -341,6 +348,11 @@
 ### Published images
 - Backend: sha256:856e8c2227124754a7fcbcc26e84588618d099c3b70f07c4d593f2ce3b33b4ca
 - Frontend: sha256:4a12143f851d6f2e49f47ead3dfcf4f15ef238b9be9f5af3853971da624cb6d0
+
+
+### Published images
+- Backend: sha256:0fcb87726992e0349002f91a6bb50033e28dabffac2040018eb01d270159aaa9
+- Frontend: sha256:4c5d83f9aef8912a5cef7d7904e8c8f7c4f72b26dec6fb1598b369113adfe1cf
 
 
 ### Published images
