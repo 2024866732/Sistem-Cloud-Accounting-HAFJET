@@ -1,3 +1,10 @@
+## [3.0.3](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v3.0.2...v3.0.3) (2025-10-10)
+
+
+### Bug Fixes
+
+* **test:** skip incomplete loyverseSyncService tests ([c32eb51](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/c32eb51da9c0ac620212ac947d7daae6197438fd))
+
 ## [3.0.2](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v3.0.1...v3.0.2) (2025-10-10)
 
 
@@ -536,3 +543,8 @@
 ### Published images
 - Backend: sha256:79c30637f7ce695acb266f9cf728052c179551ecd9178e3b8020cfeddf53fbe0
 - Frontend: sha256:afb8418cedda400050ca8f5595610f53ff3677213ffbb8697952c6096de4e0c8
+
+
+### Published images
+- Backend: sha256:279a336db0aa3b8c4ecad67f68ce15a686111cc788c84537de717f1ccf64a9e1
+- Frontend: sha256:659635960fc51536b0450cd6549f44c68e974f83d845b78f94e42d04887fc9db
