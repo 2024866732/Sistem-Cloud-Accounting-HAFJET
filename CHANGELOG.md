@@ -1,3 +1,10 @@
+## [2.3.6](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.5...v2.3.6) (2025-10-10)
+
+
+### Bug Fixes
+
+* **ci:** remove --project flag from railway commands, CLI uses env var or linked project ([a886611](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/a886611d2db13ae7bd5605b50921d675537e2c90))
+
 ## [2.3.5](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.4...v2.3.5) (2025-10-10)
 
 
@@ -405,3 +412,8 @@
 ### Published images
 - Backend: sha256:b5a7b194cc24d176842e1e0a810c2ab0639da89be94e94d702718f510389267c
 - Frontend: sha256:e627944d2827663aef2987a6f66d1fe5335db75b379a50a1f0a96db31a508e5f
+
+
+### Published images
+- Backend: sha256:71e9188e759a022e2f526943929a7e6ba444e96d3571a8aa6eb0c79f8e8cabcc
+- Frontend: sha256:7bc5e6d9f9e088159510574eeda30fbae742e9d9fabe0f7264a8b75a054b5573
