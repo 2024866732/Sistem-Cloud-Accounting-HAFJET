@@ -55,7 +55,8 @@ export default function Login() {
         setErrorMsg('Email atau password tidak betul. Sila cuba lagi.');
         toast.error('Email atau password tidak betul.');
       }
-    } catch (error) {
+    } catch (err) {
+      console.debug('Login error', err);
       setErrorMsg('Ralat sistem. Sila cuba lagi.');
       toast.error('Ralat sistem.');
     } finally {
@@ -150,5 +151,3 @@ export default function Login() {
     </div>
   )
 }
-
-aws --endpoint-url=http://localhost:4566 s3 ls
