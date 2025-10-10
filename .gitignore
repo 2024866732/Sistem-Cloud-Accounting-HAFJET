@@ -39,3 +39,10 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Temporary files
+tmp_*.txt
+tmp_*.json
+tmp_*.html
+run_*.json
+*-logs.txt

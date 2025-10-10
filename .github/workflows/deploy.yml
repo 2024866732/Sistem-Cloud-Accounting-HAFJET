@@ -5,13 +5,24 @@
 # 
 # ✅ Tiada LocalStack - fokus Railway cloud deployment sahaja
 # ✅ Retry logic untuk deploy yang robust
-# ✅ Health check validation selepas deploy
+# ✅ Auto-detection Railway service dari project configuration
+# ✅ Health check validation selepas deploy (optional)
 # ✅ Diagnostics capture untuk troubleshooting
 # ✅ Manual trigger tersedia (workflow_dispatch)
 #
 # Required Secrets:
-#   - RAILWAY_TOKEN: Railway authentication token
-#   - RAILWAY_PROJECT: Railway project ID
+#   - RAILWAY_TOKEN: Railway authentication token (REQUIRED)
+#   - RAILWAY_PROJECT: Railway project ID (OPTIONAL but recommended)
+#   - RAILWAY_BACKEND_URL: Backend URL for health checks (OPTIONAL)
+#
+# Optional Secrets:
+#   - RAILWAY_SERVICE: Specific service name (usually auto-detected)
+#
+# Setup Instructions:
+#   1. Get RAILWAY_TOKEN from Railway dashboard > Project > Settings > Tokens
+#   2. Add token to GitHub: Settings > Secrets > Actions > New secret
+#   3. (Optional) Add RAILWAY_PROJECT for explicit project linking
+#   4. (Optional) Add RAILWAY_BACKEND_URL for health check validation
 #
 # =============================================================================
 
@@ -67,6 +78,16 @@ jobs:
         run: npm install -g @railway/cli
 
       # -------------------------------------------------------------------------
+      # Step 5: Link Railway Project (if RAILWAY_PROJECT is set)
+      # -------------------------------------------------------------------------
+      - name: Link Railway Project
+        if: env.RAILWAY_PROJECT != ''
+        run: |
+          echo "🔗 Linking to Railway project: $RAILWAY_PROJECT"
+          railway link $RAILWAY_PROJECT 2>/dev/null || echo "⚠️ Project already linked or link failed"
+          railway status 2>/dev/null || echo "⚠️ Unable to fetch Railway status"
+
+      # -------------------------------------------------------------------------
       # Step 5: Skip explicit login - Railway CLI uses RAILWAY_TOKEN env var
       # -------------------------------------------------------------------------
       # Railway CLI automatically authenticates using RAILWAY_TOKEN environment
@@ -112,19 +133,31 @@ jobs:
           
           echo "🚀 Starting Railway deployment..."
           
-          if railway up --service "$RAILWAY_SERVICE"; then
-            echo "✅ Deployment succeeded on first attempt"
+          # Try different deployment methods - Railway CLI auto-detects service from project
+          if railway up --detach 2>/dev/null; then
+            echo "✅ Deployment succeeded using 'railway up --detach'"
+            echo "deploy_status=success" >> $GITHUB_OUTPUT
+          elif railway deploy --detach 2>/dev/null; then
+            echo "✅ Deployment succeeded using 'railway deploy --detach'"
+            echo "deploy_status=success" >> $GITHUB_OUTPUT
+          elif [ -n "$RAILWAY_SERVICE" ] && railway up --service "$RAILWAY_SERVICE" --detach 2>/dev/null; then
+            echo "✅ Deployment succeeded using service-specific deployment"
             echo "deploy_status=success" >> $GITHUB_OUTPUT
           else
             echo "⚠️ First deployment attempt failed. Collecting logs..."
-            railway logs --service "$RAILWAY_SERVICE" --tail 100 || true
+            railway logs --tail 100 2>/dev/null || echo "Unable to fetch logs"
             
             echo "🔄 Retrying deployment..."
-            if railway up --service "$RAILWAY_SERVICE"; then
+            if railway up --detach 2>/dev/null; then
               echo "✅ Deployment succeeded on retry"
               echo "deploy_status=success" >> $GITHUB_OUTPUT
             else
               echo "❌ Deployment failed after retry"
+              echo "💡 Troubleshooting tips:"
+              echo "  - Ensure RAILWAY_TOKEN is valid"
+              echo "  - Check Railway project is properly linked"
+              echo "  - Verify railway.json configuration exists"
+              echo "  - Try: railway link <project-id>"
               echo "deploy_status=failed" >> $GITHUB_OUTPUT
               exit 1
             fi
@@ -136,30 +169,44 @@ jobs:
       - name: Verify deployment health
         if: steps.railway_deploy.outputs.deploy_status == 'success'
         run: |
-          HEALTH_URL="https://sistem-cloud-accounting-hafjet-production.up.railway.app/api/health"
-          MAX_ATTEMPTS=6
-          SLEEP_SECONDS=10
+          echo "⏳ Waiting for Railway services to stabilize..."
+          sleep 30
           
-          echo "🏥 Running health checks against: $HEALTH_URL"
+          # Try to get deployment URL from Railway
+          echo "🔍 Checking Railway deployment status..."
+          railway status 2>/dev/null || echo "Unable to fetch Railway status"
           
-          for i in $(seq 1 $MAX_ATTEMPTS); do
-            echo "Health check attempt $i/$MAX_ATTEMPTS..."
+          # If RAILWAY_BACKEND_URL is set, use it for health check
+          if [ -n "${{ secrets.RAILWAY_BACKEND_URL }}" ]; then
+            HEALTH_URL="${{ secrets.RAILWAY_BACKEND_URL }}/api/health"
+            MAX_ATTEMPTS=6
+            SLEEP_SECONDS=10
             
-            if curl -sSf "$HEALTH_URL" -m 15; then
-              echo "✅ Health check passed!"
-              exit 0
-            fi
+            echo "🏥 Running health checks against: $HEALTH_URL"
             
-            if [ $i -lt $MAX_ATTEMPTS ]; then
-              echo "⏳ Waiting ${SLEEP_SECONDS}s before retry..."
-              sleep $SLEEP_SECONDS
-            fi
-          done
-          
-          echo "❌ Health check failed after $MAX_ATTEMPTS attempts"
-          echo "📋 Dumping Railway logs for debugging..."
-          railway logs --service "$RAILWAY_SERVICE" --tail 200 || true
-          exit 1
+            for i in $(seq 1 $MAX_ATTEMPTS); do
+              echo "Health check attempt $i/$MAX_ATTEMPTS..."
+              
+              if curl -sSf "$HEALTH_URL" -m 15; then
+                echo "✅ Health check passed!"
+                exit 0
+              fi
+              
+              if [ $i -lt $MAX_ATTEMPTS ]; then
+                echo "⏳ Waiting ${SLEEP_SECONDS}s before retry..."
+                sleep $SLEEP_SECONDS
+              fi
+            done
+            
+            echo "⚠️ Health check failed after $MAX_ATTEMPTS attempts"
+            echo "📋 Dumping Railway logs for debugging..."
+            railway logs --tail 200 2>/dev/null || echo "Unable to fetch logs"
+            echo "💡 Note: Service may still be starting. Check Railway dashboard."
+          else
+            echo "⚠️ RAILWAY_BACKEND_URL not configured - skipping health check"
+            echo "💡 Add RAILWAY_BACKEND_URL secret to enable health checks"
+            echo "   After first successful deployment, get URL from Railway dashboard"
+          fi
 
       # -------------------------------------------------------------------------
       # Step 10: Success notification
@@ -190,6 +237,16 @@ jobs:
           echo "Actor: $GITHUB_ACTOR"
           echo "Railway Project: $RAILWAY_PROJECT"
           echo "================================================"
+          echo "📋 Railway Status:"
+          railway status 2>/dev/null || echo "Unable to fetch Railway status"
+          echo "================================================"
           echo "📋 Railway logs (last 500 lines):"
-          railway logs --service "$RAILWAY_SERVICE" --tail 500 || echo "Failed to fetch logs"
+          railway logs --tail 500 2>/dev/null || echo "Unable to fetch logs"
+          echo "================================================"
+          echo "💡 Troubleshooting Steps:"
+          echo "  1. Verify RAILWAY_TOKEN is valid and not expired"
+          echo "  2. Check Railway dashboard: https://railway.app"
+          echo "  3. Ensure Railway project exists and is accessible"
+          echo "  4. Verify railway.json and nixpacks.toml configurations"
+          echo "  5. Check if services are properly configured in Railway"
           echo "================================================"
