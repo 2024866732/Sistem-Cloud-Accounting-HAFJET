@@ -1,3 +1,10 @@
+## [2.3.5](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.4...v2.3.5) (2025-10-10)
+
+
+### Bug Fixes
+
+* **ci:** upgrade Node.js from 18 to 20 for Vite 7.x compatibility ([55e91df](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/55e91dfe851a69c2380273256311f6f861f5528c))
+
 ## [2.3.4](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.3...v2.3.4) (2025-10-10)
 
 
@@ -393,3 +400,8 @@
 ### Published images
 - Backend: sha256:2cd91cf57bac6bc2e81120337e96dc530535d9c5c732d8e699ce54c7d39da87b
 - Frontend: sha256:f386e425496434c3d2bd93e6a4ac861470c2133c3a3a6bd538b0a27cfc68713f
+
+
+### Published images
+- Backend: sha256:b5a7b194cc24d176842e1e0a810c2ab0639da89be94e94d702718f510389267c
+- Frontend: sha256:e627944d2827663aef2987a6f66d1fe5335db75b379a50a1f0a96db31a508e5f
