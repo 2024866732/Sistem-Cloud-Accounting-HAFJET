@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v3.0.1...v3.0.2) (2025-10-10)
+
+
+### Bug Fixes
+
+* **test:** convert loyverseSyncService test from vitest to Jest ([cebf19b](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/cebf19b82f350f66b9a4047cf77de95a6dda312a))
+
 ## [3.0.1](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v3.0.0...v3.0.1) (2025-10-10)
 
 
@@ -524,3 +531,8 @@
 ### Published images
 - Backend: sha256:23ce62380ae57a1912d8dd2804a2b4c09a1da2cc579dce092589511bb61c1344
 - Frontend: sha256:40f25f332f994c5e8cb8269f824b562fb80ab9c4b4261f913bc8f084d20ec259
+
+
+### Published images
+- Backend: sha256:79c30637f7ce695acb266f9cf728052c179551ecd9178e3b8020cfeddf53fbe0
+- Frontend: sha256:afb8418cedda400050ca8f5595610f53ff3677213ffbb8697952c6096de4e0c8
