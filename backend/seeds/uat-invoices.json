@@ -1,0 +1,30 @@
+[
+  {
+    "reference": "UAT-INV-001",
+    "customerName": "Acme Sdn Bhd",
+    "items": [
+      {
+        "description": "Consulting",
+        "quantity": 1,
+        "unitPrice": 1000
+      }
+    ],
+    "total": 1000,
+    "status": "draft",
+    "createdAt": "2025-10-08T21:32:40.981Z"
+  },
+  {
+    "reference": "UAT-INV-002",
+    "customerName": "Borneo Trading",
+    "items": [
+      {
+        "description": "Subscription",
+        "quantity": 12,
+        "unitPrice": 50
+      }
+    ],
+    "total": 600,
+    "status": "issued",
+    "createdAt": "2025-10-08T21:32:40.981Z"
+  }
+]

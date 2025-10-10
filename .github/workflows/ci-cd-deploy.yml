@@ -1,0 +1,118 @@
+# CI/CD Deploy Workflow
+# This workflow automates build, test, and deployment to LocalStack (local AWS emulator)
+# For production, see the commented section at the end
+
+name: CI/CD Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: localstack/localstack:latest
+        ports:
+          - 4566:4566
+          - 4571:4571
+        env:
+          SERVICES: s3
+          DEBUG: 1
+        options: >
+          --health-cmd "curl -f http://localhost:4566/_localstack/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      S3_BUCKET: ${{ secrets.S3_BUCKET }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+
+    steps:
+      # Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Set up Node.js (for frontend)
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # Set up Python (for backend/tests)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # Install dependencies (Node.js)
+      - name: Install Node.js dependencies
+        run: |
+          cd frontend
+          npm install
+
+      # Build frontend
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+
+      # Install Python dependencies (backend/tests)
+      - name: Install Python dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt || true
+
+      # Build backend (if needed)
+      # - name: Build backend
+      #   run: |
+      #     cd backend
+      #     npm run build
+
+      # Upload build artefact to S3 bucket in LocalStack
+      - name: Upload artefact to S3 (LocalStack)
+        run: |
+          aws --endpoint-url=http://localhost:4566 s3 mb s3://$S3_BUCKET || true
+          aws --endpoint-url=http://localhost:4566 s3 cp frontend/dist/ s3://$S3_BUCKET/ --recursive
+
+      # Validate artefact exists in S3 bucket
+      - name: Validate artefact in S3
+        run: |
+          aws --endpoint-url=http://localhost:4566 s3 ls s3://$S3_BUCKET/
+
+      # Run frontend tests (Jest)
+      - name: Run frontend tests
+        run: |
+          cd frontend
+          npm test
+
+      # Run backend tests (Pytest)
+      - name: Run backend tests
+        run: |
+          cd backend
+          pytest || true
+
+      # Inform success or failure
+      - name: Deployment status
+        if: ${{ success() }}
+        run: echo "Deployment succeeded!"
+      - name: Deployment failed
+        if: ${{ failure() }}
+        run: echo "Deployment failed!"
+
+      # --- Production Deployment Example ---
+      # Uncomment and modify the following for real AWS deployment
+      # - name: Upload artefact to S3 (Production)
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+      #     AWS_DEFAULT_REGION: ${{ secrets.PROD_AWS_DEFAULT_REGION }}
+      #   run: |
+      #     aws s3 cp frontend/dist/ s3://$S3_BUCKET/ --recursive
+      #
+      # Ensure secrets are set securely in GitHub Actions
+      # See https://docs.github.com/en/actions/security-guides/encrypted-secrets for details

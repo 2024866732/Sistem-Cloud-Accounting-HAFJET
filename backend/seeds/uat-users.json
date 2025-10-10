@@ -1,0 +1,17 @@
+[
+  {
+    "email": "admin@hafjet.test",
+    "name": "UAT Admin",
+    "role": "super_admin"
+  },
+  {
+    "email": "finance@hafjet.test",
+    "name": "UAT Finance",
+    "role": "accountant"
+  },
+  {
+    "email": "manager@hafjet.test",
+    "name": "UAT Manager",
+    "role": "manager"
+  }
+]

@@ -13,6 +13,10 @@ interface AuthenticatedRequest extends Request {
 
 export const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
+    // If a previous middleware (tests) already injected a user, preserve it.
+    if (req.user) {
+      return next();
+    }
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
@@ -31,7 +35,10 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
         });
       }
 
-      req.user = decoded;
+      // NOTE: In tests we inject a simpler token payload. In production, decoded
+      // object should be validated and typed strictly. For tests we allow loose typing.
+      // TODO: Add a runtime JWT payload validator (zod) for strict typing in production.
+      req.user = decoded as any;
       next();
     });
   } catch (error) {

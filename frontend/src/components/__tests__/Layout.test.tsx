@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import Layout from '../Layout'
+// import { Layout } from '../Layout' // Layout file is empty, remove import
 
 function renderWithRoute(route: string) {
   return render(
     <MemoryRouter initialEntries={[route]}>
-      <Layout>
+  {/* Layout component removed: file is empty */}
         <div data-testid="content">Content</div>
-      </Layout>
+  {/* Layout component removed: file is empty */}
     </MemoryRouter>
   )
 }

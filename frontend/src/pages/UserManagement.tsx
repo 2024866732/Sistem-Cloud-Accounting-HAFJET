@@ -4,6 +4,8 @@ import {
   Search, Download, Upload, UserCheck, UserX,
   Crown, Lock, Activity, Settings, Mail
 } from 'lucide-react'
+import TwoFactorModal from '../components/TwoFactorModal'
+import { settingsService, authService } from '../services/api'
 
 interface User {
   id: string
@@ -50,6 +52,10 @@ const UserManagement: React.FC = () => {
   const [filterRole, setFilterRole] = useState<string>('all')
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [loading, setLoading] = useState(true)
+  const [currentUser, setCurrentUser] = useState<unknown | null>(null)
+  const [twoFaModalOpen, setTwoFaModalOpen] = useState(false)
+  const [qrData, setQrData] = useState<{ qr?: string; secret?: string } | null>(null)
+  const [backupCodes, setBackupCodes] = useState<string[] | undefined>(undefined)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -206,6 +212,14 @@ const UserManagement: React.FC = () => {
         }
       ])
       
+      // also fetch current user from auth service if available
+      try {
+        const me = await authService.getCurrentUser()
+        setCurrentUser(me?.data || null)
+      } catch {
+        // keep mock users if auth not configured in dev
+        setCurrentUser(null)
+      }
       setLoading(false)
     }
 
@@ -593,15 +607,136 @@ const UserManagement: React.FC = () => {
               {activeTab === 'roles' && renderRoleManagement()}
               {activeTab === 'audit' && renderAuditLogs()}
               {activeTab === 'settings' && (
-                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30 text-center">
-                  <Settings className="h-16 w-16 text-white/40 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-white/80 mb-2">Security Settings</h3>
-                  <p className="text-white/60">Advanced security configuration options coming soon.</p>
+                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
+                  <div className="text-center">
+                    <Settings className="h-16 w-16 text-white/40 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-white/80 mb-2">Security Settings</h3>
+                    <p className="text-white/60 mb-4">Manage two-factor authentication for your account.</p>
+                  </div>
+
+                  {/* 2FA Panel */}
+                  <div className="max-w-xl mx-auto mt-6 space-y-4 text-left">
+                    <div className="bg-white/10 rounded-2xl p-6 border border-white/20">
+                      <h4 className="text-white font-semibold mb-2">Two-Factor Authentication (2FA)</h4>
+                      <p className="text-white/70 text-sm mb-4">Add an extra layer of security using authenticator apps (e.g., Google Authenticator, Authy).</p>
+
+                      {/* Show current user 2FA status from mock users */}
+                      {(() => {
+                        const currentUserId = (currentUser && typeof currentUser === 'object' && 'id' in (currentUser as Record<string, unknown>)) ? String((currentUser as Record<string, unknown>)['id']) : '1'
+                        const me = users.find(u => u.id === currentUserId)
+                        if (!me) return <p className="text-white/60">User not found</p>
+                        return (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-white/80">2FA Status</span>
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${me.twoFactorEnabled ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+                                {me.twoFactorEnabled ? 'Enabled' : 'Disabled'}
+                              </span>
+                            </div>
+
+                            {!me.twoFactorEnabled ? (
+                              <div className="space-y-2">
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      const res = await settingsService.setup2FA()
+                                      const payloadUnknown: unknown = (res as unknown as { data?: unknown })?.data ?? res
+                                      const payload = typeof payloadUnknown === 'object' && payloadUnknown !== null ? payloadUnknown as Record<string, unknown> : {}
+                                      function getString(obj: unknown, key: string): string | undefined {
+                                        if (typeof obj === 'object' && obj !== null && key in (obj as Record<string, unknown>)) {
+                                          const v = (obj as Record<string, unknown>)[key]
+                                          return typeof v === 'string' ? v : undefined
+                                        }
+                                        return undefined
+                                      }
+                                      const qr = getString(payload, 'qr') ?? getString((payload as Record<string, unknown>)['data'], 'qr') ?? getString(payload, 'otpauth_url')
+                                      const secret = getString(payload, 'secret') ?? getString((payload as Record<string, unknown>)['data'], 'secret')
+                                      setQrData({ qr, secret })
+                                      // open modal to show QR
+                                      setTwoFaModalOpen(true)
+                                    } catch (error) {
+                                      console.error(error)
+                                      alert('Failed to start 2FA setup')
+                                    }
+                                  }}
+                                  className="bg-blue-600 text-white px-4 py-2 rounded-xl"
+                                >
+                                  Setup 2FA
+                                </button>
+
+                                <div className="pt-2">
+                                  <label className="block text-white/80 text-sm mb-1">Enter code from your authenticator</label>
+                                  <div className="flex space-x-2">
+                                    <input id="tfacode" className="flex-1 px-3 py-2 rounded-xl bg-white/5 text-white border border-white/20" placeholder="123456" />
+                                    <button
+                                      onClick={async () => {
+                                        const tokenInput = (document.getElementById('tfacode') as HTMLInputElement)
+                                        const token = tokenInput?.value || ''
+                                        try {
+                                          const res = await settingsService.verify2FA({ token })
+                                          const payloadUnknown: unknown = (res as unknown as { data?: unknown })?.data ?? res
+                                          function hasBackupCodes(obj: unknown): obj is { backupCodes: string[] } {
+                                            return typeof obj === 'object' && obj !== null && 'backupCodes' in (obj as Record<string, unknown>)
+                                          }
+                                          const codes = hasBackupCodes(payloadUnknown) ? (payloadUnknown as { backupCodes: string[] }).backupCodes : (Array.isArray(payloadUnknown) ? payloadUnknown : [])
+                                          setBackupCodes(codes as string[])
+                                          setUsers(prev => prev.map(u => u.id === '1' ? { ...u, twoFactorEnabled: true } : u))
+                                          // keep the modal open so user can copy backup codes after verification
+                                          setTwoFaModalOpen(true)
+                                          // optionally notify the user (kept for parity with UI flow)
+                                          if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+                                            window.alert('2FA enabled')
+                                          }
+                                        } catch (err) {
+                                          console.error(err)
+                                          alert('Invalid token or verification failed')
+                                        }
+                                      }}
+                                      className="bg-green-600 text-white px-4 py-2 rounded-xl"
+                                    >
+                                      Verify & Enable
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <p className="text-white/70 text-sm">2FA is currently enabled for your account. You can disable it below.</p>
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      await settingsService.disable2FA()
+                                      setUsers(prev => prev.map(u => u.id === '1' ? { ...u, twoFactorEnabled: false } : u))
+                                      alert('2FA disabled')
+                                    } catch (err) {
+                                      console.error(err)
+                                      alert('Failed to disable 2FA')
+                                    }
+                                  }}
+                                  className="bg-red-600 text-white px-4 py-2 rounded-xl"
+                                >
+                                  Disable 2FA
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  </div>
                 </div>
               )}
             </>
           )}
         </div>
+
+        <TwoFactorModal
+          open={twoFaModalOpen}
+          onClose={() => setTwoFaModalOpen(false)}
+          qrDataUrl={qrData?.qr}
+          secret={qrData?.secret}
+          backupCodes={backupCodes}
+        />
 
         {/* Footer */}
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/30 text-center">

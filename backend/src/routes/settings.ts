@@ -7,11 +7,16 @@ import {
   getSystemSettings,
   updateSystemSettings,
   getUsers,
+  getUserById,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  changePassword,
+  resetUserPassword
 } from '../controllers/settingsController';
+import { setup2FA, verify2FA, disable2FA } from '../controllers/twoFactorController';
 import { authenticateToken } from '../middleware/auth';
+import { authorize } from '../middleware/rbac';
 
 const router = Router();
 
@@ -31,9 +36,19 @@ router.get('/system', getSystemSettings);
 router.put('/system', updateSystemSettings);
 
 // User management routes
-router.get('/users', getUsers);
-router.post('/users', createUser);
-router.put('/users/:id', updateUser);
-router.delete('/users/:id', deleteUser);
+router.get('/users', authorize('admin.manage_users'), getUsers);
+router.get('/users/:id', getUserById);
+router.post('/users', authorize('admin.manage_users'), createUser);
+router.put('/users/:id', authorize('admin.manage_users'), updateUser);
+router.delete('/users/:id', authorize('admin.manage_users'), deleteUser);
+
+// Password management routes
+router.post('/change-password', changePassword);
+router.post('/users/:id/reset-password', authorize('admin.manage_users'), resetUserPassword);
+
+// Two-factor authentication routes
+router.post('/users/2fa/setup', setup2FA);
+router.post('/users/2fa/verify', verify2FA);
+router.post('/users/2fa/disable', disable2FA);
 
 export default router;

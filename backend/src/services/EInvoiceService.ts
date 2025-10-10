@@ -164,6 +164,9 @@ export class LHDNEInvoiceService {
       }
     })
 
+  // TODO: Add retry logic and exponential backoff for production API calls
+  // TODO: Implement HTTP circuit breaker to avoid overloading LHDN when it is down
+
     // Add request interceptor for authentication
     this.apiClient.interceptors.request.use(async (config) => {
       if (!this.accessToken || (this.tokenExpiry && new Date() >= this.tokenExpiry)) {

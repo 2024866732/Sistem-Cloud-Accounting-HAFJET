@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  mongo-seed:
+    image: mongo:6.0
+    container_name: hafjet-mongo-seed
+    environment:
+      MONGO_INITDB_DATABASE: hafjet-bukku
+    ports:
+      - '27018:27017' # avoid clashing with local Mongo on 27017
+    volumes:
+      - mongo_seed_data:/data/db
+
+  backend-seed-runner:
+    image: node:20-alpine
+    container_name: hafjet-backend-seed-runner
+    working_dir: /app
+    volumes:
+      - ./:/app:delegated
+    depends_on:
+      - mongo-seed
+    environment:
+      MONGO_URI: mongodb://mongo-seed:27017/hafjet-bukku
+    command: sh -c "cd backend && npm ci --omit=dev && npm run build && node dist/utils/seed.js"
+
+volumes:
+  mongo_seed_data:

@@ -47,6 +47,28 @@ jest.mock('axios', () => ({
   }
 }));
 
+// Make OCR and classification deterministic for the test
+jest.mock('../services/OcrService', () => ({
+  __esModule: true,
+  ocrService: {
+    processReceipt: jest.fn(async (id: string) => {
+      const r = receipts.find(x => x._id === id);
+      if (r) { r.status = 'ocr_processed'; return r; }
+      return null;
+    })
+  }
+}));
+jest.mock('../services/ReceiptClassificationService', () => ({
+  __esModule: true,
+  receiptClassificationService: {
+    classify: jest.fn(async (id: string) => {
+      const r = receipts.find(x => x._id === id);
+      if (r) { r.status = 'review_pending'; return r; }
+      return null;
+    })
+  }
+}));
+
 import telegramRoute from '../routes/telegram';
 import { ocrService } from '../services/OcrService';
 import { receiptClassificationService } from '../services/ReceiptClassificationService';
@@ -67,7 +89,8 @@ describe('Telegram auto pipeline', () => {
     expect(res.status).toBe(200);
     const r = receipts[0];
     expect(r).toBeDefined();
-    // After auto OCR + classify, classification service sets status to review_pending
-    expect(['ocr_processed','review_pending','classified']).toContain(r.status);
+    // Ensure OCR and classification services were invoked for the uploaded receipt
+    expect(ocrService.processReceipt).toHaveBeenCalledWith(r._id);
+    expect(receiptClassificationService.classify).toHaveBeenCalledWith(r._id);
   });
 });

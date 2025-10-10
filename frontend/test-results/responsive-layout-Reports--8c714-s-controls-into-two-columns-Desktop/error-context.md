@@ -1,0 +1,173 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - complementary "Sidebar utama" [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e8]: H
+        - generic [ref=e9]:
+          - generic [ref=e10]: HAFJET Cloud
+          - generic [ref=e11]: Accounting System
+      - navigation [ref=e12]:
+        - generic [ref=e13]:
+          - heading "Main Features" [level=3] [ref=e14]
+          - generic [ref=e15]:
+            - link "📊 Dashboard" [ref=e16] [cursor=pointer]:
+              - /url: /dashboard
+              - generic [ref=e17] [cursor=pointer]: 📊
+              - generic [ref=e18] [cursor=pointer]: Dashboard
+            - link "🏢 Companies" [ref=e19] [cursor=pointer]:
+              - /url: /companies
+              - generic [ref=e20] [cursor=pointer]: 🏢
+              - generic [ref=e21] [cursor=pointer]: Companies
+            - link "🏦 Banking" [ref=e22] [cursor=pointer]:
+              - /url: /banking
+              - generic [ref=e23] [cursor=pointer]: 🏦
+              - generic [ref=e24] [cursor=pointer]: Banking
+            - link "🧾 Invoices" [ref=e25] [cursor=pointer]:
+              - /url: /invoices
+              - generic [ref=e26] [cursor=pointer]: 🧾
+              - generic [ref=e27] [cursor=pointer]: Invoices
+            - link "🇲🇾 E-Invoice LHDN" [ref=e28] [cursor=pointer]:
+              - /url: /einvoice
+              - generic [ref=e29] [cursor=pointer]: 🇲🇾
+              - generic [ref=e30] [cursor=pointer]: E-Invoice LHDN
+            - link "💰 Transactions" [ref=e31] [cursor=pointer]:
+              - /url: /transactions
+              - generic [ref=e32] [cursor=pointer]: 💰
+              - generic [ref=e33] [cursor=pointer]: Transactions
+            - link "📦 Inventory" [ref=e34] [cursor=pointer]:
+              - /url: /inventory
+              - generic [ref=e35] [cursor=pointer]: 📦
+              - generic [ref=e36] [cursor=pointer]: Inventory
+            - link "📈 Reports" [ref=e37] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e38] [cursor=pointer]: 📈
+              - generic [ref=e39] [cursor=pointer]: Reports
+        - generic [ref=e40]:
+          - heading "Advanced" [level=3] [ref=e41]
+          - generic [ref=e42]:
+            - link "🚀 Analytics" [ref=e43] [cursor=pointer]:
+              - /url: /analytics
+              - generic [ref=e44] [cursor=pointer]: 🚀
+              - generic [ref=e45] [cursor=pointer]: Analytics
+            - link "⚡ Automation" [ref=e46] [cursor=pointer]:
+              - /url: /automation
+              - generic [ref=e47] [cursor=pointer]: ⚡
+              - generic [ref=e48] [cursor=pointer]: Automation
+            - link "📁 Digital Shoebox" [ref=e49] [cursor=pointer]:
+              - /url: /digital-shoebox
+              - generic [ref=e50] [cursor=pointer]: 📁
+              - generic [ref=e51] [cursor=pointer]: Digital Shoebox
+            - link "💾 Data Management" [ref=e52] [cursor=pointer]:
+              - /url: /data
+              - generic [ref=e53] [cursor=pointer]: 💾
+              - generic [ref=e54] [cursor=pointer]: Data Management
+        - generic [ref=e55]:
+          - heading "System" [level=3] [ref=e56]
+          - generic [ref=e57]:
+            - link "🛡️ Security" [ref=e58] [cursor=pointer]:
+              - /url: /security
+              - generic [ref=e59] [cursor=pointer]: 🛡️
+              - generic [ref=e60] [cursor=pointer]: Security
+            - link "⚡ Performance" [ref=e61] [cursor=pointer]:
+              - /url: /performance
+              - generic [ref=e62] [cursor=pointer]: ⚡
+              - generic [ref=e63] [cursor=pointer]: Performance
+            - link "👥 User Management" [ref=e64] [cursor=pointer]:
+              - /url: /users
+              - generic [ref=e65] [cursor=pointer]: 👥
+              - generic [ref=e66] [cursor=pointer]: User Management
+            - link "⚙️ Settings" [ref=e67] [cursor=pointer]:
+              - /url: /settings
+              - generic [ref=e68] [cursor=pointer]: ⚙️
+              - generic [ref=e69] [cursor=pointer]: Settings
+    - generic [ref=e71]:
+      - generic [ref=e72]:
+        - generic [ref=e73]: T
+        - generic [ref=e74]:
+          - paragraph [ref=e75]: Test User
+          - paragraph [ref=e76]: test@example.com
+      - button "Log Keluar" [ref=e77]: 🚪 Log Keluar
+  - generic [ref=e78]:
+    - banner [ref=e79]:
+      - generic [ref=e80]:
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - button "Open navigation menu" [ref=e83]
+            - generic [ref=e85]:
+              - generic [ref=e87]: H
+              - generic [ref=e89]: HAFJET
+          - generic [ref=e90]:
+            - button [ref=e92]:
+              - img [ref=e93]
+            - generic [ref=e97]: T
+        - heading "🇲🇾 Cloud Accounting MY" [level=1] [ref=e99]
+    - main [ref=e100]:
+      - generic [ref=e102]:
+        - generic [ref=e104]:
+          - generic [ref=e105]:
+            - heading "📊 Advanced Financial Reports" [level=1] [ref=e106]
+            - paragraph [ref=e107]: 🇲🇾 Comprehensive Malaysian accounting reports with SST & E-Invoice compliance
+          - generic [ref=e109]:
+            - generic [ref=e110]:
+              - generic [ref=e111]:
+                - img [ref=e112]
+                - text: Date Range
+              - combobox "Date Range" [ref=e114]:
+                - option "This Month" [selected]
+                - option "Last Month"
+                - option "This Year"
+            - generic [ref=e115]:
+              - generic [ref=e116]:
+                - img [ref=e117]
+                - text: Report Type
+              - combobox "Report Type" [ref=e119]:
+                - option "Overview" [selected]
+                - option "Profit & Loss"
+              - generic [ref=e120]: Choose the report to display
+            - generic [ref=e121]:
+              - generic [ref=e122]:
+                - img [ref=e123]
+                - text: Export Format
+              - combobox "Export Format" [ref=e126]:
+                - option "PDF Report" [selected]
+                - option "Excel Spreadsheet"
+                - option "CSV Data"
+              - generic [ref=e127]: Select export format for report download
+            - generic [ref=e128]:
+              - button "Export report" [ref=e129]:
+                - img [ref=e130]
+                - generic [ref=e133]: Export
+              - button "Share report" [ref=e134]:
+                - img [ref=e135]
+                - generic [ref=e141]: Share
+          - generic [ref=e143]:
+            - button "Overview Dashboard" [ref=e144]:
+              - img [ref=e145]
+              - generic [ref=e147]: Overview Dashboard
+            - button "Profit & Loss" [ref=e148]:
+              - img [ref=e149]
+              - generic [ref=e152]: Profit & Loss
+            - button "Balance Sheet" [ref=e153]:
+              - img [ref=e154]
+              - generic [ref=e157]: Balance Sheet
+            - button "Cash Flow" [ref=e158]:
+              - img [ref=e159]
+              - generic [ref=e162]: Cash Flow
+            - button "SST Report" [ref=e163]:
+              - img [ref=e164]
+              - generic [ref=e166]: SST Report
+            - button "E-Invoice Compliance" [ref=e167]:
+              - img [ref=e168]
+              - generic [ref=e172]: E-Invoice Compliance
+            - button "Aged Receivables" [ref=e173]:
+              - img [ref=e174]
+              - generic [ref=e177]: Aged Receivables
+            - button "Trial Balance" [ref=e178]:
+              - img [ref=e179]
+              - generic [ref=e182]: Trial Balance
+          - paragraph [ref=e187]: 📋 Reports generated on 09/10/2025 | 🇲🇾 Compliant with Malaysian Financial Reporting Standards | 🔒 All data encrypted and secure
+        - button "Get help" [ref=e188]: Help
+```
