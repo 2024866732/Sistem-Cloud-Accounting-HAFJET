@@ -111,15 +111,15 @@ jobs:
           
           echo "🚀 Starting Railway deployment..."
           
-          if railway up --project "$RAILWAY_PROJECT"; then
+          if railway up; then
             echo "✅ Deployment succeeded on first attempt"
             echo "deploy_status=success" >> $GITHUB_OUTPUT
           else
             echo "⚠️ First deployment attempt failed. Collecting logs..."
-            railway logs --project "$RAILWAY_PROJECT" --tail 100 || true
+            railway logs --tail 100 || true
             
             echo "🔄 Retrying deployment..."
-            if railway up --project "$RAILWAY_PROJECT"; then
+            if railway up; then
               echo "✅ Deployment succeeded on retry"
               echo "deploy_status=success" >> $GITHUB_OUTPUT
             else
@@ -157,7 +157,7 @@ jobs:
           
           echo "❌ Health check failed after $MAX_ATTEMPTS attempts"
           echo "📋 Dumping Railway logs for debugging..."
-          railway logs --project "$RAILWAY_PROJECT" --tail 200 || true
+          railway logs --tail 200 || true
           exit 1
 
       # -------------------------------------------------------------------------
@@ -190,5 +190,5 @@ jobs:
           echo "Railway Project: $RAILWAY_PROJECT"
           echo "================================================"
           echo "📋 Railway logs (last 500 lines):"
-          railway logs --project "$RAILWAY_PROJECT" --tail 500 || echo "Failed to fetch logs"
+          railway logs --tail 500 || echo "Failed to fetch logs"
           echo "================================================"
