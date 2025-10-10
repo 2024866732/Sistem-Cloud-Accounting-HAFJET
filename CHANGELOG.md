@@ -1,3 +1,10 @@
+## [2.3.9](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.8...v2.3.9) (2025-10-10)
+
+
+### Bug Fixes
+
+* **test:** add isolatedModules for ts-jest and configure Jest ESM support ([6528951](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/6528951b704aada526f351244559b12125f6c335))
+
 ## [2.3.8](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.7...v2.3.8) (2025-10-10)
 
 
@@ -441,3 +448,8 @@
 ### Published images
 - Backend: sha256:d076a9648ed9265f83257e1717ef441ef6b5ebe8dcfe6f3786706728d082549b
 - Frontend: sha256:34121d10d5bec746fa7c37da29345bdad066c9aff7ab0cee9d05d0178280f8a4
+
+
+### Published images
+- Backend: sha256:73019e5a8809afc338941d600b8b6a1d41142f9b2069072853d4fa1977dfc981
+- Frontend: sha256:4d63b47b95db997e5fb3165aed0b84afc10a0f055f8f2c8fa6bcbb58ab8be5ce
