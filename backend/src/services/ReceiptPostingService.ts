@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import { Receipt } from '../models/Receipt';
-import { LedgerEntry, ILedgerEntry, ILedgerSplit } from '../models/LedgerEntry';
+import { Receipt } from '../models/Receipt.js';
+import { LedgerEntry, ILedgerEntry, ILedgerSplit } from '../models/LedgerEntry.js';
 
 // Temporary chart of accounts mapping (should be centralized later)
 const Accounts = {

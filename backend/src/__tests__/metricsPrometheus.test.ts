@@ -22,7 +22,7 @@ jest.mock('../services/MetricsService', () => ({
 }));
 
 // Import app after mocks applied
-import app from '../index';
+import app from '../index.js';
 
 describe('Prometheus Metrics Endpoint', () => {
   it('returns plain text metrics when enabled', async () => {

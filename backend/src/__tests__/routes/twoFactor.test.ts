@@ -2,17 +2,17 @@ import request from 'supertest';
 import express, { Express } from 'express';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
-import { config } from '../../config/config';
+import { config } from '../../config/config.js';
 
 // Mock dependencies
 jest.mock('../../models/User');
 jest.mock('speakeasy');
 jest.mock('qrcode');
 
-import User from '../../models/User';
+import User from '../../models/User.js';
 import speakeasy from 'speakeasy';
 import qrcode from 'qrcode';
-import settingsRouter from '../../routes/settings';
+import settingsRouter from '../../routes/settings.js';
 
 const mockUserModel = User as jest.Mocked<typeof User>;
 

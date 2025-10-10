@@ -7,12 +7,12 @@ import request from 'supertest';
 import express, { Express } from 'express';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
-import { config } from '../../config/config';
+import { config } from '../../config/config.js';
 
 // Mock User model BEFORE importing anything else
 jest.mock('../../models/User');
-import User from '../../models/User';
-import settingsRouter from '../../routes/settings';
+import User from '../../models/User.js';
+import settingsRouter from '../../routes/settings.js';
 
 // Create mock User model methods
 const mockUserModel = User as jest.Mocked<typeof User>;

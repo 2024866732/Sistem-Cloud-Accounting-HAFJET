@@ -69,7 +69,7 @@ jobs:
       # Step 5: Login ke Railway menggunakan token
       # -------------------------------------------------------------------------
       - name: Railway login
-        run: echo "$RAILWAY_TOKEN" | railway login --token -
+        run: echo "$RAILWAY_TOKEN" | railway login
 
       # -------------------------------------------------------------------------
       # Step 6: Frontend - Install dependencies, run tests, build

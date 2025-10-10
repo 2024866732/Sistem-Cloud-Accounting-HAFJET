@@ -2,8 +2,8 @@
 // Schedules and runs sync between Loyverse POS and HAFJET backend
 // Handles incremental updates, error/retry, and mapping
 
-import { LoyverseSyncService } from './loyverseSyncService';
-import type { Receipt, Item, Inventory, Customer } from './loyverseTypes';
+import { LoyverseSyncService } from './loyverseSyncService.js';
+import type { Receipt, Item, Inventory, Customer } from './loyverseTypes.js';
 
 export async function runLoyverseSyncJob(service: LoyverseSyncService) {
   // Example: Pull new receipts and map to HAFJET transactions

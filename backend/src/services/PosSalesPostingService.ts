@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
-import PosSale from '../models/PosSale';
-import { LedgerEntry, ILedgerSplit } from '../models/LedgerEntry';
-import MetricsService from './MetricsService';
+import PosSale from '../models/PosSale.js';
+import { LedgerEntry, ILedgerSplit } from '../models/LedgerEntry.js';
+import MetricsService from './MetricsService.js';
 
 interface PostDailyPosOptions {
   companyId: string;

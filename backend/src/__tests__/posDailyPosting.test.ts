@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import PosSalesPostingService from '../services/PosSalesPostingService';
-import { LedgerEntry } from '../models/LedgerEntry';
-import PosSale from '../models/PosSale';
+import PosSalesPostingService from '../services/PosSalesPostingService.js';
+import { LedgerEntry } from '../models/LedgerEntry.js';
+import PosSale from '../models/PosSale.js';
 
 jest.mock('../models/LedgerEntry', () => ({
   LedgerEntry: {

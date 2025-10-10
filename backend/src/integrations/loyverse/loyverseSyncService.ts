@@ -3,7 +3,7 @@
 // Handles OAuth2, data pull/push, error/retry, deduplication, and mapping
 
 import axios from 'axios';
-import type { Receipt, Item, Inventory, Customer, Payment } from './loyverseTypes';
+import type { Receipt, Item, Inventory, Customer, Payment } from './loyverseTypes.js';
 
 export class LoyverseSyncService {
   private accessToken: string | null = null;

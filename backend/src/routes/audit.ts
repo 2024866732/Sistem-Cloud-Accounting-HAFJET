@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { authenticateToken } from '../middleware/auth';
-import { authorize } from '../middleware/rbac';
-import AuditLog from '../models/AuditLog';
+import { authenticateToken } from '../middleware/auth.js';
+import { authorize } from '../middleware/rbac.js';
+import AuditLog from '../models/AuditLog.js';
 
 const router = Router();
 

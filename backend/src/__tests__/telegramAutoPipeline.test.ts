@@ -69,9 +69,9 @@ jest.mock('../services/ReceiptClassificationService', () => ({
   }
 }));
 
-import telegramRoute from '../routes/telegram';
-import { ocrService } from '../services/OcrService';
-import { receiptClassificationService } from '../services/ReceiptClassificationService';
+import telegramRoute from '../routes/telegram.js';
+import { ocrService } from '../services/OcrService.js';
+import { receiptClassificationService } from '../services/ReceiptClassificationService.js';
 
 const app = express();
 app.use(bodyParser.json());

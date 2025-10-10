@@ -1,5 +1,5 @@
-import { Receipt } from '../models/Receipt';
-import { logger } from '../utils/logger';
+import { Receipt } from '../models/Receipt.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * ReceiptClassificationService

@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express'
-import { authenticateToken } from '../middleware/auth'
-import MalaysianBankingService from '../services/MalaysianBankingService'
-import { logger } from '../utils/logger'
-import { notificationService } from '../index'
+import { authenticateToken } from '../middleware/auth.js'
+import MalaysianBankingService from '../services/MalaysianBankingService.js'
+import { logger } from '../utils/logger.js'
+import { notificationService } from '../index.js'
 
 // Extend Request interface to include user
 interface AuthenticatedRequest extends Request {

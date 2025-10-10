@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import MetricsService from '../services/MetricsService';
+import MetricsService from '../services/MetricsService.js';
 
 describe('MetricsService', () => {
   beforeEach(() => {

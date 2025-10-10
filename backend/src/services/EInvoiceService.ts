@@ -1,6 +1,6 @@
 // LHDN E-Invoice Service for Malaysian Tax Compliance
 import axios, { AxiosInstance } from 'axios'
-import { logger } from '../utils/logger'
+import { logger } from '../utils/logger.js'
 
 export interface LHDNEInvoiceConfig {
   clientId: string

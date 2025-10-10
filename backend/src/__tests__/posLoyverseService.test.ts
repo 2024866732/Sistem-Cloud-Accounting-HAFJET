@@ -35,7 +35,7 @@ jest.mock('../config/config', () => ({ config: { LOYVERSE_API_KEY: 'key', LOYVER
 // Mock axios (not currently used for mock fetch but placeholder for future)
 jest.mock('axios', () => ({ __esModule: true, default: { get: jest.fn(async () => ({ data: {} })) } }));
 
-import { loyversePosService } from '../services/LoyversePosService';
+import { loyversePosService } from '../services/LoyversePosService.js';
 
 describe('LoyversePosService', () => {
   beforeEach(() => { sales.length = 0; stores.length = 0; });

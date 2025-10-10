@@ -8,8 +8,8 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import jwt from 'jsonwebtoken';
-import { config } from './config/config';
-import generatedIndex from './generatedIndex';
+import { config } from './config/config.js';
+import generatedIndex from './generatedIndex.js';
 
 // Extend Socket type for authentication
 interface AuthenticatedSocket extends Socket {
@@ -17,32 +17,32 @@ interface AuthenticatedSocket extends Socket {
   companyId?: string;
 }
 
-import authRoutes from './routes/auth';
-import userRoutes from './routes/users';
-import companyRoutes from './routes/companies';
-import invoiceRoutes from './routes/invoices';
-import transactionRoutes from './routes/transactions';
-import reportRoutes from './routes/reports';
-import taxRoutes from './routes/tax';
-import inventoryRoutes from './routes/inventory';
-import dashboardRoutes from './routes/dashboard';
-import settingsRoutes from './routes/settings';
-import bankingRoutes from './routes/banking';
-import einvoiceRoutes from './routes/einvoice';
-import notificationRoutes from './routes/notifications';
-import reconciliationRoutes from './routes/reconciliation';
-import auditRoutes from './routes/audit';
-import receiptRoutes from './routes/receipts';
-import telegramRoutes from './routes/telegram';
-import posRoutes from './routes/pos';
-import systemRoutes from './routes/system';
-import PosSyncScheduler from './services/PosSyncScheduler';
-import loyversePosService from './services/LoyversePosService';
-import { errorHandler } from './middleware/errorHandler';
-import { authorize } from './middleware/rbac';
-import { logger } from './utils/logger';
-import NotificationService from './services/NotificationService';
-import { metricsHandler, notificationDeliveryCounter } from './middleware/metrics';
+import authRoutes from './routes/auth.js';
+import userRoutes from './routes/users.js';
+import companyRoutes from './routes/companies.js';
+import invoiceRoutes from './routes/invoices.js';
+import transactionRoutes from './routes/transactions.js';
+import reportRoutes from './routes/reports.js';
+import taxRoutes from './routes/tax.js';
+import inventoryRoutes from './routes/inventory.js';
+import dashboardRoutes from './routes/dashboard.js';
+import settingsRoutes from './routes/settings.js';
+import bankingRoutes from './routes/banking.js';
+import einvoiceRoutes from './routes/einvoice.js';
+import notificationRoutes from './routes/notifications.js';
+import reconciliationRoutes from './routes/reconciliation.js';
+import auditRoutes from './routes/audit.js';
+import receiptRoutes from './routes/receipts.js';
+import telegramRoutes from './routes/telegram.js';
+import posRoutes from './routes/pos.js';
+import systemRoutes from './routes/system.js';
+import PosSyncScheduler from './services/PosSyncScheduler.js';
+import loyversePosService from './services/LoyversePosService.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { authorize } from './middleware/rbac.js';
+import { logger } from './utils/logger.js';
+import NotificationService from './services/NotificationService.js';
+import { metricsHandler, notificationDeliveryCounter } from './middleware/metrics.js';
 
 const app = express();
 

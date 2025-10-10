@@ -1,14 +1,14 @@
 import { Router } from 'express';
-import { telegramIngestionService } from '../services/TelegramIngestionService';
-import NotificationService from '../services/NotificationService';
-import TelegramChatLink from '../models/TelegramChatLink';
-import { authenticateToken } from '../middleware/auth';
-import { authorize } from '../middleware/rbac';
-import { audit } from '../middleware/audit';
-import { telegramRateLimit } from '../middleware/rateLimit';
-import { config } from '../config/config';
-import { ocrService } from '../services/OcrService';
-import { receiptClassificationService } from '../services/ReceiptClassificationService';
+import { telegramIngestionService } from '../services/TelegramIngestionService.js';
+import NotificationService from '../services/NotificationService.js';
+import TelegramChatLink from '../models/TelegramChatLink.js';
+import { authenticateToken } from '../middleware/auth.js';
+import { authorize } from '../middleware/rbac.js';
+import { audit } from '../middleware/audit.js';
+import { telegramRateLimit } from '../middleware/rateLimit.js';
+import { config } from '../config/config.js';
+import { ocrService } from '../services/OcrService.js';
+import { receiptClassificationService } from '../services/ReceiptClassificationService.js';
 
 // NOTE: This webhook is unauthenticated except for optional chat allowlist.
 // Recommend reverse proxy IP filtering + secret token query param in production.

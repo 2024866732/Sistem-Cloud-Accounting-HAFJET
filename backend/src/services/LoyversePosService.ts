@@ -1,11 +1,11 @@
 import axios from 'axios';
 import crypto from 'crypto';
-import { config } from '../config/config';
-import PosSale, { IPosSale } from '../models/PosSale';
-import MetricsService from './MetricsService';
-import PosSyncState from '../models/PosSyncState';
-import StoreLocation from '../models/StoreLocation';
-import NotificationService from './NotificationService';
+import { config } from '../config/config.js';
+import PosSale, { IPosSale } from '../models/PosSale.js';
+import MetricsService from './MetricsService.js';
+import PosSyncState from '../models/PosSyncState.js';
+import StoreLocation from '../models/StoreLocation.js';
+import NotificationService from './NotificationService.js';
 
 interface RawLoyverseSaleItem {
   line: number;

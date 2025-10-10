@@ -2,8 +2,8 @@
 // Receives real-time events from Loyverse POS and triggers sync
 
 import express from 'express';
-import { runLoyverseSyncJob } from './loyverseSyncJob';
-import { LoyverseSyncService } from './loyverseSyncService';
+import { runLoyverseSyncJob } from './loyverseSyncJob.js';
+import { LoyverseSyncService } from './loyverseSyncService.js';
 
 const router = express.Router();
 

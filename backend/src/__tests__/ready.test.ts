@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../index';
+import app from '../index.js';
 
 describe('Readiness endpoint', () => {
   it('responds with 200 or 503 depending on DB connection', async () => {

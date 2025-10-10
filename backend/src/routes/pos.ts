@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { authenticateToken } from '../middleware/auth';
-import { authorize } from '../middleware/rbac';
-import { audit } from '../middleware/audit';
-import loyversePosService from '../services/LoyversePosService';
-import PosSalesPostingService from '../services/PosSalesPostingService';
+import { authenticateToken } from '../middleware/auth.js';
+import { authorize } from '../middleware/rbac.js';
+import { audit } from '../middleware/audit.js';
+import loyversePosService from '../services/LoyversePosService.js';
+import PosSalesPostingService from '../services/PosSalesPostingService.js';
 
 const router = Router();
 

@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import speakeasy from 'speakeasy';
 import qrcode from 'qrcode';
-import User from '../models/User';
-import { logger } from '../utils/logger';
+import User from '../models/User.js';
+import { logger } from '../utils/logger.js';
 
 // Generate 2FA setup (TOTP) secret and return otpauth_url (and QR encoded data)
 export const setup2FA = async (req: Request, res: Response) => {

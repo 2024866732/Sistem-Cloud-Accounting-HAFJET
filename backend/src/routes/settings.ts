@@ -13,10 +13,10 @@ import {
   deleteUser,
   changePassword,
   resetUserPassword
-} from '../controllers/settingsController';
-import { setup2FA, verify2FA, disable2FA } from '../controllers/twoFactorController';
-import { authenticateToken } from '../middleware/auth';
-import { authorize } from '../middleware/rbac';
+} from '../controllers/settingsController.js';
+import { setup2FA, verify2FA, disable2FA } from '../controllers/twoFactorController.js';
+import { authenticateToken } from '../middleware/auth.js';
+import { authorize } from '../middleware/rbac.js';
 
 const router = Router();
 

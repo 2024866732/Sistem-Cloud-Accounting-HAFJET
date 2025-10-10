@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import AuditLog from '../models/AuditLog';
+import AuditLog from '../models/AuditLog.js';
 
 export interface AuditOptions {
   action: string; // e.g. invoice.create
