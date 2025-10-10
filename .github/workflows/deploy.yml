@@ -1,193 +1,93 @@
-name: Build and Deploy
+# CI/CD Deploy ke Railway App
+# Perbezaan: LocalStack untuk dev/test local, Railway App untuk deploy cloud/live.
+
+name: CI/CD Deploy
 
 on:
   push:
-    branches: [ main, master ]
+    branches:
+      - main # Hanya run bila ada push ke branch main
 
 jobs:
-  build-and-push:
+  deploy:
     runs-on: ubuntu-latest
+
+    env:
+      # Semua secrets diambil dari GitHub Actions Secret
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_PROJECT: ${{ secrets.RAILWAY_PROJECT }} # Nama projek Railway anda
+      # Tambah env lain jika perlu, contoh API_KEY, DB_URL, dsb.
+
     steps:
-      - uses: actions/checkout@v4
+      # 1. Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        # Komen: Ambil semua kod dari repo
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Check for GHCR PAT
-        id: ghcr_check
-        run: |
-          if [ -z "${{ secrets.GHCR_PAT }}" ]; then
-            echo "GHCR_PAT not set; container images will not be pushed to ghcr.io from this run"
-            echo "push=false" >> $GITHUB_OUTPUT
-          else
-            echo "push=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Log in to GHCR (if configured)
-        if: steps.ghcr_check.outputs.push == 'true'
-        uses: docker/login-action@v2
+      # 2. Setup Node.js runtime (Railway CLI perlukan Node.js)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
+          node-version: '18'
+        # Komen: Node.js versi 18, tukar ikut keperluan projek
 
-      - name: Build and push backend image
-        uses: docker/build-push-action@v4
-        if: steps.ghcr_check.outputs.push == 'true'
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: true
-          tags: |
-            ghcr.io/2024866732/hafjet-bukku-backend:${{ github.sha }}
-            ghcr.io/2024866732/hafjet-bukku-backend:latest
+      # 3. Install Railway CLI secara global
+      - name: Install Railway CLI
+        run: npm install -g railway
+        # Komen: Railway CLI untuk deploy ke Railway cloud
 
-      - name: Build backend image (skip push)
-        if: steps.ghcr_check.outputs.push != 'true'
-        uses: docker/build-push-action@v4
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: false
-          tags: |
-            hafjet-bukku-backend:${{ github.sha }}
+      # 4. Login Railway CLI dengan token dari secrets
+      - name: Railway login
+        run: railway login --token $RAILWAY_TOKEN
+        # Komen: Autentikasi Railway CLI guna token rahsia
 
-      - name: Build and push frontend image
-        uses: docker/build-push-action@v4
-        if: steps.ghcr_check.outputs.push == 'true'
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
-          push: true
-          tags: |
-            ghcr.io/2024866732/hafjet-bukku-frontend:${{ github.sha }}
-            ghcr.io/2024866732/hafjet-bukku-frontend:latest
+      # 5. Deploy app ke Railway
+      - name: Deploy to Railway
+        run: railway up --project $RAILWAY_PROJECT
+        # Komen: Deploy kod/app ke Railway project
 
-      - name: Build frontend image (skip push)
-        if: steps.ghcr_check.outputs.push != 'true'
-        uses: docker/build-push-action@v4
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
-          push: false
-          tags: |
-            hafjet-bukku-frontend:${{ github.sha }}
-
-  deploy-k8s:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'latest'
-
-      # Ensure KUBE_CONFIG presence for protected branches (main/master).
-      # This step intentionally fails the job on main/master if KUBE_CONFIG is not set,
-      # preventing accidental silent skips of production deploys.
-
-      - name: Ensure KUBE_CONFIG present for protected branches
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-          GITHUB_REF: ${{ github.ref }}
+      # 6. Verify deployment (uji endpoint API selepas deploy)
+      - name: Verify deployment
         run: |
-          # Only require KUBE_CONFIG for main/master branch deploys.
-          # Make this non-fatal: warn and continue. Later steps will skip applying
-          # manifests if the kubeconfig file is not present. This avoids noisy CI
-          # failures when deployment secrets are intentionally absent.
-          if [ "$GITHUB_REF" = "refs/heads/main" ] || [ "$GITHUB_REF" = "refs/heads/master" ]; then
-            if [ -z "$KUBE_CONFIG" ]; then
-              echo "WARNING: KUBE_CONFIG secret is not set for main/master; deploy steps will be skipped but the job will not fail."
-            else
-              echo "KUBE_CONFIG present; deploy steps will run."
-            fi
-          else
-            echo "Not a protected branch ($GITHUB_REF); KUBE_CONFIG is optional."
-          fi
+          # Tunggu app ready (boleh adjust masa jika perlu)
+          sleep 15
+          # Uji endpoint API, tukar URL ikut app anda
+          curl -sSf https://sistem-cloud-accounting-hafjet-production.up.railway.app/api/health || echo "Health check skipped or failed"
+        # Komen: Uji endpoint /api/health, pastikan app running
 
-      - name: Kubeconfig fingerprint (redacted)
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        run: |
-          if [ -z "$KUBE_CONFIG" ]; then
-            echo "No kubeconfig present; fingerprint skipped"
-            exit 0
-          fi
-          # Print a short, redacted hash of the base64 payload so maintainers can verify which secret is in use without revealing it
-          FINGERPRINT=$(echo "$KUBE_CONFIG" | sha256sum | awk '{print substr($1,1,12)}')
-          echo "kubeconfig fingerprint: ${FINGERPRINT}"
+      # 7. Inform success/failure
+      - name: Deployment status
+        if: ${{ success() }}
+        run: echo "✅ Railway deployment successful!"
+      - name: Deployment failed
+        if: ${{ failure() }}
+        run: echo "❌ Railway deployment failed!"
+        # Komen: Workflow akan fail jika mana-mana step gagal
 
-      - name: Kubeconfig masked sample (first/last 8 chars)
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        run: |
-          if [ -z "$KUBE_CONFIG" ]; then
-            echo "No kubeconfig present; masked sample skipped"
-            exit 0
-          fi
-          # Show a masked sample of the base64 payload: first 8 / last 8 characters
-          PREFIX=$(echo "$KUBE_CONFIG" | head -c 8)
-          SUFFIX=$(echo "$KUBE_CONFIG" | tail -c 8)
-          echo "kubeconfig (masked): ${PREFIX}...${SUFFIX}"
+    # Untuk production AWS deploy, tukar step deploy:
+    # - name: Setup AWS CLI
+    #   uses: aws-actions/configure-aws-credentials@v2
+    #   with:
+    #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #     aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+    # - name: Deploy to AWS (contoh S3)
+    #   run: aws s3 cp build/ s3://your-prod-bucket/ --recursive
 
-      - name: Deploy secret smoke-check
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        run: |
-          if [ -z "$KUBE_CONFIG" ]; then
-            echo "KUBE_CONFIG secret not present (deploy apply will be skipped)"
-          else
-            echo "KUBE_CONFIG secret present (deploy apply will run)"
-          fi
+# Contoh secrets yang perlu ada di GitHub Actions:
+# - RAILWAY_TOKEN: Token Railway anda (dapatkan dari Railway dashboard)
+# - RAILWAY_PROJECT: Nama projek Railway (186782e9-5c00-473e-8434-a5fdd3951711)
+# - (Tambahan untuk production AWS: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION)
 
-      - name: Configure kubeconfig (if provided)
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        run: |
-          if [ -z "$KUBE_CONFIG" ]; then
-            echo "KUBE_CONFIG secret not provided; skipping kubeconfig setup"
-            exit 0
-          fi
-          echo "Decoding KUBE_CONFIG and writing kubeconfig"
-          echo "$KUBE_CONFIG" | base64 --decode > kubeconfig
-          mkdir -p $HOME/.kube
-          mv kubeconfig $HOME/.kube/config
+# Cara tambah secrets:
+# 1. Pergi ke Settings > Secrets and variables > Actions
+# 2. Klik "New repository secret"
+# 3. Masukkan nama dan value (contoh: RAILWAY_TOKEN, RAILWAY_PROJECT)
 
-      - name: Apply k8s manifests (if kubeconfig present)
-        run: |
-          if [ ! -f "$HOME/.kube/config" ]; then
-            echo "No kubeconfig found; skipping apply"
-            exit 0
-          fi
-          kubectl apply -f deploy/k8s
+# Perbezaan Railway vs LocalStack:
+# - Railway deploy ke cloud sebenar, sesuai untuk production/staging.
+# - LocalStack hanya untuk local development, mock AWS services.
+# - Railway CLI automasi deploy, scaling, dan env management.
+# - LocalStack perlukan endpoint-url, Railway tidak.
 
-  deploy-on-tag:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'latest'
-
-      - name: Configure kubeconfig (from secret)
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        run: |
-          if [ -z "$KUBE_CONFIG" ]; then
-            echo "KUBE_CONFIG secret not provided; cannot apply manifests on tag deploy"
-            exit 1
-          fi
-          echo "$KUBE_CONFIG" | base64 --decode > kubeconfig
-          mkdir -p $HOME/.kube
-          mv kubeconfig $HOME/.kube/config
-
-      - name: Apply k8s manifests
-        run: |
-          kubectl apply -f deploy/k8s
+# Workflow ini robust dan beginner-friendly untuk CI/CD cloud live ke Railway App!

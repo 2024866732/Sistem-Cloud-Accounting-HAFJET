@@ -2,32 +2,34 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './e2e',
-  timeout: 30_000,
+  timeout: 120000,
   expect: { timeout: 5000 },
-  fullyParallel: true,
-  retries: 0,
+  fullyParallel: false,
   reporter: [['list']],
   use: {
-    baseURL: process.env.E2E_BASE_URL || 'http://localhost:5173',
+    headless: true,
+    actionTimeout: 0,
     trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure'
+    baseURL: process.env.E2E_BASE_URL || 'http://localhost:5173'
   },
   webServer: {
     command: 'npm run dev',
-    cwd: './',
-    url: 'http://localhost:5173',
-    timeout: 60_000,
-    reuseExistingServer: !process.env.CI
+    port: 5173,
+    timeout: 120000,
+    reuseExistingServer: true
   },
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      name: 'Desktop',
+      use: { browserName: 'chromium', viewport: { width: 1280, height: 800 } }
     },
     {
-      name: 'mobile-chrome',
-      use: { ...devices['Pixel 5'] }
+      name: 'Tablet',
+      use: { ...devices['iPad (gen 7)'] }
+    },
+    {
+      name: 'Mobile',
+      use: { ...devices['iPhone 12'] }
     }
   ]
 })

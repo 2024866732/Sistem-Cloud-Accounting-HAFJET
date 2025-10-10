@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
 import { logger } from '../utils/logger';
+import User, { IUser } from '../models/User';
+import mongoose from 'mongoose';
 
-// Mock company settings data
+// Mock company settings data (TODO: Replace with Company model)
 const mockCompanySettings = {
   company: {
     name: 'HAFJET SDN BHD',
@@ -219,44 +221,28 @@ export const updateSystemSettings = async (req: Request, res: Response) => {
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
-    logger.info('Fetching users');
+    const user = (req as any).user;
+    if (!user || !user.companyId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized - missing company context'
+      });
+    }
+
+    logger.info(`Fetching users for company ${user.companyId}`);
     
-    const users = [
-      {
-        id: '1',
-        name: 'Admin User',
-        email: 'admin@hafjet.com',
-        role: 'admin',
-        permissions: ['all'],
-        status: 'active',
-        lastLogin: new Date(),
-        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-      },
-      {
-        id: '2',
-        name: 'Finance Manager',
-        email: 'finance@hafjet.com',
-        role: 'manager',
-        permissions: ['transactions', 'reports', 'invoices'],
-        status: 'active',
-        lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000)
-      },
-      {
-        id: '3',
-        name: 'Accounting Staff',
-        email: 'staff@hafjet.com',
-        role: 'staff',
-        permissions: ['transactions', 'invoices'],
-        status: 'active',
-        lastLogin: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
-      }
-    ];
-    
+    // Query users from database
+    const users = await User.find({ 
+      companyId: user.companyId,
+      status: { $ne: 'deleted' } // Exclude deleted users
+    })
+    .select('-password -twoFactorSecret -twoFactorBackupCodes') // Exclude sensitive fields
+  .sort({ createdAt: -1 });
+
     res.json({
       success: true,
-      data: users
+      data: users,
+      count: users.length
     });
   } catch (error) {
     logger.error('Error fetching users:', error);
@@ -269,28 +255,98 @@ export const getUsers = async (req: Request, res: Response) => {
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const userData = req.body;
-    logger.info('Creating new user:', userData);
+    const currentUser = (req as any).user;
+    if (!currentUser || !currentUser.companyId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized - missing company context'
+      });
+    }
+
+    const { name, email, password, role, permissions, phone, department, jobTitle } = req.body;
     
-    // Simulate user creation
-    const newUser = {
-      id: Date.now().toString(),
-      ...userData,
+    // Validation
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email, and password are required'
+      });
+    }
+
+    // Email format validation
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email format'
+      });
+    }
+
+    // Password strength validation
+    if (password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 8 characters long'
+      });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ 
+      email: email.toLowerCase(),
+      companyId: currentUser.companyId
+    });
+
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        message: 'User with this email already exists in your company'
+      });
+    }
+
+    logger.info(`Creating new user: ${email} for company ${currentUser.companyId}`);
+    
+    // Create new user
+    const newUser = new User({
+      companyId: currentUser.companyId,
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      password, // Will be hashed by pre-save middleware
+      role: role || 'staff',
+      permissions: permissions || [],
       status: 'active',
-      createdAt: new Date(),
-      lastLogin: null
-    };
-    
-    // Simulate delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
+      phone,
+      department,
+      jobTitle,
+      createdBy: currentUser.id,
+      loginAttempts: 0,
+      twoFactorEnabled: false
+    });
+
+    await newUser.save();
+
+    // Return user without sensitive fields. Some tests mock the created user as a plain object; guard against missing toJSON()
+    const created = (newUser && typeof (newUser as any).toJSON === 'function') ? (newUser as any).toJSON() : newUser;
+
     res.status(201).json({
       success: true,
       message: 'User created successfully',
-      data: newUser
+      data: created
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error creating user:', error);
+    
+    // Handle mongoose validation errors
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: Object.keys(error.errors).map(key => ({
+          field: key,
+          message: error.errors[key].message
+        }))
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: 'Failed to create user'
@@ -300,20 +356,99 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
+    const currentUser = (req as any).user;
     const { id } = req.params;
     const updates = req.body;
-    logger.info(`Updating user ${id}:`, updates);
+
+    if (!currentUser || !currentUser.companyId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized - missing company context'
+      });
+    }
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID format'
+      });
+    }
+
+    logger.info(`Updating user ${id} by ${currentUser.id}`);
     
-    // Simulate update
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
+    // Find user
+    const user = await User.findOne({ 
+      _id: id, 
+      companyId: currentUser.companyId 
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Prevent updating password through this endpoint (use dedicated password change endpoint)
+    if (updates.password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Use /change-password endpoint to update password'
+      });
+    }
+
+    // Prevent updating email to existing email
+    if (updates.email && updates.email !== user.email) {
+      const existingUser = await User.findOne({
+        email: updates.email.toLowerCase(),
+        companyId: currentUser.companyId,
+        _id: { $ne: id }
+      });
+
+      if (existingUser) {
+        return res.status(409).json({
+          success: false,
+          message: 'Email already in use by another user'
+        });
+      }
+    }
+
+    // Allowed update fields
+    const allowedUpdates = ['name', 'email', 'role', 'permissions', 'status', 'phone', 'department', 'jobTitle', 'avatar'];
+    const updateFields: any = {};
+
+    allowedUpdates.forEach(field => {
+      if (updates[field] !== undefined) {
+        updateFields[field] = updates[field];
+      }
+    });
+
+    // Update user
+    Object.assign(user, updateFields);
+    await user.save();
+
+    const userResponse = user.toJSON();
+
     res.json({
       success: true,
       message: 'User updated successfully',
-      data: { id, ...updates }
+      data: userResponse
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error updating user:', error);
+    
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: Object.keys(error.errors).map(key => ({
+          field: key,
+          message: error.errors[key].message
+        }))
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: 'Failed to update user'
@@ -323,21 +458,263 @@ export const updateUser = async (req: Request, res: Response) => {
 
 export const deleteUser = async (req: Request, res: Response) => {
   try {
+    const currentUser = (req as any).user;
     const { id } = req.params;
-    logger.info(`Deleting user ${id}`);
+
+    if (!currentUser || !currentUser.companyId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized - missing company context'
+      });
+    }
+
+    // Validate ObjectId
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID format'
+      });
+    }
+
+    // Prevent self-deletion
+      // Prevent self-deletion (coerce to string to handle ObjectId or mocked values)
+      if (String(id) === String(currentUser.id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete your own account'
+      });
+    }
+
+    logger.info(`Deleting user ${id} by ${currentUser.id}`);
     
-    // Simulate deletion
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
+    // Find user
+    const user = await User.findOne({ 
+      _id: id, 
+      companyId: currentUser.companyId 
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Soft delete (set status to inactive instead of removing from database)
+    user.status = 'inactive';
+    await user.save();
+
+    // For hard delete, use: await User.deleteOne({ _id: id });
+
     res.json({
       success: true,
-      message: 'User deleted successfully'
+      message: 'User deactivated successfully'
     });
   } catch (error) {
     logger.error('Error deleting user:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to delete user'
+    });
+  }
+};
+
+// Get single user by ID
+export const getUserById = async (req: Request, res: Response) => {
+  try {
+    const currentUser = (req as any).user;
+    const { id } = req.params;
+
+    if (!currentUser || !currentUser.companyId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized - missing company context'
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID format'
+      });
+    }
+
+    const user = await User.findOne({ 
+      _id: id, 
+      companyId: currentUser.companyId 
+    })
+    .select('-password -twoFactorSecret -twoFactorBackupCodes');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: user
+    });
+  } catch (error) {
+    logger.error('Error fetching user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch user'
+    });
+  }
+};
+
+// Change user password
+export const changePassword = async (req: Request, res: Response) => {
+  try {
+    const currentUser = (req as any).user;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentUser || !currentUser.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized'
+      });
+    }
+
+    // Validation
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password and new password are required'
+      });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 8 characters long'
+      });
+    }
+
+    if (currentPassword === newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be different from current password'
+      });
+    }
+
+    logger.info(`Password change requested for user ${currentUser.id}`);
+
+    // Fetch user with password field
+    const user = await User.findById(currentUser.id).select('+password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check if account is locked
+    if (typeof (user as any).isLocked === 'function' ? user.isLocked() : false) {
+      return res.status(423).json({
+        success: false,
+        message: 'Account is temporarily locked due to multiple failed login attempts'
+      });
+    }
+
+    const isPasswordValid = await (typeof (user as any).comparePassword === 'function' ? user.comparePassword(currentPassword) : false);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+
+    // Update password (will be hashed by pre-save middleware)
+    user.password = newPassword;
+    await user.save();
+
+    logger.info(`Password changed successfully for user ${currentUser.id}`);
+
+    res.json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+  } catch (error) {
+    logger.error('Error changing password:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to change password'
+    });
+  }
+};
+
+// Reset user password (admin only)
+export const resetUserPassword = async (req: Request, res: Response) => {
+  try {
+    const currentUser = (req as any).user;
+    const { id } = req.params;
+    const { newPassword } = req.body;
+
+    if (!currentUser || !currentUser.companyId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized'
+      });
+    }
+
+    // Check if current user is admin
+    if (currentUser.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only administrators can reset user passwords'
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID format'
+      });
+    }
+
+    if (!newPassword || newPassword.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 8 characters long'
+      });
+    }
+
+    logger.info(`Password reset for user ${id} by admin ${currentUser.id}`);
+
+    const user = await User.findOne({ 
+      _id: id, 
+      companyId: currentUser.companyId 
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Reset password and unlock account
+    user.password = newPassword;
+    user.loginAttempts = 0;
+    user.lockUntil = undefined;
+    await user.save();
+
+    logger.info(`Password reset successfully for user ${id}`);
+
+    res.json({
+      success: true,
+      message: 'Password reset successfully'
+    });
+  } catch (error) {
+    logger.error('Error resetting password:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reset password'
     });
   }
 };

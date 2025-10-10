@@ -1,143 +1,51 @@
-import mongoose, { Schema, Document } from 'mongoose';
-
-export interface IInvoiceItem {
+export type InvoiceItem = {
+  id?: string;
   description: string;
   quantity: number;
   unitPrice: number;
-  amount: number;
-  taxRate: number; // SST rate (usually 6%)
-  taxAmount: number;
-  taxType: 'SST' | 'GST' | 'NONE';
-  category?: string; // For SST exemption checking
-}
+  amount?: number;
+  taxRate?: number; // decimal (0.06 for 6%)
+  taxAmount?: number;
+  taxType?: string;
+};
 
-export interface IMalaysianTax {
-  taxType: 'SST' | 'GST' | 'NONE';
+export type MalaysianTax = {
+  taxType: string;
   taxRate: number;
   taxableAmount: number;
   taxAmount: number;
   exemptAmount: number;
   sstNumber?: string;
-}
+};
 
-export interface IEInvoice {
-  uuid?: string;
-  submissionId?: string;
-  status: 'pending' | 'submitted' | 'approved' | 'rejected';
-  submissionDate?: Date;
-  approvalDate?: Date;
-  rejectionReason?: string;
-  xmlData?: string;
-}
+export type EInvoiceState = {
+  status: string;
+  submissionDate: string | null;
+  uuid: string | null;
+};
 
-export interface IInvoice extends Document {
-  companyId: mongoose.Types.ObjectId;
+export type Invoice = {
+  id: string;
   invoiceNumber: string;
-  customerId: mongoose.Types.ObjectId;
-  issueDate: Date;
-  dueDate: Date;
-  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+  customerName: string;
+  customerEmail?: string;
+  issueDate: string;
+  dueDate: string;
+  status: 'draft' | 'sent' | 'paid' | 'cancelled' | string;
   currency: string;
-  items: IInvoiceItem[];
-  malaysianTax: IMalaysianTax;
-  einvoice: IEInvoice;
+  items: InvoiceItem[];
   subtotal: number;
   taxAmount: number;
-  totalAmount: number;
-  paidAmount: number;
-  notes?: string;
-  terms?: string;
-  eInvoiceId?: string;
-  eInvoiceStatus?: 'pending' | 'submitted' | 'approved' | 'rejected';
-  createdBy: mongoose.Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-}
+  total: number;
+  malaysianTax: MalaysianTax;
+  einvoice: EInvoiceState;
+  createdAt?: string;
+  updatedAt?: string;
+};
 
-const InvoiceItemSchema = new Schema<IInvoiceItem>({
-  description: { type: String, required: true },
-  quantity: { type: Number, required: true, min: 0 },
-  unitPrice: { type: Number, required: true, min: 0 },
-  amount: { type: Number, required: true, min: 0 },
-  taxRate: { type: Number, min: 0, max: 1 },
-  taxAmount: { type: Number, min: 0 }
-});
+export type CreateInvoicePayload = Partial<Invoice> & {
+  items: InvoiceItem[];
+};
 
-const InvoiceSchema = new Schema<IInvoice>({
-  companyId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Company',
-    required: true
-  },
-  invoiceNumber: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  customerId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Contact',
-    required: true
-  },
-  issueDate: {
-    type: Date,
-    required: true
-  },
-  dueDate: {
-    type: Date,
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ['draft', 'sent', 'paid', 'overdue', 'cancelled'],
-    default: 'draft'
-  },
-  currency: {
-    type: String,
-    default: 'MYR'
-  },
-  items: [InvoiceItemSchema],
-  subtotal: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  taxAmount: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  totalAmount: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  paidAmount: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
-  notes: String,
-  terms: String,
-  eInvoiceId: String,
-  eInvoiceStatus: {
-    type: String,
-    enum: ['pending', 'submitted', 'approved', 'rejected']
-  },
-  createdBy: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  }
-}, {
-  timestamps: true
-});
-
-// Indexes
-InvoiceSchema.index({ companyId: 1, invoiceNumber: 1 });
-InvoiceSchema.index({ customerId: 1 });
-InvoiceSchema.index({ status: 1 });
-InvoiceSchema.index({ issueDate: -1 });
-InvoiceSchema.index({ dueDate: 1 });
-
-export const Invoice = mongoose.model<IInvoice>('Invoice', InvoiceSchema);
+// Keep this file as type-only model definitions for the lightweight file-backed service.
+// Production builds should replace with a proper Mongoose model connected to MongoDB.

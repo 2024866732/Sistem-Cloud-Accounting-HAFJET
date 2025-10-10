@@ -291,6 +291,21 @@ export const settingsService = {
     const response = await api.delete<ApiResponse<unknown>>(`/settings/users/${id}`)
     return response.data
   },
+  // 2FA endpoints
+  setup2FA: async () => {
+    const response = await api.post<ApiResponse<unknown>>('/settings/users/2fa/setup')
+    return response.data
+  },
+
+  verify2FA: async (payload: { token: string }) => {
+    const response = await api.post<ApiResponse<unknown>>('/settings/users/2fa/verify', payload)
+    return response.data
+  },
+
+  disable2FA: async () => {
+    const response = await api.post<ApiResponse<unknown>>('/settings/users/2fa/disable')
+    return response.data
+  },
 }
 
 // Dashboard service

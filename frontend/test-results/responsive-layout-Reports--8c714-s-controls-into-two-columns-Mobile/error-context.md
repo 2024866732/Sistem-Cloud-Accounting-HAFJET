@@ -1,0 +1,173 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - complementary "Sidebar utama" [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e8]: H
+        - generic [ref=e9]:
+          - generic [ref=e10]: HAFJET Cloud
+          - generic [ref=e11]: Accounting System
+      - navigation [ref=e12]:
+        - generic [ref=e13]:
+          - heading "Main Features" [level=3] [ref=e14]
+          - generic [ref=e15]:
+            - link "📊 Dashboard" [ref=e16]:
+              - /url: /dashboard
+              - generic [ref=e17]: 📊
+              - generic [ref=e18]: Dashboard
+            - link "🏢 Companies" [ref=e19]:
+              - /url: /companies
+              - generic [ref=e20]: 🏢
+              - generic [ref=e21]: Companies
+            - link "🏦 Banking" [ref=e22]:
+              - /url: /banking
+              - generic [ref=e23]: 🏦
+              - generic [ref=e24]: Banking
+            - link "🧾 Invoices" [ref=e25]:
+              - /url: /invoices
+              - generic [ref=e26]: 🧾
+              - generic [ref=e27]: Invoices
+            - link "🇲🇾 E-Invoice LHDN" [ref=e28]:
+              - /url: /einvoice
+              - generic [ref=e29]: 🇲🇾
+              - generic [ref=e30]: E-Invoice LHDN
+            - link "💰 Transactions" [ref=e31]:
+              - /url: /transactions
+              - generic [ref=e32]: 💰
+              - generic [ref=e33]: Transactions
+            - link "📦 Inventory" [ref=e34]:
+              - /url: /inventory
+              - generic [ref=e35]: 📦
+              - generic [ref=e36]: Inventory
+            - link "📈 Reports" [ref=e37]:
+              - /url: /reports
+              - generic [ref=e38]: 📈
+              - generic [ref=e39]: Reports
+        - generic [ref=e40]:
+          - heading "Advanced" [level=3] [ref=e41]
+          - generic [ref=e42]:
+            - link "🚀 Analytics" [ref=e43]:
+              - /url: /analytics
+              - generic [ref=e44]: 🚀
+              - generic [ref=e45]: Analytics
+            - link "⚡ Automation" [ref=e46]:
+              - /url: /automation
+              - generic [ref=e47]: ⚡
+              - generic [ref=e48]: Automation
+            - link "📁 Digital Shoebox" [ref=e49]:
+              - /url: /digital-shoebox
+              - generic [ref=e50]: 📁
+              - generic [ref=e51]: Digital Shoebox
+            - link "💾 Data Management" [ref=e52]:
+              - /url: /data
+              - generic [ref=e53]: 💾
+              - generic [ref=e54]: Data Management
+        - generic [ref=e55]:
+          - heading "System" [level=3] [ref=e56]
+          - generic [ref=e57]:
+            - link "🛡️ Security" [ref=e58]:
+              - /url: /security
+              - generic [ref=e59]: 🛡️
+              - generic [ref=e60]: Security
+            - link "⚡ Performance" [ref=e61]:
+              - /url: /performance
+              - generic [ref=e62]: ⚡
+              - generic [ref=e63]: Performance
+            - link "👥 User Management" [ref=e64]:
+              - /url: /users
+              - generic [ref=e65]: 👥
+              - generic [ref=e66]: User Management
+            - link "⚙️ Settings" [ref=e67]:
+              - /url: /settings
+              - generic [ref=e68]: ⚙️
+              - generic [ref=e69]: Settings
+    - generic [ref=e71]:
+      - generic [ref=e72]:
+        - generic [ref=e73]: T
+        - generic [ref=e74]:
+          - paragraph [ref=e75]: Test User
+          - paragraph [ref=e76]: test@example.com
+      - button "Log Keluar" [ref=e77]: 🚪 Log Keluar
+  - generic [ref=e78]:
+    - banner [ref=e79]:
+      - generic [ref=e80]:
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - button "Open navigation menu" [ref=e83]
+            - generic [ref=e85]:
+              - generic [ref=e87]: H
+              - generic [ref=e89]: HAFJET
+          - generic [ref=e90]:
+            - button [ref=e92]:
+              - img [ref=e93]
+            - generic [ref=e97]: T
+        - heading "🇲🇾 Cloud Accounting MY" [level=1] [ref=e99]
+    - main [ref=e100]:
+      - generic [ref=e102]:
+        - generic [ref=e104]:
+          - generic [ref=e105]:
+            - heading "📊 Advanced Financial Reports" [level=1] [ref=e106]
+            - paragraph [ref=e107]: 🇲🇾 Comprehensive Malaysian accounting reports with SST & E-Invoice compliance
+          - generic [ref=e109]:
+            - generic [ref=e110]:
+              - generic [ref=e111]:
+                - img [ref=e112]
+                - text: Date Range
+              - combobox "Date Range" [ref=e114]:
+                - option "This Month" [selected]
+                - option "Last Month"
+                - option "This Year"
+            - generic [ref=e115]:
+              - generic [ref=e116]:
+                - img [ref=e117]
+                - text: Report Type
+              - combobox "Report Type" [ref=e119]:
+                - option "Overview" [selected]
+                - option "Profit & Loss"
+              - generic [ref=e120]: Choose the report to display
+            - generic [ref=e121]:
+              - generic [ref=e122]:
+                - img [ref=e123]
+                - text: Export Format
+              - combobox "Export Format" [ref=e126]:
+                - option "PDF Report" [selected]
+                - option "Excel Spreadsheet"
+                - option "CSV Data"
+              - generic [ref=e127]: Select export format for report download
+            - generic [ref=e128]:
+              - button "Export report" [ref=e129]:
+                - img [ref=e130]
+                - generic [ref=e133]: Export
+              - button "Share report" [ref=e134]:
+                - img [ref=e135]
+                - generic [ref=e141]: Share
+          - generic [ref=e143]:
+            - button "Overview Dashboard" [ref=e144]:
+              - img [ref=e145]
+              - generic [ref=e147]: Overview Dashboard
+            - button "Profit & Loss" [ref=e148]:
+              - img [ref=e149]
+              - generic [ref=e152]: Profit & Loss
+            - button "Balance Sheet" [ref=e153]:
+              - img [ref=e154]
+              - generic [ref=e157]: Balance Sheet
+            - button "Cash Flow" [ref=e158]:
+              - img [ref=e159]
+              - generic [ref=e162]: Cash Flow
+            - button "SST Report" [ref=e163]:
+              - img [ref=e164]
+              - generic [ref=e166]: SST Report
+            - button "E-Invoice Compliance" [ref=e167]:
+              - img [ref=e168]
+              - generic [ref=e172]: E-Invoice Compliance
+            - button "Aged Receivables" [ref=e173]:
+              - img [ref=e174]
+              - generic [ref=e177]: Aged Receivables
+            - button "Trial Balance" [ref=e178]:
+              - img [ref=e179]
+              - generic [ref=e182]: Trial Balance
+          - paragraph [ref=e187]: 📋 Reports generated on 09/10/2025 | 🇲🇾 Compliant with Malaysian Financial Reporting Standards | 🔒 All data encrypted and secure
+        - button "Get help" [ref=e188]: Help
+```

@@ -87,4 +87,7 @@ export class LedgerPostingService {
   }
 }
 
+// TODO: Add transactional guarantees (two-phase commit or outbox pattern) for ledger posting
+// TODO: Externalize accounts mapping to Chart of Accounts service; handle currency conversions
+
 export default LedgerPostingService;

@@ -330,6 +330,12 @@ const startServer = () => {
 // Start server after DB connection to ensure health/readiness is accurate
 const init = async () => {
   try {
+    // In test mode, avoid starting external connections or the HTTP server.
+    // Tests import the app and expect a fast, deterministic environment.
+    if (process.env.NODE_ENV === 'test') {
+      logger.warn('NODE_ENV=test - skipping DB connection and server start in init()');
+      return;
+    }
     // Allow skipping DB connection for local smoke tests (set SKIP_DB=true)
     if (process.env.SKIP_DB === 'true') {
       logger.warn('SKIP_DB=true set - starting server without connecting to MongoDB (smoke-test mode)');
