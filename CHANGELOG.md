@@ -1,3 +1,10 @@
+## [2.3.7](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.6...v2.3.7) (2025-10-10)
+
+
+### Bug Fixes
+
+* **ci:** add --service flag to railway commands to specify target service ([45f1e2a](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/45f1e2aecfa64965e2af29bf30ec0d3eb9ae30ef))
+
 ## [2.3.6](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.5...v2.3.6) (2025-10-10)
 
 
@@ -417,3 +424,8 @@
 ### Published images
 - Backend: sha256:71e9188e759a022e2f526943929a7e6ba444e96d3571a8aa6eb0c79f8e8cabcc
 - Frontend: sha256:7bc5e6d9f9e088159510574eeda30fbae742e9d9fabe0f7264a8b75a054b5573
+
+
+### Published images
+- Backend: sha256:6a095f6f5a93b6b88506502bcdd865f0f14cf8cc56707c3acda37b70fc4dc301
+- Frontend: sha256:5d1fe6eb53c1391849f805ceb3a3ce7b12f1c2e08fcff56e97230213b0045a9a
