@@ -31,6 +31,7 @@ jobs:
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_PROJECT: ${{ secrets.RAILWAY_PROJECT }}
+      RAILWAY_SERVICE: ${{ secrets.RAILWAY_SERVICE || 'hafjet-cloud-accounting' }}
 
     steps:
       # -------------------------------------------------------------------------
@@ -111,15 +112,15 @@ jobs:
           
           echo "🚀 Starting Railway deployment..."
           
-          if railway up; then
+          if railway up --service "$RAILWAY_SERVICE"; then
             echo "✅ Deployment succeeded on first attempt"
             echo "deploy_status=success" >> $GITHUB_OUTPUT
           else
             echo "⚠️ First deployment attempt failed. Collecting logs..."
-            railway logs --tail 100 || true
+            railway logs --service "$RAILWAY_SERVICE" --tail 100 || true
             
             echo "🔄 Retrying deployment..."
-            if railway up; then
+            if railway up --service "$RAILWAY_SERVICE"; then
               echo "✅ Deployment succeeded on retry"
               echo "deploy_status=success" >> $GITHUB_OUTPUT
             else
@@ -157,7 +158,7 @@ jobs:
           
           echo "❌ Health check failed after $MAX_ATTEMPTS attempts"
           echo "📋 Dumping Railway logs for debugging..."
-          railway logs --tail 200 || true
+          railway logs --service "$RAILWAY_SERVICE" --tail 200 || true
           exit 1
 
       # -------------------------------------------------------------------------
@@ -190,5 +191,5 @@ jobs:
           echo "Railway Project: $RAILWAY_PROJECT"
           echo "================================================"
           echo "📋 Railway logs (last 500 lines):"
-          railway logs --tail 500 || echo "Failed to fetch logs"
+          railway logs --service "$RAILWAY_SERVICE" --tail 500 || echo "Failed to fetch logs"
           echo "================================================"
