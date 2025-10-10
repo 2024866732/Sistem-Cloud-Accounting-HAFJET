@@ -1,6 +1,6 @@
 {
   "name": "hafjet-cloud-accounting-system",
-  "version": "2.3.3",
+  "version": "2.3.4",
   "description": "HAFJET Cloud Accounting System for Malaysia - Enterprise-ready accounting solution",
   "main": "index.js",
   "workspaces": [

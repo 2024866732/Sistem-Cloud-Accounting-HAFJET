@@ -1,3 +1,11 @@
+## [2.3.4](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.3...v2.3.4) (2025-10-10)
+
+
+### Bug Fixes
+
+* **ci:** add issues:write permission to monitor workflow to prevent 403 errors ([f7f5671](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/f7f56719d2fe1b79033511a1d94cc3b01ce03118))
+* **ci:** remove explicit railway login, use RAILWAY_TOKEN env var instead ([639ff58](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/commit/639ff586f2b32489bf06604e8ab0cb8911b4e471))
+
 ## [2.3.3](https://github.com/2024866732/Sistem-Cloud-Accounting-HAFJET/compare/v2.3.2...v2.3.3) (2025-10-10)
 
 
@@ -380,3 +388,8 @@
 ### Published images
 - Backend: sha256:0b2f80ef5e753503c216e8eda1f17dcb3859df727848f958b39431f4c584f1fd
 - Frontend: sha256:f037e3c2980717796d01b20e69da802dcc4b6171d049e2ac566b87aa91b4bb33
+
+
+### Published images
+- Backend: sha256:2cd91cf57bac6bc2e81120337e96dc530535d9c5c732d8e699ce54c7d39da87b
+- Frontend: sha256:f386e425496434c3d2bd93e6a4ac861470c2133c3a3a6bd538b0a27cfc68713f
