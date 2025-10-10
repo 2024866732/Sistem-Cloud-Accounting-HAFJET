@@ -1,6 +1,6 @@
 // Integration tests for LoyverseSyncService
 import { LoyverseSyncService } from './loyverseSyncService.js';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@jest/globals';
 
 describe('LoyverseSyncService', () => {
   it('should authenticate and set tokens', async () => {
