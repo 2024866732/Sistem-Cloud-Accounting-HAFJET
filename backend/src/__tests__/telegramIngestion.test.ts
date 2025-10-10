@@ -47,7 +47,7 @@ jest.mock('../services/NotificationService', () => ({
   NotificationService: { sendCompanyNotification: jest.fn(async () => {}) }
 }));
 
-import { telegramIngestionService } from '../services/TelegramIngestionService';
+import { telegramIngestionService } from '../services/TelegramIngestionService.js';
 
 describe('TelegramIngestionService document ingestion', () => {
   beforeAll(() => {

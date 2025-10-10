@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import fs from 'fs';
 import path from 'path';
-import { ocrService } from '../services/OcrService';
-import { receiptClassificationService } from '../services/ReceiptClassificationService';
-import { receiptPostingService } from '../services/ReceiptPostingService';
+import { ocrService } from '../services/OcrService.js';
+import { receiptClassificationService } from '../services/ReceiptClassificationService.js';
+import { receiptPostingService } from '../services/ReceiptPostingService.js';
 
 // Mock Receipt model minimal behavior
 jest.mock('../models/Receipt', () => {
@@ -59,7 +59,7 @@ describe('Receipt pipeline (OCR -> classify -> post)', () => {
     jest.clearAllMocks();
     const filePath = ensureTestFile();
     // Dynamically import mocked Receipt after mocks in place
-    const { Receipt } = await import('../models/Receipt');
+    const { Receipt } = await import('../models/Receipt.js');
     const receipt: any = await Receipt.create({
       companyId: '000000000000000000000001',
       userId: '000000000000000000000002',

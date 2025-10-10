@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express'
-import { authenticateToken } from '../middleware/auth'
-import { logger } from '../utils/logger'
-import { notificationService } from '../index'
-import LHDNEInvoiceService, { EInvoiceDoc } from '../services/EInvoiceService'
+import { authenticateToken } from '../middleware/auth.js'
+import { logger } from '../utils/logger.js'
+import { notificationService } from '../index.js'
+import LHDNEInvoiceService, { EInvoiceDoc } from '../services/EInvoiceService.js'
 
 // Extend Request interface to include user
 interface AuthenticatedRequest extends Request {

@@ -1,4 +1,4 @@
-import { LedgerEntry, ILedgerEntry, ILedgerSplit } from '../models/LedgerEntry';
+import { LedgerEntry, ILedgerEntry, ILedgerSplit } from '../models/LedgerEntry.js';
 import mongoose from 'mongoose';
 
 interface PostInvoiceOptions {

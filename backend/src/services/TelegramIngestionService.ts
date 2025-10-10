@@ -2,9 +2,9 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import Receipt from '../models/Receipt';
-import NotificationService from './NotificationService';
-import { config } from '../config/config';
+import Receipt from '../models/Receipt.js';
+import NotificationService from './NotificationService.js';
+import { config } from '../config/config.js';
 
 interface TelegramFileInfo {
   file_id: string;

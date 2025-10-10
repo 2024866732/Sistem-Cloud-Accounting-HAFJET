@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import LedgerPostingService from '../services/LedgerPostingService';
-import { LedgerEntry } from '../models/LedgerEntry';
+import LedgerPostingService from '../services/LedgerPostingService.js';
+import { LedgerEntry } from '../models/LedgerEntry.js';
 
 jest.mock('../models/LedgerEntry', () => {
   return {

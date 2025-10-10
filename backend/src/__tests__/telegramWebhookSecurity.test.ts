@@ -39,8 +39,8 @@ jest.mock('../models/TelegramChatLink', () => ({
 // Mock Receipt
 jest.mock('../models/Receipt', () => ({ __esModule: true, default: { create: async (d: any) => ({ ...d, _id: 'r1' }) } }));
 
-import telegramRoute from '../routes/telegram';
-import { __resetTelegramRateLimiter } from '../middleware/rateLimit';
+import telegramRoute from '../routes/telegram.js';
+import { __resetTelegramRateLimiter } from '../middleware/rateLimit.js';
 
 const app = express();
 app.use(bodyParser.json());

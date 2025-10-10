@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { authenticateToken } from '../middleware/auth';
-import { authorize } from '../middleware/rbac';
+import { authenticateToken } from '../middleware/auth.js';
+import { authorize } from '../middleware/rbac.js';
 import { z } from 'zod';
-import { validate } from '../middleware/validate';
-import ReconciliationSession from '../models/ReconciliationSession';
-import { audit } from '../middleware/audit';
+import { validate } from '../middleware/validate.js';
+import ReconciliationSession from '../models/ReconciliationSession.js';
+import { audit } from '../middleware/audit.js';
 
 const router = Router();
 

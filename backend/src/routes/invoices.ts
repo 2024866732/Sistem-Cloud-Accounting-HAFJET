@@ -1,12 +1,12 @@
 // invoices routes - canonical implementation
 import { Router } from 'express';
-import { authenticateToken } from '../middleware/auth';
-import { validate, createInvoiceSchema, updateInvoiceSchema } from '../middleware/validate';
-import { audit } from '../middleware/audit';
-import { authorize } from '../middleware/rbac';
-import LedgerPostingService from '../services/LedgerPostingService';
-import LHDNEInvoiceService, { EInvoiceDoc } from '../services/EInvoiceService';
-import InvoiceService from '../services/InvoiceService';
+import { authenticateToken } from '../middleware/auth.js';
+import { validate, createInvoiceSchema, updateInvoiceSchema } from '../middleware/validate.js';
+import { audit } from '../middleware/audit.js';
+import { authorize } from '../middleware/rbac.js';
+import LedgerPostingService from '../services/LedgerPostingService.js';
+import LHDNEInvoiceService, { EInvoiceDoc } from '../services/EInvoiceService.js';
+import InvoiceService from '../services/InvoiceService.js';
 
 const router = Router();
 

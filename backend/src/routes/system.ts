@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { authenticateToken } from '../middleware/auth';
-import { authorize } from '../middleware/rbac';
-import { audit } from '../middleware/audit';
-import MetricsService from '../services/MetricsService';
-import { config } from '../config/config';
+import { authenticateToken } from '../middleware/auth.js';
+import { authorize } from '../middleware/rbac.js';
+import { audit } from '../middleware/audit.js';
+import MetricsService from '../services/MetricsService.js';
+import { config } from '../config/config.js';
 
 const router = Router();
 

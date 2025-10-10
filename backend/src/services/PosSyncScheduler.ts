@@ -1,6 +1,6 @@
-import loyversePosService from './LoyversePosService';
-import MetricsService from './MetricsService';
-import { config } from '../config/config';
+import loyversePosService from './LoyversePosService.js';
+import MetricsService from './MetricsService.js';
+import { config } from '../config/config.js';
 
 class PosSyncSchedulerClass {
   private timer: NodeJS.Timeout | null = null;

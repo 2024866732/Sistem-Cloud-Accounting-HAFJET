@@ -1,4 +1,4 @@
-import { logger } from '../utils/logger'
+import { logger } from '../utils/logger.js'
 
 // Malaysian Bank Interfaces
 export interface MalaysianBank {

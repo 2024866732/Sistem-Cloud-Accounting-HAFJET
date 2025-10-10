@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import PosSyncScheduler from '../services/PosSyncScheduler';
-import loyversePosService from '../services/LoyversePosService';
-import MetricsService from '../services/MetricsService';
+import PosSyncScheduler from '../services/PosSyncScheduler.js';
+import loyversePosService from '../services/LoyversePosService.js';
+import MetricsService from '../services/MetricsService.js';
 
 jest.mock('../services/LoyversePosService', () => ({
   __esModule: true,

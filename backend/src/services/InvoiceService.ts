@@ -2,7 +2,7 @@ import fs from 'fs';
 import { promisify } from 'util';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
-import { Invoice, CreateInvoicePayload, InvoiceItem } from '../models/Invoice';
+import { Invoice, CreateInvoicePayload, InvoiceItem } from '../models/Invoice.js';
 
 const mkdir = promisify(fs.mkdir);
 const readFile = promisify(fs.readFile);

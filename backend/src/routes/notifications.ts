@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { authenticateToken } from '../middleware/auth';
-import NotificationService from '../services/NotificationService';
+import { authenticateToken } from '../middleware/auth.js';
+import NotificationService from '../services/NotificationService.js';
 
 const router = Router();
 
@@ -35,7 +35,7 @@ router.post('/read-all', authenticateToken, async (req: any, res) => {
     const companyId = req.user.companyId;
     await NotificationService.markAsRead('*'); // placeholder; implement bulk below
     // Bulk update directly
-    const model = (await import('../models/Notification')).Notification;
+    const model = (await import('../models/Notification.js')).Notification;
     await model.updateMany({ $or: [{ userId }, { userId: null }], companyId, read: false }, { read: true, readAt: new Date() });
     res.json({ success: true });
   } catch (err) {

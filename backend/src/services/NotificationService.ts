@@ -1,7 +1,7 @@
 import { Server as SocketIOServer } from 'socket.io';
-import NotificationModel, { Notification as PersistedNotification, INotification } from '../models/Notification';
-import { notificationDeliveryCounter } from '../middleware/metrics';
-import client from '../middleware/metrics';
+import NotificationModel, { Notification as PersistedNotification, INotification } from '../models/Notification.js';
+import { notificationDeliveryCounter } from '../middleware/metrics.js';
+import client from '../middleware/metrics.js';
 
 interface Notification {
   id: string;

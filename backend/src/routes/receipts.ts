@@ -3,14 +3,14 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
-import { authenticateToken } from '../middleware/auth';
-import { authorize } from '../middleware/rbac';
-import { audit } from '../middleware/audit';
-import Receipt from '../models/Receipt';
-import { ocrService } from '../services/OcrService';
-import { receiptClassificationService } from '../services/ReceiptClassificationService';
-import { receiptPostingService } from '../services/ReceiptPostingService';
-import NotificationService from '../services/NotificationService';
+import { authenticateToken } from '../middleware/auth.js';
+import { authorize } from '../middleware/rbac.js';
+import { audit } from '../middleware/audit.js';
+import Receipt from '../models/Receipt.js';
+import { ocrService } from '../services/OcrService.js';
+import { receiptClassificationService } from '../services/ReceiptClassificationService.js';
+import { receiptPostingService } from '../services/ReceiptPostingService.js';
+import NotificationService from '../services/NotificationService.js';
 
 // Ensure uploads directory exists (local demo). In production swap to S3 or similar.
 const uploadDir = path.join(process.cwd(), 'uploads');

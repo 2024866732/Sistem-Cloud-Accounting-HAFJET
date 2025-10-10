@@ -6,8 +6,8 @@ import path from 'path'
 dotenv.config()
 
 // Import models (use relative imports assuming standard model files exist)
-import User from '../models/User'
-import { Company } from '../models/Company'
+import User from '../models/User.js'
+import { Company } from '../models/Company.js'
 // Invoice type file in this project is a types-only declaration. We'll write sample
 // invoice JSON to backend/seeds/ for manual import instead of importing a model.
 

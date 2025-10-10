@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { config } from '../config/config';
+import { config } from '../config/config.js';
 
 interface Bucket {
   count: number;

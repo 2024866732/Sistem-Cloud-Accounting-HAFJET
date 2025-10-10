@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import loyversePosService from '../services/LoyversePosService';
-import PosSale from '../models/PosSale';
-import PosSyncState from '../models/PosSyncState';
+import loyversePosService from '../services/LoyversePosService.js';
+import PosSale from '../models/PosSale.js';
+import PosSyncState from '../models/PosSyncState.js';
 
 // Mock StoreLocation to avoid real DB calls in upsertStore
 jest.mock('../models/StoreLocation', () => ({

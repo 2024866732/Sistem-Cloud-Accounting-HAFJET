@@ -55,7 +55,7 @@ jest.mock('../services/NotificationService', () => ({
 }));
 
 // Patch Loyverse service raw fetch to inject failing items
-import { LoyversePosService } from '../services/LoyversePosService';
+import { LoyversePosService } from '../services/LoyversePosService.js';
 
 const svc = new LoyversePosService();
 

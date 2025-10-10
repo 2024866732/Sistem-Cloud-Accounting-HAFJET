@@ -51,7 +51,7 @@ jest.mock('../models/Receipt', () => ({
   Receipt: { create: async (doc: any) => ({ ...doc, _id: 'rphoto', extractionFields: [], save: async function() { return this; } }) }
 }));
 
-import telegramRoute from '../routes/telegram';
+import telegramRoute from '../routes/telegram.js';
 
 const app = express();
 app.use(bodyParser.json());

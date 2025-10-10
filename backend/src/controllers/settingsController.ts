@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { logger } from '../utils/logger';
-import User, { IUser } from '../models/User';
+import { logger } from '../utils/logger.js';
+import User, { IUser } from '../models/User.js';
 import mongoose from 'mongoose';
 
 // Mock company settings data (TODO: Replace with Company model)

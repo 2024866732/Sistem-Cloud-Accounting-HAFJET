@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { Receipt, IReceipt } from '../models/Receipt';
-import { logger } from '../utils/logger';
+import { Receipt, IReceipt } from '../models/Receipt.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * OcrService

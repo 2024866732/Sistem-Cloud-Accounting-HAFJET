@@ -1,5 +1,5 @@
 // Integration tests for LoyverseSyncService
-import { LoyverseSyncService } from './loyverseSyncService';
+import { LoyverseSyncService } from './loyverseSyncService.js';
 import { describe, it, expect } from 'vitest';
 
 describe('LoyverseSyncService', () => {

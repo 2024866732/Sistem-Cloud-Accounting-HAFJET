@@ -7,13 +7,13 @@
 import request from 'supertest';
 import express, { Express } from 'express';
 import jwt from 'jsonwebtoken';
-import { config } from '../../config/config';
-import InvoiceService from '../../services/InvoiceService';
-import LHDNEInvoiceService from '../../services/EInvoiceService';
-import LedgerPostingService from '../../services/LedgerPostingService';
+import { config } from '../../config/config.js';
+import InvoiceService from '../../services/InvoiceService.js';
+import LHDNEInvoiceService from '../../services/EInvoiceService.js';
+import LedgerPostingService from '../../services/LedgerPostingService.js';
 
 // Import the actual router to test
-import invoicesRouter from '../../routes/invoices';
+import invoicesRouter from '../../routes/invoices.js';
 
 // Create a minimal test app
 function createTestApp(): Express {
