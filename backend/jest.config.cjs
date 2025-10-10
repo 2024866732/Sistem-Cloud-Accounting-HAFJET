@@ -10,7 +10,15 @@ module.exports = {
   roots: ['<rootDir>/src'],
   moduleFileExtensions: ['ts','js','json'],
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', { diagnostics: false }]
+    '^.+\\.(ts|tsx)$': ['ts-jest', { 
+      diagnostics: false,
+      isolatedModules: true,
+      useESM: true
+    }]
+  },
+  extensionsToTreatAsEsm: ['.ts'],
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1'
   },
   collectCoverageFrom: [
     'src/services/**/*.ts',
