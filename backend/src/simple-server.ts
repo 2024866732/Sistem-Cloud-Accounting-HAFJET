@@ -25,7 +25,8 @@ app.get('/api/health', (req, res) => {
 app.post('/api/auth/login', (req, res) => {
   const { email, password } = req.body;
   
-  console.log('Login attempt:', { email, password });
+  // Avoid logging sensitive information like passwords
+  console.log('Login attempt:', { email });
   
   if (email === 'admin@hafjet.com' && password === 'admin123') {
     const token = 'mock-jwt-token-for-testing';
