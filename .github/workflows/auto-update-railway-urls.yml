@@ -1,3 +1,78 @@
 ﻿---
+name: Auto Update Railway URLs (safe)
+
+on:
+  workflow_dispatch:
+  # Optionally run after a successful deployment workflow (uncomment when ready)
+  # workflow_run:
+  #   workflows: ["Deploy to Railway"]
+  #   types: [completed]
+
+
+jobs:
+  check-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      has_secrets: ${{ steps.check.outputs.has_secrets }}
+    steps:
+      - name: Check required secrets
+        id: check
+        run: |
+          echo "Checking repository secrets..."
+          # GitHub masks missing secrets as empty strings; check both
+          if [ -z "${{ secrets.REPO_WRITE_TOKEN }}" ] || [ -z "${{ secrets.RAILWAY_TOKEN }}" ]; then
+            echo "Required secrets are missing. Skipping update."
+            echo "has_secrets=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "has_secrets=true" >> $GITHUB_OUTPUT
+
+  update-railway-urls:
+    needs: check-secrets
+    if: needs.check-secrets.outputs.has_secrets == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install GH CLI
+        run: |
+          sudo apt-get update && sudo apt-get install -y gh
+
+      - name: Fetch Railway domain(s)
+        id: fetch
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "(placeholder) Query Railway API to list domains/services"
+          # Example: railway status or railway domain list commands would go here
+          # We output a placeholder backend URL to be used in the next step
+          echo "BACKEND_URL=https://example-backend.railway.app" >> $GITHUB_ENV
+
+      - name: Set repository secret RAILWAY_BACKEND_URL (safe)
+        env:
+          REPO_WRITE_TOKEN: ${{ secrets.REPO_WRITE_TOKEN }}
+        run: |
+          if [ -z "$RAILWAY_BACKEND_URL" ]; then
+            # Use env variable from previous step
+            RAILWAY_BACKEND_URL="$BACKEND_URL"
+          fi
+          if [ -z "$RAILWAY_BACKEND_URL" ]; then
+            echo "No backend URL discovered; aborting secret set"
+            exit 0
+          fi
+          echo "Setting repository secret RAILWAY_BACKEND_URL (masked)"
+          # Use gh CLI to set secret; requires REPO_WRITE_TOKEN to be stored as a secret
+          gh auth login --with-token <<< "$REPO_WRITE_TOKEN" || true
+          echo "$RAILWAY_BACKEND_URL" | gh secret set RAILWAY_BACKEND_URL --body - || (echo "gh secret set failed (ensure REPO_WRITE_TOKEN has correct scopes)" && exit 1)
+
+      - name: Report
+        run: |
+          echo "Auto-update completed. If this ran, repo secrets were updated."
 
 
