@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Store,
   CheckCircle2,
@@ -14,22 +14,16 @@ import {
   Lock,
   Key,
 } from 'lucide-react';
-
-interface SyncStatus {
-  type: 'products' | 'customers' | 'sales' | 'inventory';
-  label: string;
-  lastSync: string;
-  status: 'success' | 'syncing' | 'error';
-  count: number;
-}
+import { loyverseApi } from '../../services/loyverseApi';
+import type { SyncStatus } from '../../services/loyverseApi';
 
 const LoyverseIntegration: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
-
-  const syncStatuses: SyncStatus[] = [
+  const [error, setError] = useState<string | null>(null);
+  const [syncStatuses, setSyncStatuses] = useState<SyncStatus[]>([
     {
       type: 'products',
       label: 'Products & Services',
@@ -58,7 +52,27 @@ const LoyverseIntegration: React.FC = () => {
       status: 'success',
       count: 189,
     },
-  ];
+  ]);
+
+  // Load status on mount
+  useEffect(() => {
+    loadStatus();
+  }, []);
+
+  const loadStatus = async () => {
+    try {
+      const data = await loyverseApi.status();
+      if (data.isConnected) {
+        setIsConnected(true);
+        if (data.syncStatuses) {
+          setSyncStatuses(data.syncStatuses);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load status:', err);
+      // Keep default state if backend not available
+    }
+  };
 
   const features = [
     {
@@ -83,27 +97,54 @@ const LoyverseIntegration: React.FC = () => {
     },
   ];
 
-  const handleConnect = () => {
-    if (apiKey.trim()) {
-      setIsSyncing(true);
-      // Simulate API connection
-      setTimeout(() => {
+  const handleConnect = async () => {
+    if (!apiKey.trim()) return;
+    
+    setIsSyncing(true);
+    setError(null);
+    
+    try {
+      const result = await loyverseApi.connect(apiKey);
+      if (result.success) {
         setIsConnected(true);
-        setIsSyncing(false);
-      }, 2000);
+        await loadStatus(); // Reload status after connect
+      } else {
+        setError(result.message || 'Failed to connect');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Connection failed. Please check your API key.');
+    } finally {
+      setIsSyncing(false);
     }
   };
 
-  const handleDisconnect = () => {
-    setIsConnected(false);
-    setApiKey('');
+  const handleDisconnect = async () => {
+    try {
+      await loyverseApi.disconnect();
+      setIsConnected(false);
+      setApiKey('');
+      setError(null);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to disconnect');
+    }
   };
 
-  const handleSync = () => {
+  const handleSync = async () => {
     setIsSyncing(true);
-    setTimeout(() => {
+    setError(null);
+    
+    try {
+      const result = await loyverseApi.sync('all');
+      if (result.success) {
+        await loadStatus(); // Reload status after sync
+      } else {
+        setError(result.message || 'Sync failed');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Sync failed');
+    } finally {
       setIsSyncing(false);
-    }, 3000);
+    }
   };
 
   return (

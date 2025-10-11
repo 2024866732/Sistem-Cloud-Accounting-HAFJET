@@ -10,6 +10,43 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Secret check (optional secrets)
+        id: secretcheck
+        uses: ./.github/workflows/ci-templates/secret-check.yml
+
+      - name: Pre-deploy guard - verify Railway project
+        env:
+          RAILWAY_PROJECT: ${{ secrets.RAILWAY_PROJECT }}
+          RAILWAY_BACKEND_URL: ${{ secrets.RAILWAY_BACKEND_URL }}
+          EXPECTED_RAILWAY_PROJECT: ${{ secrets.EXPECTED_RAILWAY_PROJECT }}
+          EXPECTED_RAILWAY_BACKEND_URL: ${{ secrets.EXPECTED_RAILWAY_BACKEND_URL }}
+        run: |
+          echo "Verifying target Railway project before release..."
+          if [ -z "$EXPECTED_RAILWAY_PROJECT" ] && [ -z "$EXPECTED_RAILWAY_BACKEND_URL" ]; then
+            echo "No EXPECTED_RAILWAY_* configured - skipping strict guard (set EXPECTED_RAILWAY_PROJECT or EXPECTED_RAILWAY_BACKEND_URL in repo secrets to enable)."
+            exit 0
+          fi
+
+          if [ -z "$RAILWAY_PROJECT" ] && [ -z "$RAILWAY_BACKEND_URL" ]; then
+            echo "ERROR: Railway secrets not set. Aborting release." >&2
+            exit 1
+          fi
+
+          if [ -n "$RAILWAY_PROJECT" ] && [ -n "$EXPECTED_RAILWAY_PROJECT" ]; then
+            if [ "$RAILWAY_PROJECT" != "$EXPECTED_RAILWAY_PROJECT" ]; then
+              echo "ERROR: RAILWAY_PROJECT does not match EXPECTED_RAILWAY_PROJECT. Aborting release." >&2
+              exit 1
+            fi
+          fi
+
+          if [ -n "$RAILWAY_BACKEND_URL" ] && [ -n "$EXPECTED_RAILWAY_BACKEND_URL" ]; then
+            if [[ "$RAILWAY_BACKEND_URL" != *"$EXPECTED_RAILWAY_BACKEND_URL"* ]]; then
+              echo "ERROR: RAILWAY_BACKEND_URL does not match EXPECTED_RAILWAY_BACKEND_URL. Aborting release." >&2
+              exit 1
+            fi
+          fi
+
+          echo "Pre-deploy guard passed."
       - name: Checkout repo
         uses: actions/checkout@v4
 

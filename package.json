@@ -1,6 +1,6 @@
 {
   "name": "hafjet-cloud-accounting-system",
-  "version": "3.0.4",
+  "version": "3.0.3",
   "description": "HAFJET Cloud Accounting System for Malaysia - Enterprise-ready accounting solution",
   "main": "index.js",
   "workspaces": [
@@ -40,7 +40,8 @@
   "author": "HAFJET",
   "license": "MIT",
   "engines": {
-    "node": "20.x"
+    "node": ">=20.0.0 <=22.19.0",
+    "npm": ">=10.0.0"
   },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.0",
