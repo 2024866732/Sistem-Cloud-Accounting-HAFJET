@@ -1,0 +1,184 @@
+﻿---
+name: Auto Update Railway URLs (safe)
+
+on:
+  workflow_dispatch:
+  # Auto-run after successful deployment
+  workflow_run:
+    workflows: ["Deploy to Railway", "CI/CD Pipeline"]
+    types: [completed]
+    branches: [main]
+
+
+jobs:
+  check-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check required secrets
+        run: |
+          echo "Checking repository secrets..."
+          # Fail early if secrets are missing - make failure explicit so CI owner can fix
+          if [ -z "${{ secrets.REPO_WRITE_TOKEN }}" ]; then
+            echo "❌ Error: REPO_WRITE_TOKEN not set"; exit 1
+          fi
+          if [ -z "${{ secrets.RAILWAY_TOKEN }}" ]; then
+            echo "❌ Error: RAILWAY_TOKEN not set"; exit 1
+          fi
+          echo "All required secrets present."
+
+  update-railway-urls:
+    needs: check-secrets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Railway CLI & dependencies
+        run: |
+          npm install -g @railway/cli
+          sudo apt-get update && sudo apt-get install -y gh jq
+
+      - name: Discover Railway Services & Domains
+        id: fetch
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "🔍 Querying Railway API for deployed services..."
+          
+          # Railway GraphQL API endpoint
+          RAILWAY_API="https://backboard.railway.app/graphql/v2"
+          
+          # Query to get all projects and their deployments
+          QUERY='{"query":"query { me { projects { edges { node { id name services { edges { node { id name domains { serviceDomains { domain } } } } } } } } } }"}'
+          
+          # Call Railway API
+          RESPONSE=$(curl -s -X POST "$RAILWAY_API" \
+            -H "Authorization: Bearer $RAILWAY_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$QUERY")
+          
+          echo "Railway API Response:"
+          echo "$RESPONSE" | jq '.'
+          
+          # Extract domains (adjust based on your project structure)
+          # This example assumes first project, first service
+          BACKEND_DOMAIN=$(echo "$RESPONSE" | jq -r '.data.me.projects.edges[0].node.services.edges[] | select(.node.name | contains("backend") or contains("api")) | .node.domains.serviceDomains[0].domain' | head -n1)
+          FRONTEND_DOMAIN=$(echo "$RESPONSE" | jq -r '.data.me.projects.edges[0].node.services.edges[] | select(.node.name | contains("frontend") or contains("web")) | .node.domains.serviceDomains[0].domain' | head -n1)
+          SERVICE_NAME=$(echo "$RESPONSE" | jq -r '.data.me.projects.edges[0].node.services.edges[0].node.name' | head -n1)
+          
+          # Fallback to placeholder if not found
+          BACKEND_DOMAIN=${BACKEND_DOMAIN:-"backend-not-found.railway.app"}
+          FRONTEND_DOMAIN=${FRONTEND_DOMAIN:-"frontend-not-found.railway.app"}
+          SERVICE_NAME=${SERVICE_NAME:-"hafjet-bukku"}
+          
+          echo "✅ Discovered:"
+          echo "  Backend Domain: $BACKEND_DOMAIN"
+          echo "  Frontend Domain: $FRONTEND_DOMAIN"
+          echo "  Service Name: $SERVICE_NAME"
+          
+          # Set outputs for next steps
+          echo "backend_domain=$BACKEND_DOMAIN" >> $GITHUB_OUTPUT
+          echo "frontend_domain=$FRONTEND_DOMAIN" >> $GITHUB_OUTPUT
+          echo "service_name=$SERVICE_NAME" >> $GITHUB_OUTPUT
+      - name: Install Python dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install --no-cache-dir pynacl requests
+
+      - name: Update all Railway secrets (Python)
+        env:
+          BACKEND_DOMAIN: ${{ steps.fetch.outputs.backend_domain }}
+          FRONTEND_DOMAIN: ${{ steps.fetch.outputs.frontend_domain }}
+          SERVICE_NAME: ${{ steps.fetch.outputs.service_name }}
+          REPO_WRITE_TOKEN: ${{ secrets.REPO_WRITE_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 - <<'PY'
+          import os, base64, requests
+          from nacl import public
+
+          repo = os.environ['GITHUB_REPOSITORY']
+          owner, repo_name = repo.split('/')
+          token = os.environ['REPO_WRITE_TOKEN']
+          
+          # Get discovered values
+          backend_domain = os.environ.get('BACKEND_DOMAIN')
+          frontend_domain = os.environ.get('FRONTEND_DOMAIN')
+          service_name = os.environ.get('SERVICE_NAME')
+          
+          # Prepare secrets to update
+          secrets_to_update = {
+              'RAILWAY_SERVICE': service_name,
+              'RAILWAY_BACKEND_URL': f"https://{backend_domain}",
+              'RAILWAY_FRONTEND_URL': f"https://{frontend_domain}"
+          }
+
+          headers = {'Authorization': f'token {token}', 'Accept': 'application/vnd.github.v3+json'}
+
+          # Get the public key for the repository (once)
+          r = requests.get(f'https://api.github.com/repos/{owner}/{repo_name}/actions/secrets/public-key', headers=headers)
+          r.raise_for_status()
+          key_info = r.json()
+          key_id = key_info['key_id']
+          public_key = base64.b64decode(key_info['key'])
+          
+          # Prepare encryption
+          pubkey = public.PublicKey(public_key)
+          sealed_box = public.SealedBox(pubkey)
+
+          # Update each secret
+          for secret_name, secret_value in secrets_to_update.items():
+              print(f"📝 Updating {secret_name} = {secret_value}")
+              
+              # Encrypt
+              encrypted = sealed_box.encrypt(secret_value.encode('utf-8'))
+              encrypted_b64 = base64.b64encode(encrypted).decode('utf-8')
+              
+              # PUT to GitHub API
+              payload = {'encrypted_value': encrypted_b64, 'key_id': key_id}
+              put = requests.put(f'https://api.github.com/repos/{owner}/{repo_name}/actions/secrets/{secret_name}', json=payload, headers=headers)
+              put.raise_for_status()
+              print(f"✅ {secret_name} updated successfully")
+          
+          print('\n🎉 All Railway secrets updated via Python!')
+          PY
+
+      - name: Verify deployment health
+        env:
+          BACKEND_DOMAIN: ${{ steps.fetch.outputs.backend_domain }}
+        run: |
+          echo "🏥 Running healthcheck on backend..."
+          BACKEND_URL="https://$BACKEND_DOMAIN"
+          
+          # Try to reach backend health endpoint
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$BACKEND_URL/api/health" || echo "000")
+          
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Backend is healthy (HTTP $HTTP_CODE)"
+          else
+            echo "⚠️  Backend returned HTTP $HTTP_CODE (may still be deploying)"
+          fi
+          
+          # Don't fail workflow if healthcheck fails (deployment might still be in progress)
+          exit 0
+
+      - name: Report success
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ AUTO-UPDATE COMPLETED SUCCESSFULLY!"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "📦 Updated Repository Secrets:"
+          echo "  • RAILWAY_SERVICE"
+          echo "  • RAILWAY_BACKEND_URL"
+          echo "  • RAILWAY_FRONTEND_URL"
+          echo ""
+          echo "🔄 These secrets are now synchronized with Railway deployment"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+

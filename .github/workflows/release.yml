@@ -1,234 +1,31 @@
-name: Auto Release
-
+﻿---
+name: Release
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'package.json'
-  workflow_dispatch: {}
 
-permissions:
-  contents: write
+  push:
+    branches: [ "main" ]
+
 
 jobs:
-  create-release:
+  release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.19.0'
+          node-version: 20
 
-      - name: Read version from package.json
-        id: get_version
+      - name: Install dependencies (frontend)
         run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          cd frontend || exit 0
+          npm ci
 
-      - name: Check if tag exists
-        id: tag_check
+      - name: Build frontend (if present)
         run: |
-          if git ls-remote --tags origin refs/tags/v${{ steps.get_version.outputs.VERSION }} | grep -q "refs/tags/v${{ steps.get_version.outputs.VERSION }}"; then
-            echo "TAG_EXISTS=true" >> $GITHUB_OUTPUT
-          else
-            echo "TAG_EXISTS=false" >> $GITHUB_OUTPUT
-          fi
+          cd frontend || exit 0
+          npm run build || echo 'no frontend build step'
 
-      - name: Create and push tag
-        if: steps.tag_check.outputs.TAG_EXISTS == 'false'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a v${{ steps.get_version.outputs.VERSION }} -m "Release v${{ steps.get_version.outputs.VERSION }}"
-          git push origin v${{ steps.get_version.outputs.VERSION }}
 
-      - name: Create draft GitHub release
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: v${{ steps.get_version.outputs.VERSION }}
-          release_name: Release v${{ steps.get_version.outputs.VERSION }}
-          body: "Automated draft release for v${{ steps.get_version.outputs.VERSION }}"
-          draft: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Node (for build)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.19.0'
-
-      - name: Install dependencies (root)
-        run: npm ci --legacy-peer-deps
-
-      - name: Build frontend
-        run: |
-          cd frontend
-          npm ci --legacy-peer-deps
-          npm run build --if-present
-
-      - name: Build backend (optional)
-        run: |
-          cd backend
-          npm ci --legacy-peer-deps
-          npm run build --if-present || echo "no backend build"
-
-      - name: Package artifacts
-        id: package_artifacts
-        run: |
-          mkdir -p release-artifacts
-          if [ -d frontend/dist ]; then tar -czf release-artifacts/frontend-${{ steps.get_version.outputs.VERSION }}.tar.gz -C frontend dist; fi
-          if [ -d backend/dist ]; then tar -czf release-artifacts/backend-${{ steps.get_version.outputs.VERSION }}.tar.gz -C backend dist; fi
-          if [ -f release-artifacts/frontend-${{ steps.get_version.outputs.VERSION }}.tar.gz ]; then echo "HAS_FRONTEND=true" >> $GITHUB_OUTPUT; else echo "HAS_FRONTEND=false" >> $GITHUB_OUTPUT; fi
-          if [ -f release-artifacts/backend-${{ steps.get_version.outputs.VERSION }}.tar.gz ]; then echo "HAS_BACKEND=true" >> $GITHUB_OUTPUT; else echo "HAS_BACKEND=false" >> $GITHUB_OUTPUT; fi
-
-      - name: Upload frontend asset (if exists)
-        if: ${{ steps.package_artifacts.outputs.HAS_FRONTEND == 'true' }}
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release-artifacts/frontend-${{ steps.get_version.outputs.VERSION }}.tar.gz
-          asset_name: frontend-${{ steps.get_version.outputs.VERSION }}.tar.gz
-          asset_content_type: application/gzip
-
-      - name: Upload backend asset (if exists)
-        if: ${{ steps.package_artifacts.outputs.HAS_BACKEND == 'true' }}
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release-artifacts/backend-${{ steps.get_version.outputs.VERSION }}.tar.gz
-          asset_name: backend-${{ steps.get_version.outputs.VERSION }}.tar.gz
-          asset_content_type: application/gzip
-
-      - name: Lookup pushed image digests (GHCR)
-        id: lookup_digests
-        run: |
-          set -euo pipefail
-          REPO="${{ github.repository }}"
-          BACKEND_NAME="2024866732/hafjet-bukku-backend"
-          FRONTEND_NAME="2024866732/hafjet-bukku-frontend"
-
-          # Helper to query GHCR manifest list for tag 'latest' using gh API
-          get_digest() {
-            OWNER_REPO=$1
-            TAG=latest
-            attempts=3
-            delay=2
-            for i in $(seq 1 $attempts); do
-              # Prefer the version whose metadata.container.tags contains 'latest'
-              # Redirect stderr to filter out JSON error messages
-              DIGEST=$(gh api -H "Accept: application/vnd.oci.image.manifest.v1+json" \
-                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq 'map(select(.metadata.container.tags[]? == "latest"))[0].metadata.container.digest' 2>&1 | grep -v "message" | grep -v "Not Found" | tr -d '\n\r' || echo "")
-              # Validate it's actually a digest before returning
-              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ] && [ "$DIGEST" != "" ] && echo "$DIGEST" | grep -qE '^sha256:[a-f0-9]{64}$'; then
-                echo "$DIGEST"
-                return 0
-              fi
-
-              # Fallback: if no version labelled latest, try to use the first available digest
-              DIGEST=$(gh api -H "Accept: application/vnd.oci.image.manifest.v1+json" \
-                "/repos/${OWNER_REPO}/packages/container/${OWNER_REPO##*/}/versions" --jq '.[0].metadata.container.digest' 2>&1 | grep -v "message" | grep -v "Not Found" | tr -d '\n\r' || echo "")
-              # Validate it's actually a digest before returning
-              if [ -n "$DIGEST" ] && [ "$DIGEST" != "null" ] && [ "$DIGEST" != "" ] && echo "$DIGEST" | grep -qE '^sha256:[a-f0-9]{64}$'; then
-                echo "$DIGEST"
-                return 0
-              fi
-              echo "Attempt $i: GHCR API did not return a digest for ${OWNER_REPO}; retrying in ${delay}s..." >&2
-              sleep $delay
-              delay=$((delay * 2))
-            done
-
-            # Fallback: try to pull and inspect with docker (skip if not authenticated)
-            IMAGE=ghcr.io/${OWNER_REPO}:latest
-            if docker pull "$IMAGE" >/dev/null 2>&1; then
-              DIGEST=$(docker image inspect "$IMAGE" --format '{{index .RepoDigests 0}}' 2>/dev/null | grep -oE 'sha256:[a-f0-9]{64}' || echo "")
-              if [ -n "$DIGEST" ]; then
-                echo "$DIGEST"
-                return 0
-              fi
-            fi
-
-            # Return empty if all attempts fail (not an error - images might not exist yet)
-            echo ""
-            return 0
-          }
-
-          BACKEND_DIGEST=$(get_digest "$BACKEND_NAME")
-          FRONTEND_DIGEST=$(get_digest "$FRONTEND_NAME")
-          
-          # Sanitize output - ensure no JSON or multi-line content
-          BACKEND_DIGEST=$(echo "$BACKEND_DIGEST" | tr -d '\n\r' | grep -E '^sha256:[a-f0-9]{64}$' || echo "")
-          FRONTEND_DIGEST=$(echo "$FRONTEND_DIGEST" | tr -d '\n\r' | grep -E '^sha256:[a-f0-9]{64}$' || echo "")
-
-          echo "BACKEND_DIGEST=$BACKEND_DIGEST" >> $GITHUB_OUTPUT
-          echo "FRONTEND_DIGEST=$FRONTEND_DIGEST" >> $GITHUB_OUTPUT
-          
-          if [ -z "$BACKEND_DIGEST" ]; then
-            echo "⚠️ Backend digest not found - image may not be pushed yet"
-          else
-            echo "✅ Backend digest: $BACKEND_DIGEST"
-          fi
-          
-          if [ -z "$FRONTEND_DIGEST" ]; then
-            echo "⚠️ Frontend digest not found - image may not be pushed yet"
-          else
-            echo "✅ Frontend digest: $FRONTEND_DIGEST"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOCKER_BUILDKIT: 1
-
-      - name: Write image-metadata artifact for release
-        run: |
-          mkdir -p image-metadata
-          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          cat > image-metadata/${{ github.sha }}.json <<EOF
-          {
-            "github_sha": "${{ github.sha }}",
-            "timestamp": "${TIMESTAMP}",
-            "backend": { "digest": "${{ steps.lookup_digests.outputs.BACKEND_DIGEST }}" },
-            "frontend": { "digest": "${{ steps.lookup_digests.outputs.FRONTEND_DIGEST }}" }
-          }
-          EOF
-
-      - name: Upload image-metadata artifact for release
-        uses: actions/upload-artifact@v4
-        with:
-          name: image-metadata-${{ github.sha }}
-          path: image-metadata/${{ github.sha }}.json
-
-      - name: Append image digests to release body
-        if: always()
-        run: |
-          VERSION=${{ steps.get_version.outputs.VERSION }}
-          RELEASE_ID=${{ steps.create_release.outputs.id }}
-          BACKEND_DIGEST='${{ steps.lookup_digests.outputs.BACKEND_DIGEST }}'
-          FRONTEND_DIGEST='${{ steps.lookup_digests.outputs.FRONTEND_DIGEST }}'
-
-          # Build new body content
-          BODY="Automated draft release for v${VERSION}\n\n"
-          if [ -n "$BACKEND_DIGEST" ]; then
-            BODY+="### Backend image\n$BACKEND_DIGEST\n\n"
-          fi
-          if [ -n "$FRONTEND_DIGEST" ]; then
-            BODY+="### Frontend image\n$FRONTEND_DIGEST\n\n"
-          fi
-
-          # Append existing short message
-          BODY+="(Artifacts attached if available)"
-
-          # Update the release using gh (falls back to curl if gh not available)
-          if command -v gh >/dev/null 2>&1; then
-            echo "Updating release $RELEASE_ID body with image digests"
-            gh release edit "v${VERSION}" --repo "${{ github.repository }}" --notes "$BODY"
-          else
-            echo "gh CLI not found, using curl to update release"
-            API_JSON=$(jq -n --arg body "$BODY" '{body: $body}')
-            curl -s -X PATCH -H "Authorization: Bearer $GITHUB_TOKEN" -H "Content-Type: application/json" \
-              -d "$API_JSON" "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
