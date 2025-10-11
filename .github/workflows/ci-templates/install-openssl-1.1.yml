@@ -1,0 +1,25 @@
+# Reusable step to install OpenSSL 1.1 on Ubuntu runners for MongoDB 5.0 compatibility
+# Usage: use as reusable workflow via `uses: ./.github/workflows/ci-templates/install-openssl-1.1.yml`
+# It will install libssl1.1 if not present.
+
+on: [workflow_call]
+
+jobs:
+  install_openssl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check libssl1.1
+        id: check
+        run: |
+          if ldconfig -p | grep -q libcrypto.so.1.1; then
+            echo "present=true" >> $GITHUB_OUTPUT
+          else
+            echo "present=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Install libssl1.1 if missing
+        if: steps.check.outputs.present == 'false'
+        run: |
+          echo "libssl1.1 not found - installing..."
+          wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl1.1/libssl1.1_1.1.1f-1ubuntu2_amd64.deb -O /tmp/libssl1.1.deb
+          sudo dpkg -i /tmp/libssl1.1.deb || sudo apt-get -f install -y
+          echo "Installed libssl1.1"
