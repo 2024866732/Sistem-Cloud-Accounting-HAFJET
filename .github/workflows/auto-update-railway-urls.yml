@@ -51,14 +51,47 @@ jobs:
           # For now output a placeholder domain which will be used downstream
           DOMAIN=example-backend.railway.app
           echo "domain=$DOMAIN" >> $GITHUB_OUTPUT
-      - name: Set repository secret RAILWAY_BACKEND_URL
-        uses: peter-evans/create-or-update-secret@v2
-        with:
-          token: ${{ secrets.REPO_WRITE_TOKEN }}
-          secret-name: RAILWAY_BACKEND_URL
-          # Use the discovered domain to build the backend URL
-          secret-value: https://${{ steps.fetch.outputs.domain }}
-          visibility: repository
+      - name: Install Python dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install --no-cache-dir pynacl requests
+
+      - name: Create/Update repository secret RAILWAY_BACKEND_URL (Python)
+        env:
+          DOMAIN: ${{ steps.fetch.outputs.domain }}
+          REPO_WRITE_TOKEN: ${{ secrets.REPO_WRITE_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 - <<'PY'
+          import os, base64, requests
+          from nacl import public
+
+          repo = os.environ['GITHUB_REPOSITORY']
+          owner, repo_name = repo.split('/')
+          token = os.environ['REPO_WRITE_TOKEN']
+          domain = os.environ.get('DOMAIN')
+          backend_url = f"https://{domain}"
+
+          headers = {'Authorization': f'token {token}', 'Accept': 'application/vnd.github.v3+json'}
+
+          # Get the public key for the repository
+          r = requests.get(f'https://api.github.com/repos/{owner}/{repo_name}/actions/secrets/public-key', headers=headers)
+          r.raise_for_status()
+          key_info = r.json()
+          key_id = key_info['key_id']
+          public_key = base64.b64decode(key_info['key'])
+
+          # Encrypt using PyNaCl SealedBox
+          pubkey = public.PublicKey(public_key)
+          sealed_box = public.SealedBox(pubkey)
+          encrypted = sealed_box.encrypt(backend_url.encode('utf-8'))
+          encrypted_b64 = base64.b64encode(encrypted).decode('utf-8')
+
+          payload = {'encrypted_value': encrypted_b64, 'key_id': key_id}
+          put = requests.put(f'https://api.github.com/repos/{owner}/{repo_name}/actions/secrets/RAILWAY_BACKEND_URL', json=payload, headers=headers)
+          put.raise_for_status()
+          print('RAILWAY_BACKEND_URL secret updated via Python')
+          PY
 
       - name: Report
         run: |
