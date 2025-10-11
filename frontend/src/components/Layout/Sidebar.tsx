@@ -142,8 +142,10 @@ const menuItems: MenuItem[] = [
     label: 'Bukku Store',
     icon: <Store size={20} />,
     submenu: [
+      { id: 'loyverse', label: 'Loyverse POS', icon: null, path: '/integrations/loyverse' },
       { id: 'marketplace', label: 'Marketplace', icon: null, path: '/store/marketplace' },
       { id: 'my-apps', label: 'My Apps', icon: null, path: '/store/my-apps' },
+      { id: 'all-integrations', label: 'All Integrations', icon: null, path: '/integrations' },
     ],
   },
 ];
