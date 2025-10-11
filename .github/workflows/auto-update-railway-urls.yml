@@ -12,11 +12,8 @@ on:
 jobs:
   check-secrets:
     runs-on: ubuntu-latest
-    outputs:
-      has_secrets: ${{ steps.check.outputs.has_secrets }}
     steps:
       - name: Check required secrets
-        id: check
         run: |
           echo "Checking repository secrets..."
           # Fail early if secrets are missing - make failure explicit so CI owner can fix
@@ -26,11 +23,10 @@ jobs:
           if [ -z "${{ secrets.RAILWAY_TOKEN }}" ]; then
             echo "❌ Error: RAILWAY_TOKEN not set"; exit 1
           fi
-          echo "has_secrets=true" >> $GITHUB_OUTPUT
+          echo "All required secrets present."
 
   update-railway-urls:
     needs: check-secrets
-    if: needs.check-secrets.outputs.has_secrets == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -47,7 +43,6 @@ jobs:
 
       - name: Fetch Railway domain(s)
         id: fetch
-        runs-on: ubuntu-latest
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
