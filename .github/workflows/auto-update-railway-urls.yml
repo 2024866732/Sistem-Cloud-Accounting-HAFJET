@@ -19,11 +19,12 @@ jobs:
         id: check
         run: |
           echo "Checking repository secrets..."
-          # GitHub masks missing secrets as empty strings; check both
-          if [ -z "${{ secrets.REPO_WRITE_TOKEN }}" ] || [ -z "${{ secrets.RAILWAY_TOKEN }}" ]; then
-            echo "Required secrets are missing. Skipping update."
-            echo "has_secrets=false" >> $GITHUB_OUTPUT
-            exit 0
+          # Fail early if secrets are missing - make failure explicit so CI owner can fix
+          if [ -z "${{ secrets.REPO_WRITE_TOKEN }}" ]; then
+            echo "❌ Error: REPO_WRITE_TOKEN not set"; exit 1
+          fi
+          if [ -z "${{ secrets.RAILWAY_TOKEN }}" ]; then
+            echo "❌ Error: RAILWAY_TOKEN not set"; exit 1
           fi
           echo "has_secrets=true" >> $GITHUB_OUTPUT
 
@@ -46,30 +47,49 @@ jobs:
 
       - name: Fetch Railway domain(s)
         id: fetch
+        runs-on: ubuntu-latest
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           echo "(placeholder) Query Railway API to list domains/services"
-          # Example: railway status or railway domain list commands would go here
-          # We output a placeholder backend URL to be used in the next step
-          echo "BACKEND_URL=https://example-backend.railway.app" >> $GITHUB_ENV
+          # Example: use Railway CLI or API to discover deployed domain for backend
+          # For now output a placeholder domain which will be used downstream
+          DOMAIN=example-backend.railway.app
+          echo "domain=$DOMAIN" >> $GITHUB_OUTPUT
 
-      - name: Set repository secret RAILWAY_BACKEND_URL (safe)
+      - name: Set repository secret RAILWAY_BACKEND_URL with Octokit
+        uses: actions/github-script@v7
         env:
-          REPO_WRITE_TOKEN: ${{ secrets.REPO_WRITE_TOKEN }}
-        run: |
-          if [ -z "$RAILWAY_BACKEND_URL" ]; then
-            # Use env variable from previous step
-            RAILWAY_BACKEND_URL="$BACKEND_URL"
-          fi
-          if [ -z "$RAILWAY_BACKEND_URL" ]; then
-            echo "No backend URL discovered; aborting secret set"
-            exit 0
-          fi
-          echo "Setting repository secret RAILWAY_BACKEND_URL (masked)"
-          # Use gh CLI to set secret; requires REPO_WRITE_TOKEN to be stored as a secret
-          gh auth login --with-token <<< "$REPO_WRITE_TOKEN" || true
-          echo "$RAILWAY_BACKEND_URL" | gh secret set RAILWAY_BACKEND_URL --body - || (echo "gh secret set failed (ensure REPO_WRITE_TOKEN has correct scopes)" && exit 1)
+          DOMAIN: ${{ steps.fetch.outputs.domain }}
+          MY_PAT: ${{ secrets.REPO_WRITE_TOKEN }}
+        with:
+          script: |
+            const sodium = require('libsodium-wrappers');
+            await sodium.ready;
+            const backend_url = `https://${process.env.DOMAIN}`;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            // Get public key for the repository
+            const { data: { key, key_id } } = await github.request('GET /repos/{owner}/{repo}/actions/secrets/public-key', {
+              owner,
+              repo,
+              headers: { authorization: `token ${process.env.MY_PAT}` }
+            });
+            // Encrypt secret using libsodium
+            const binkey = sodium.from_base64(key, sodium.base64_variants.ORIGINAL);
+            const binsec = sodium.from_string(backend_url);
+            const encsec = sodium.crypto_box_seal(binsec, binkey);
+            const encrypted_value = sodium.to_base64(encsec, sodium.base64_variants.ORIGINAL);
+            // PUT the encrypted secret
+            await github.request('PUT /repos/{owner}/{repo}/actions/secrets/{secret_name}', {
+              owner,
+              repo,
+              secret_name: 'RAILWAY_BACKEND_URL',
+              encrypted_value,
+              key_id,
+              headers: { authorization: `token ${process.env.MY_PAT}` }
+            });
+            console.log('RAILWAY_BACKEND_URL secret updated via Octokit');
 
       - name: Report
         run: |
