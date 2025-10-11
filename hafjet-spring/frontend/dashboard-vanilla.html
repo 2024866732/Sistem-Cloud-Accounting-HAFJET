@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <title>HAFJET Accounting Dashboard</title>
+  <link rel="stylesheet" href="assets/css/vanilla.css">
+</head>
+<body>
+  <div class="auth-overlay" id="authOverlay">
+    <form class="auth-card" id="loginForm">
+      <h2>Log Masuk HAFJET</h2>
+      <p class="error-msg" id="loginError"></p>
+      <fieldset class="field">
+        <label for="email">Emel</label>
+        <input id="email" name="email" type="email" placeholder="akaun@hafjet.com" required>
+      </fieldset>
+      <fieldset class="field">
+        <label for="password">Kata Laluan</label>
+        <input id="password" name="password" type="password" placeholder="••••••••" required>
+      </fieldset>
+      <button class="primary-btn" type="submit">Log Masuk</button>
+    </form>
+  </div>
+
+  <header class="topbar">
+    <div class="app-brand">
+      <strong>HAFJET Accounting Dashboard</strong>
+      <span>Seiring operasi jual beli & kewangan anda</span>
+    </div>
+    <div class="nav-tabs" id="navTabs">
+      <button data-section-target="dashboard" class="active">Dashboard</button>
+      <button data-section-target="sales">Sales</button>
+      <button data-section-target="purchases">Purchases</button>
+      <button data-section-target="bank">Bank</button>
+      <button data-section-target="products">Products</button>
+      <button data-section-target="contacts">Contacts</button>
+      <button data-section-target="reports">Reports</button>
+      <button data-section-target="accounting">Accounting</button>
+      <button class="ghost-btn" id="logoutBtn">Log Keluar</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <section data-section="dashboard" class="visible">
+      <div class="section-heading">
+        <div>
+          <h2>Ringkasan Dashboard</h2>
+          <p>Prestasi jualan, bil, keuntungan, dan aliran tunai terkini.</p>
+        </div>
+        <button class="ghost-btn" type="button" id="refreshDashboard">Refresh</button>
+      </div>
+      <div class="cards-grid">
+        <article class="card">
+          <header><h3 class="card-title">Jumlah Invoices</h3></header>
+          <p class="card-value" id="invoiceTotal">RM 0</p>
+          <small id="invoiceMeta">Tiada data</small>
+        </article>
+        <article class="card">
+          <header><h3 class="card-title">Bil Diterima</h3></header>
+          <p class="card-value" id="billsTotal">RM 0</p>
+          <small id="billsMeta">Tiada data</small>
+        </article>
+        <article class="card positive">
+          <header><h3 class="card-title">Keuntungan Bersih</h3></header>
+          <p class="card-value" id="profitLoss">RM 0</p>
+          <small id="profitMeta">Tiada data</small>
+        </article>
+        <article class="card neutral">
+          <header><h3 class="card-title">Aliran Tunai</h3></header>
+          <p class="card-value" id="cashFlow">RM 0</p>
+          <small id="cashMeta">Tiada data</small>
+        </article>
+      </div>
+
+      <div class="tables-grid">
+        <div class="table-card">
+          <header>
+            <h3>Cashflow</h3>
+            <button class="ghost-btn" type="button">Export</button>
+          </header>
+          <table>
+            <thead>
+              <tr>
+                <th>Tarikh</th><th>Jenis</th><th>Butiran</th><th>Masuk</th><th>Keluar</th><th>Baki</th>
+              </tr>
+            </thead>
+            <tbody id="cashflowTable"></tbody>
+          </table>
+        </div>
+
+        <div class="table-card">
+          <header>
+            <h3>Jualan Terkini</h3>
+            <button class="ghost-btn" type="button">Lihat Semua</button>
+          </header>
+          <table>
+            <thead>
+              <tr>
+                <th>No Invoice</th><th>Pelanggan</th><th>Status</th><th>Jumlah</th>
+              </tr>
+            </thead>
+            <tbody id="recentSales"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section data-section="sales">
+      <div class="section-heading">
+        <div>
+          <h2>Sales</h2>
+          <p>Quotations, Sales Orders, Delivery Orders, Invoices, Payments.</p>
+        </div>
+        <button class="primary-btn" type="button" id="addSalesBtn">Tambah Order Dummy</button>
+      </div>
+      <div class="table-card">
+        <header>
+          <h3>Sales Orders</h3>
+          <span id="salesCount"></span>
+        </header>
+        <table>
+          <thead>
+            <tr>
+              <th>Doc #</th><th>Tarikh</th><th>Pelanggan</th><th>Status</th><th>Jumlah</th><th>Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="salesOrdersTable"></tbody>
+        </table>
+      </div>
+
+      <div class="table-card">
+        <header>
+          <h3>Invoices</h3>
+          <button class="ghost-btn" type="button">Jana Invoice</button>
+        </header>
+        <table>
+          <thead>
+            <tr>
+              <th>No Invoice</th><th>Tarikh</th><th>Tarikh Tama</th><th>Pelanggan</th><th>Status</th><th>Jumlah</th>
+            </tr>
+          </thead>
+          <tbody id="salesInvoicesTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section data-section="purchases">
+      <div class="section-heading">
+        <div>
+          <h2>Purchases</h2>
+          <p>Purchase Orders, Bills, Payments untuk kawal kos.</p>
+        </div>
+        <button class="primary-btn" type="button">Tambah Bill</button>
+      </div>
+      <div class="table-card">
+        <header>
+          <h3>Bills</h3>
+          <span id="billsCount"></span>
+        </header>
+        <table>
+          <thead>
+            <tr>
+              <th>No Bill</th><th>Tarikh</th><th>Pembekal</th><th>Status</th><th>Jumlah</th>
+            </tr>
+          </thead>
+          <tbody id="purchaseBillsTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section data-section="bank">
+      <div class="section-heading">
+        <div>
+          <h2>Bank & Tunai</h2>
+          <p>Pantau akaun bank, money in/out dan pemindahan.</p>
+        </div>
+        <button class="primary-btn" type="button">Rekod Transaksi</button>
+      </div>
+      <div class="tables-grid">
+        <div class="table-card">
+          <header><h3>Akaun Bank</h3></header>
+          <table>
+            <thead>
+              <tr>
+                <th>Akaun</th><th>Jenis</th><th>Baki</th><th>Kemaskini</th>
+              </tr>
+            </thead>
+            <tbody id="bankAccountsTable"></tbody>
+          </table>
+        </div>
+        <div class="table-card">
+          <header><h3>Money In/Out Terkini</h3></header>
+          <table>
+            <thead>
+              <tr>
+                <th>Tarikh</th><th>Jenis</th><th>Butiran</th><th>Jumlah</th>
+              </tr>
+            </thead>
+            <tbody id="bankTransactionsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section data-section="products">
+      <div class="section-heading">
+        <div>
+          <h2>Products & Services</h2>
+          <p>Inventori, tahap stok, dan pelarasan.</p>
+        </div>
+        <button class="primary-btn" type="button">Tambah Item</button>
+      </div>
+      <div class="table-card">
+        <header><h3>Inventori</h3></header>
+        <table>
+          <thead>
+            <tr>
+              <th>SKU</th><th>Nama</th><th>Kategori</th><th>Stok</th><th>Harga</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="inventoryTable"></tbody>
+        </table>
+      </div>
+      <div class="plain-card">
+        <h3>Pelarasan Stok Terkini</h3>
+        <ul class="simple-list" id="stockAdjustmentsList"></ul>
+      </div>
+    </section>
+
+    <section data-section="contacts">
+      <div class="section-heading">
+        <div>
+          <h2>Contacts</h2>
+          <p>Urus pelanggan dan pembekal anda.</p>
+        </div>
+        <button class="primary-btn" type="button">Tambah Kontak</button>
+      </div>
+      <div class="table-card">
+        <header><h3>Senarai Kontak</h3></header>
+        <table>
+          <thead>
+            <tr>
+              <th>Nama</th><th>Jenis</th><th>Email</th><th>Telefon</th><th>Baki</th>
+            </tr>
+          </thead>
+          <tbody id="contactsTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section data-section="reports">
+      <div class="section-heading">
+        <div>
+          <h2>Laporan Kewangan</h2>
+          <p>Balance Sheet, Profit & Loss, Cash Flow, Ledger.</p>
+        </div>
+        <button class="ghost-btn" type="button">Cetak</button>
+      </div>
+      <div class="tables-grid">
+        <div class="table-card">
+          <header><h3>Balance Sheet</h3></header>
+          <table>
+            <thead><tr><th>Akaun</th><th>Jumlah</th></tr></thead>
+            <tbody id="balanceSheetTable"></tbody>
+          </table>
+        </div>
+        <div class="table-card">
+          <header><h3>Profit & Loss</h3></header>
+          <table>
+            <thead><tr><th>Akaun</th><th>Jumlah</th></tr></thead>
+            <tbody id="profitLossTable"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="table-card">
+        <header><h3>Cash Flow</h3></header>
+        <table>
+          <thead><tr><th>Aktiviti</th><th>Jumlah</th></tr></thead>
+          <tbody id="cashFlowReportTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section data-section="accounting">
+      <div class="section-heading">
+        <div>
+          <h2>Accounting</h2>
+          <p>Journal Entries & Chart of Accounts.</p>
+        </div>
+        <button class="primary-btn" type="button">Tambah Journal</button>
+      </div>
+      <div class="table-card">
+        <header><h3>Journal Entries</h3></header>
+        <table>
+          <thead>
+            <tr>
+              <th>Tarikh</th><th>Rujukan</th><th>Deskripsi</th><th>Debit</th><th>Kredit</th>
+            </tr>
+          </thead>
+          <tbody id="journalTable"></tbody>
+        </table>
+      </div>
+
+      <div class="plain-card">
+        <h3>Chart of Accounts</h3>
+        <ul class="simple-list" id="coaList"></ul>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const overlay = document.getElementById("authOverlay");
+    const loginForm = document.getElementById("loginForm");
+    const loginError = document.getElementById("loginError");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const navTabs = document.getElementById("navTabs");
+    const sectionButtons = navTabs.querySelectorAll("[data-section-target]");
+    const sections = document.querySelectorAll("[data-section]");
+    const refreshDashboardBtn = document.getElementById("refreshDashboard");
+
+    const cards = {
+      invoiceTotal: document.getElementById("invoiceTotal"),
+      invoiceMeta: document.getElementById("invoiceMeta"),
+      billsTotal: document.getElementById("billsTotal"),
+      billsMeta: document.getElementById("billsMeta"),
+      profitLoss: document.getElementById("profitLoss"),
+      profitMeta: document.getElementById("profitMeta"),
+      cashFlow: document.getElementById("cashFlow"),
+      cashMeta: document.getElementById("cashMeta")
+    };
+    const cashflowTable = document.getElementById("cashflowTable");
+    const recentSales = document.getElementById("recentSales");
+    const salesOrdersTable = document.getElementById("salesOrdersTable");
+    const salesInvoicesTable = document.getElementById("salesInvoicesTable");
+    const salesCount = document.getElementById("salesCount");
+    const purchaseBillsTable = document.getElementById("purchaseBillsTable");
+    const billsCount = document.getElementById("billsCount");
+    const bankAccountsTable = document.getElementById("bankAccountsTable");
+    const bankTransactionsTable = document.getElementById("bankTransactionsTable");
+    const inventoryTable = document.getElementById("inventoryTable");
+    const stockAdjustmentsList = document.getElementById("stockAdjustmentsList");
+    const contactsTable = document.getElementById("contactsTable");
+    const balanceSheetTable = document.getElementById("balanceSheetTable");
+    const profitLossTable = document.getElementById("profitLossTable");
+    const cashFlowReportTable = document.getElementById("cashFlowReportTable");
+    const journalTable = document.getElementById("journalTable");
+    const coaList = document.getElementById("coaList");
+    const addSalesBtn = document.getElementById("addSalesBtn");
+
+    const mockData = {
+      summary: { invoiceTotal: 125430, invoiceChange: "+12% berbanding bulan lepas", billsTotal: 89210, billsMeta: "5 bil belum dibayar", netProfit: 36220, profitMeta: "P&L bulan semasa", cashOnHand: 18980, cashMeta: "Kemaskini 2 jam lalu" },
+      cashflow: [ { date: "2024-05-12", type: "Invoice", reference: "INV-2301", moneyIn: 5000, moneyOut: 0, balance: 21300 }, { date: "2024-05-11", type: "Bill", reference: "BILL-778", moneyIn: 0, moneyOut: 1200, balance: 16300 }, { date: "2024-05-10", type: "Transfer", reference: "TRF-220", moneyIn: 2000, moneyOut: 0, balance: 17500 } ],
+      recentSales: [ { invoiceNumber: "INV-2340", customer: "Maju Trading", status: "Paid", amount: 3450, issuedOn: "2024-05-12" }, { invoiceNumber: "INV-2339", customer: "Alpha Sdn Bhd", status: "Partial", amount: 7200, issuedOn: "2024-05-11" }, { invoiceNumber: "INV-2338", customer: "SP Logistics", status: "Sent", amount: 1840, issuedOn: "2024-05-10" } ],
+      salesOrders: [ { docNumber: "SO-1043", orderDate: "2024-05-13", customerName: "Alpha Sdn Bhd", status: "Confirmed", totalAmount: 6200 }, { docNumber: "SO-1042", orderDate: "2024-05-11", customerName: "Maju Trading", status: "Delivered", totalAmount: 3480 }, { docNumber: "SO-1041", orderDate: "2024-05-09", customerName: "Beta M&E", status: "Draft", totalAmount: 5120 } ],
+      salesInvoices: [ { invoiceNumber: "INV-2340", issueDate: "2024-05-12", dueDate: "2024-05-27", customerName: "Maju Trading", status: "Paid", totalAmount: 3450 }, { invoiceNumber: "INV-2339", issueDate: "2024-05-11", dueDate: "2024-05-26", customerName: "Alpha Sdn Bhd", status: "Partial", totalAmount: 7200 }, { invoiceNumber: "INV-2338", issueDate: "2024-05-10", dueDate: "2024-05-25", customerName: "SP Logistics", status: "Sent", totalAmount: 1840 } ],
+      purchaseBills: [ { billNumber: "BILL-778", billDate: "2024-05-10", supplierName: "Jaya Supplies", status: "Unpaid", totalAmount: 1200 }, { billNumber: "BILL-777", billDate: "2024-05-08", supplierName: "Cahaya Print", status: "Scheduled", totalAmount: 870 }, { billNumber: "BILL-776", billDate: "2024-05-05", supplierName: "Alpha Freight", status: "Paid", totalAmount: 2150 } ],
+      bankAccounts: [ { name: "Maybank 5649", type: "Current", balance: 21300, lastReconciledAt: "2024-05-12T13:40:00" }, { name: "CIMB 8871", type: "Savings", balance: 16450, lastReconciledAt: "2024-05-12T10:10:00" }, { name: "Cash on Hand", type: "Petty Cash", balance: 950, lastReconciledAt: "2024-05-11T18:20:00" } ],
+      bankTransactions: [ { transactionDate: "2024-05-12", transactionType: "Invoice", reference: "INV-2301", amount: 5000, direction: "IN" }, { transactionDate: "2024-05-11", transactionType: "Payroll", reference: "PAY-0524", amount: 12400, direction: "OUT" }, { transactionDate: "2024-05-10", transactionType: "Transfer", reference: "TRF-220", amount: 2000, direction: "IN" } ],
+      inventory: [ { sku: "PROD-1001", name: "Printer Ink XL", category: "Consumable", stockOnHand: 120, unitPrice: 89.9, serviceFlag: false }, { sku: "SERV-2003", name: "Maintenance Package", category: "Service", stockOnHand: null, unitPrice: 350, serviceFlag: true }, { sku: "PROD-1002", name: "Thermal Paper Roll", category: "Stationery", stockOnHand: 340, unitPrice: 4.5, serviceFlag: false } ],
+      stockAdjustments: [ { adjustmentDate: "2024-05-09", sku: "PROD-1002", quantity: 50, reason: "Tambah stok" }, { adjustmentDate: "2024-05-08", sku: "PROD-1001", quantity: -5, reason: "Stok rosak" }, { adjustmentDate: "2024-05-07", sku: "PROD-1002", quantity: 100, reason: "Pelarasan awal Q2" } ],
+      contacts: [ { name: "Maju Trading", contactType: "CUSTOMER", email: "finance@majutrade.my", phone: "03-4555 9900", balance: 3450 }, { name: "Jaya Supplies", contactType: "SUPPLIER", email: "hello@jayasupplies.com", phone: "03-2288 7719", balance: -870 }, { name: "Alpha Sdn Bhd", contactType: "CUSTOMER", email: "ap@alpha.com.my", phone: "03-4411 2233", balance: 7200 } ],
+      balanceSheet: [ { title: "Aset Semasa", amount: 75600 }, { title: "Aset Tetap", amount: 122000 }, { title: "Liabiliti Semasa", amount: -43800 }, { title: "Ekuiti Pemilik", amount: -153800 } ],
+      profitLoss: [ { title: "Jualan Bersih", amount: 125430 }, { title: "Kos Jualan", amount: -79800 }, { title: "Perbelanjaan Operasi", amount: -93410 }, { title: "Keuntungan Bersih", amount: 36220 } ],
+      cashFlowReport: [ { title: "Operasi", amount: 18800 }, { title: "Pelaburan", amount: -3200 }, { title: "Pembiayaan", amount: 3400 } ],
+      journalEntries: [ { entryDate: "2024-05-12", reference: "JE-2301", description: "Invoice INV-2340", debitAccount: "Accounts Receivable", creditAccount: "Sales", debitAmount: 3450, creditAmount: 3450 }, { entryDate: "2024-05-10", reference: "JE-2299", description: "Bayaran sewa", debitAccount: "Rent Expense", creditAccount: "Bank", debitAmount: 2800, creditAmount: 2800 } ],
+      chartOfAccounts: [ { code: "1000", name: "Aset Semasa", accountType: "ASSET" }, { code: "1100", name: "Akaun Bank", accountType: "ASSET" }, { code: "1200", name: "Akaun Belum Terima", accountType: "ASSET" }, { code: "2000", name: "Liabiliti Semasa", accountType: "LIABILITY" }, { code: "4000", name: "Jualan", accountType: "INCOME" }, { code: "5000", name: "Kos Barang Jualan", accountType: "EXPENSE" }, { code: "6000", name: "Perbelanjaan Operasi", accountType: "EXPENSE" } ]
+    };
+
+    function formatMYR(amount) { if (amount === null || amount === undefined) { return "-"; } return new Intl.NumberFormat("ms-MY", { style: "currency", currency: "MYR" }).format(Number(amount)); }
+    function formatDate(d) { if (!d) return "-"; const x = new Date(d); if (Number.isNaN(x.getTime())) return d; return x.toLocaleDateString("ms-MY"); }
+    async function fetchFromApi(url, key) { try { const r = await fetch(url, { credentials: "include" }); if (r.status === 401) { showLogin(); throw new Error("401"); } if (!r.ok) throw new Error("Gagal panggil "+url); return await r.json(); } catch (e) { console.warn("Mock "+url, e.message); return mockData[key]; } }
+
+    async function renderDashboard() {
+      const s = await fetchFromApi("/api/dashboard/summary", "summary");
+      cards.invoiceTotal.textContent = formatMYR(s.invoiceTotal ?? s.invoice_total ?? mockData.summary.invoiceTotal);
+      cards.invoiceMeta.textContent = s.invoiceChange ?? s.invoice_change ?? mockData.summary.invoiceChange;
+      cards.billsTotal.textContent = formatMYR(s.billsTotal ?? s.bills_total ?? mockData.summary.billsTotal);
+      cards.billsMeta.textContent = s.billsMeta ?? s.bills_meta ?? mockData.summary.billsMeta;
+      cards.profitLoss.textContent = formatMYR(s.netProfit ?? s.net_profit ?? mockData.summary.netProfit);
+      cards.profitMeta.textContent = s.profitMeta ?? s.profit_meta ?? mockData.summary.profitMeta;
+      cards.cashFlow.textContent = formatMYR(s.cashOnHand ?? s.cash_on_hand ?? mockData.summary.cashOnHand);
+      cards.cashMeta.textContent = s.cashMeta ?? s.cash_meta ?? mockData.summary.cashMeta;
+
+      const cf = await fetchFromApi("/api/dashboard/cashflow", "cashflow");
+      cashflowTable.innerHTML = cf.map(row => {
+        const i=row.moneyIn??row.money_in; const o=row.moneyOut??row.money_out;
+        return `<tr><td>${formatDate(row.date)}</td><td>${row.type??row.transactionType??'-'}</td><td>${row.reference??'-'}</td><td>${i?formatMYR(i):'-'}</td><td>${o?formatMYR(o):'-'}</td><td>${formatMYR(row.balance)}</td></tr>`;
+      }).join("");
+
+      const rs = await fetchFromApi("/api/dashboard/recent-sales", "recentSales");
+      recentSales.innerHTML = rs.map(item => {
+        const st=item.status??item.statusLabel??'Pending';
+        return `<tr><td>${item.invoiceNumber??item.invoice_number}</td><td>${item.customer??item.customerName}</td><td><span class="badge ${statusColor(st)}">${st}</span></td><td>${formatMYR(item.amount??item.totalAmount)}</td></tr>`;
+      }).join("");
+    }
+
+    async function renderSales() {
+      const orders = await fetchFromApi("/api/sales/orders", "salesOrders");
+      salesCount.textContent = `${orders.length} order aktif`;
+      salesOrdersTable.innerHTML = orders.map(item => {
+        const st=item.status??'Draft';
+        return `<tr><td>${item.documentNumber??item.docNumber}</td><td>${formatDate(item.orderDate)}</td><td>${item.customerName}</td><td><span class="badge ${statusColor(st)}">${st}</span></td><td>${formatMYR(item.totalAmount)}</td><td><button class="ghost-btn">Lihat</button></td></tr>`;
+      }).join("");
+
+      const invoices = await fetchFromApi("/api/sales/invoices", "salesInvoices");
+      salesInvoicesTable.innerHTML = invoices.map(item => {
+        const st=item.status??'Draft';
+        return `<tr><td>${item.invoiceNumber}</td><td>${formatDate(item.issueDate)}</td><td>${formatDate(item.dueDate)}</td><td>${item.customerName}</td><td><span class="badge ${statusColor(st)}">${st}</span></td><td>${formatMYR(item.totalAmount)}</td></tr>`;
+      }).join("");
+    }
+
+    async function renderPurchases() {
+      const bills = await fetchFromApi("/api/purchases/bills", "purchaseBills");
+      billsCount.textContent = `${bills.length} bil`;
+      purchaseBillsTable.innerHTML = bills.map(item => {
+        const st=item.status??'Draft';
+        return `<tr><td>${item.billNumber}</td><td>${formatDate(item.billDate)}</td><td>${item.supplierName}</td><td><span class="badge ${statusColor(st)}">${st}</span></td><td>${formatMYR(item.totalAmount)}</td></tr>`;
+      }).join("");
+    }
+
+    async function renderBank() {
+      const accounts = await fetchFromApi("/api/bank/accounts", "bankAccounts");
+      bankAccountsTable.innerHTML = accounts.map(item => `<tr><td>${item.name}</td><td>${item.type}</td><td>${formatMYR(item.balance)}</td><td>${item.lastReconciledAt?formatDate(item.lastReconciledAt):'-'}</td></tr>`).join("");
+
+      const txs = await fetchFromApi("/api/bank/transactions", "bankTransactions");
+      bankTransactionsTable.innerHTML = txs.map(item => `<tr><td>${formatDate(item.transactionDate)}</td><td>${item.transactionType}</td><td>${item.reference??'-'}</td><td>${formatMYR(item.direction==='OUT'?-Math.abs(item.amount):item.amount)}</td></tr>`).join("");
+    }
+
+    async function renderProducts() {
+      const products = await fetchFromApi("/api/products/items", "inventory");
+      inventoryTable.innerHTML = products.map(item => {
+        const st=item.serviceFlag?"Service":((Number(item.stockOnHand??0)<50)?"Low Stock":"Available");
+        return `<tr><td>${item.sku}</td><td>${item.name}</td><td>${item.category??'-'}</td><td>${item.stockOnHand??'-'}</td><td>${formatMYR(item.unitPrice)}</td><td><span class="badge ${statusColor(st)}">${st}</span></td></tr>`;
+      }).join("");
+
+      const adjs = await fetchFromApi("/api/products/stock-adjustments", "stockAdjustments");
+      stockAdjustmentsList.innerHTML = adjs.map(item => `<li>${formatDate(item.adjustmentDate)} · ${item.sku} (${item.quantity}) — ${item.reason??'-'}</li>`).join("");
+    }
+
+    async function renderContacts() {
+      const contacts = await fetchFromApi("/api/contacts", "contacts");
+      contactsTable.innerHTML = contacts.map(item => `<tr><td>${item.name}</td><td>${item.contactType}</td><td>${item.email??'-'}</td><td>${item.phone??'-'}</td><td>${formatMYR(item.balance??0)}</td></tr>`).join("");
+    }
+
+    async function renderReports() {
+      const bs = await fetchFromApi("/api/reports/balance-sheet", "balanceSheet");
+      balanceSheetTable.innerHTML = bs.map(item => `<tr><td>${item.title??item.account}</td><td>${formatMYR(item.amount)}</td></tr>`).join("");
+
+      const pl = await fetchFromApi("/api/reports/profit-loss", "profitLoss");
+      profitLossTable.innerHTML = pl.map(item => `<tr><td>${item.title}</td><td>${formatMYR(item.amount)}</td></tr>`).join("");
+
+      const cf = await fetchFromApi("/api/reports/cash-flow", "cashFlowReport");
+      cashFlowReportTable.innerHTML = cf.map(item => `<tr><td>${item.title}</td><td>${formatMYR(item.amount)}</td></tr>`).join("");
+    }
+
+    async function renderAccounting() {
+      const js = await fetchFromApi("/api/accounting/journals", "journalEntries");
+      journalTable.innerHTML = js.map(item => `<tr><td>${formatDate(item.entryDate)}</td><td>${item.reference??'-'}</td><td>${item.description??'-'}</td><td>${item.debitAccount??'-'} ${item.debitAmount?formatMYR(item.debitAmount):''}</td><td>${item.creditAccount??'-'} ${item.creditAmount?formatMYR(item.creditAmount):''}</td></tr>`).join("");
+
+      const chart = await fetchFromApi("/api/accounting/chart", "chartOfAccounts");
+      coaList.innerHTML = chart.map(item => `${item.code} · ${item.name} (${item.accountType??item.type??'-'})`).map(x => `<li>${x}</li>`).join("");
+    }
+
+    function statusColor(s){const n=(s||'').toString().toLowerCase(); if(["paid","confirmed","available","delivered"].some(w=>n.includes(w)))return"green"; if(["partial","scheduled","low","draft","sent"].some(w=>n.includes(w)))return"amber"; return"blue"}
+
+    async function showSection(name){
+      sections.forEach(sec=>sec.classList.toggle("visible",sec.dataset.section===name));
+      sectionButtons.forEach(b=>b.classList.toggle("active",b.dataset.sectionTarget===name));
+      switch(name){
+        case "dashboard": await renderDashboard(); break;
+        case "sales": await renderSales(); break;
+        case "purchases": await renderPurchases(); break;
+        case "bank": await renderBank(); break;
+        case "products": await renderProducts(); break;
+        case "contacts": await renderContacts(); break;
+        case "reports": await renderReports(); break;
+        case "accounting": await renderAccounting(); break;
+      }
+    }
+
+    sectionButtons.forEach(button=>button.addEventListener("click",()=>{showSection(button.dataset.sectionTarget);}));
+    refreshDashboardBtn.addEventListener("click",()=>showSection("dashboard"));
+
+    addSalesBtn.addEventListener("click", async ()=>{
+      const payload={ documentNumber:`SO-${Math.floor(Math.random()*9000+1000)}`, orderDate:new Date().toISOString().slice(0,10), customerName:"Pelanggan Baharu", status:"Draft", totalAmount:Math.round(Math.random()*4000+1500), notes:"Order demo dari dashboard"};
+      try{
+        const r=await fetch("/api/sales/orders",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify(payload)});
+        if(!r.ok) throw new Error("Gagal tambah order");
+        await renderSales();
+      }catch(e){
+        console.warn("Fallback order mock", e.message);
+        mockData.salesOrders.unshift({ docNumber:payload.documentNumber, orderDate:payload.orderDate, customerName:payload.customerName, status:payload.status, totalAmount:payload.totalAmount});
+        await renderSales();
+      }
+    });
+
+    function showDashboardAfterLogin(){ overlay.style.display="none"; sessionStorage.setItem("hafjetLoggedIn","true"); showSection("dashboard"); }
+    function showLogin(){ overlay.style.display="flex"; sessionStorage.removeItem("hafjetLoggedIn"); }
+
+    loginForm.addEventListener("submit", async (e)=>{
+      e.preventDefault(); loginError.textContent="";
+      const fd=new FormData(loginForm);
+      const payload={ email:fd.get("email"), password:fd.get("password")};
+      try{
+        const r=await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify(payload)});
+        if(!r.ok) throw new Error("Emel atau kata laluan salah.");
+        showDashboardAfterLogin();
+      }catch(err){ loginError.textContent=err.message; }
+    });
+
+    logoutBtn.addEventListener("click", async ()=>{ try{ await fetch("/api/auth/logout",{method:"POST",credentials:"include"}); } finally { showLogin(); }});
+
+    if(sessionStorage.getItem("hafjetLoggedIn")==="true"){ overlay.style.display="none"; showSection("dashboard"); } else { overlay.style.display="flex"; }
+  </script>
+</body>
+</html>
+
