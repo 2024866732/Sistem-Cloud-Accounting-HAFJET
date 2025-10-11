@@ -1,0 +1,95 @@
+/* Sidebar Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* Smooth transitions */
+.sidebar-enter {
+  transform: translateX(-100%);
+}
+
+.sidebar-enter-active {
+  transform: translateX(0);
+  transition: transform 300ms ease-out;
+}
+
+.sidebar-exit {
+  transform: translateX(0);
+}
+
+.sidebar-exit-active {
+  transform: translateX(-100%);
+  transition: transform 300ms ease-in;
+}
+
+/* Submenu animations */
+.submenu-enter {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.submenu-enter-active {
+  max-height: 500px;
+  opacity: 1;
+  transition: max-height 300ms ease-out, opacity 200ms ease-out;
+}
+
+.submenu-exit {
+  max-height: 500px;
+  opacity: 1;
+}
+
+.submenu-exit-active {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 300ms ease-in, opacity 200ms ease-in;
+}
+
+/* Active menu indicator */
+.menu-item-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: linear-gradient(to bottom, #06b6d4, #3b82f6);
+  border-radius: 0 2px 2px 0;
+}
+
+/* Hover effects */
+.menu-item:hover .menu-icon {
+  transform: scale(1.1);
+  transition: transform 150ms ease-out;
+}
+
+/* Badge pulse animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.badge-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
