@@ -65,16 +65,23 @@ jobs:
           echo "Railway API Response:"
           echo "$RESPONSE" | jq '.'
           
-          # Extract domains (adjust based on your project structure)
-          # This example assumes first project, first service
-          BACKEND_DOMAIN=$(echo "$RESPONSE" | jq -r '.data.me.projects.edges[0].node.services.edges[] | select(.node.name | contains("backend") or contains("api")) | .node.domains.serviceDomains[0].domain' | head -n1)
-          FRONTEND_DOMAIN=$(echo "$RESPONSE" | jq -r '.data.me.projects.edges[0].node.services.edges[] | select(.node.name | contains("frontend") or contains("web")) | .node.domains.serviceDomains[0].domain' | head -n1)
+          # Extract domains - Updated to match actual Railway service names
+          # Service name: "HAFJET CLOUD ACCOUNTING SYSTEM" (case-insensitive match)
+          BACKEND_DOMAIN=$(echo "$RESPONSE" | jq -r '.data.me.projects.edges[0].node.services.edges[] | select(.node.name | test("HAFJET|CLOUD|ACCOUNTING|backend|api"; "i")) | .node.domains.serviceDomains[0].domain' | head -n1)
+          
+          # Use same domain for frontend since HAFJET serves both backend + frontend
+          # If you have separate frontend service, adjust the filter accordingly
+          FRONTEND_DOMAIN=$(echo "$RESPONSE" | jq -r '.data.me.projects.edges[0].node.services.edges[] | select(.node.name | test("frontend|web|HAFJET"; "i")) | .node.domains.serviceDomains[0].domain' | head -n1)
+          
+          # If frontend domain not found, use backend domain (same service)
+          FRONTEND_DOMAIN=${FRONTEND_DOMAIN:-$BACKEND_DOMAIN}
+          
           SERVICE_NAME=$(echo "$RESPONSE" | jq -r '.data.me.projects.edges[0].node.services.edges[0].node.name' | head -n1)
           
           # Fallback to placeholder if not found
           BACKEND_DOMAIN=${BACKEND_DOMAIN:-"backend-not-found.railway.app"}
           FRONTEND_DOMAIN=${FRONTEND_DOMAIN:-"frontend-not-found.railway.app"}
-          SERVICE_NAME=${SERVICE_NAME:-"hafjet-bukku"}
+          SERVICE_NAME=${SERVICE_NAME:-"HAFJET CLOUD ACCOUNTING SYSTEM"}
           
           echo "✅ Discovered:"
           echo "  Backend Domain: $BACKEND_DOMAIN"
