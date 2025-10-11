@@ -1,3 +1,31 @@
 ﻿---
+name: Release
+on:
+
+  push:
+    branches: [ "main" ]
+
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies (frontend)
+        run: |
+          cd frontend || exit 0
+          npm ci
+
+      - name: Build frontend (if present)
+        run: |
+          cd frontend || exit 0
+          npm run build || echo 'no frontend build step'
 
 
