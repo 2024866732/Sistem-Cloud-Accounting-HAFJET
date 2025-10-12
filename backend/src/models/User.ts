@@ -56,8 +56,8 @@ const UserSchema = new Schema<IUser>({
   },
   email: { 
     type: String, 
-    required: true, 
-    unique: true, 
+    required: true,
+    // Do not set global unique here; we enforce uniqueness per company via a compound index below
     lowercase: true,
     trim: true,
     index: true,
@@ -143,7 +143,7 @@ const UserSchema = new Schema<IUser>({
   timestamps: true
 });
 
-// Indexes for performance
+// Indexes for performance & scoped uniqueness (allow same email in different companies)
 UserSchema.index({ companyId: 1, email: 1 }, { unique: true });
 UserSchema.index({ companyId: 1, status: 1 });
 UserSchema.index({ companyId: 1, role: 1 });
