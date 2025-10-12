@@ -23,7 +23,7 @@ jobs:
       FRONTEND_PATH: frontend
       IMAGE_OWNER: ${{ github.repository_owner }}
       IMAGE_TAG: ${{ github.sha }}
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -52,7 +52,7 @@ jobs:
         working-directory: ${{ env.BACKEND_PATH }}
         run: |
           npm ci --ignore-scripts --legacy-peer-deps || npm install --legacy-peer-deps
-          
+
       - name: Build backend
         working-directory: ${{ env.BACKEND_PATH }}
         run: |
@@ -163,7 +163,7 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           echo "🚀 Starting Railway deployment..."
-          
+
           # Try to deploy with different commands
           if railway up --detach 2>/dev/null; then
             echo "✅ Deployed using 'railway up'"
@@ -201,26 +201,26 @@ jobs:
             echo "💡 Add RAILWAY_BACKEND_URL secret after first deployment"
             exit 0
           fi
-          
+
           echo "🏥 Health check: $BACKEND_URL/api/health"
-          
+
           for i in {1..30}; do
             status=$(curl -s -o /dev/null -w "%{http_code}" "${BACKEND_URL}/api/health" 2>/dev/null || echo "000")
-            
+
             if [ "$status" = "200" ]; then
               echo "✅ Health check PASSED (attempt $i)"
-              
+
               # Test additional endpoints
               echo "Testing /api/auth/status..."
               curl -s "${BACKEND_URL}/api/auth/status" || echo "Auth endpoint check"
-              
+
               exit 0
             fi
-            
+
             echo "⏳ Attempt $i/30: HTTP $status - Waiting 10s..."
             sleep 10
           done
-          
+
           echo "⚠️ Health check timeout after 30 attempts"
           echo "Backend may still be starting - check Railway logs"
           exit 0
@@ -239,7 +239,7 @@ jobs:
           echo "  ✅ Frontend built successfully"
           echo "  ✅ Docker images built"
           echo ""
-          
+
           if [ "${{ steps.check-ghcr.outputs.available }}" = "true" ]; then
             echo "📦 Container Registry:"
             echo "  ✅ Images pushed to ghcr.io"
@@ -251,7 +251,7 @@ jobs:
             echo "  💡 Add GHCR_PAT secret to enable image registry"
           fi
           echo ""
-          
+
           if [ "${{ steps.check-railway.outputs.available }}" = "true" ]; then
             echo "🚂 Railway Deployment:"
             echo "  ✅ Deployment triggered successfully"

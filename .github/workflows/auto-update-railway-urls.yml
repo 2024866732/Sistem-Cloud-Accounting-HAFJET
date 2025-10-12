@@ -1,4 +1,4 @@
-﻿---
+---
 name: Auto-Update Railway URLs
 
 on:
@@ -29,46 +29,46 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          echo "🔍 Querying Railway API for deployed services..."
-          
+          echo "?? Querying Railway API for deployed services..."
+
           # Railway GraphQL API endpoint
           RAILWAY_API="https://backboard.railway.app/graphql/v2"
-          
+
           # Query to get all projects and their deployments
           QUERY='{"query":"query { me { projects { edges { node { id name services { edges { node { id name domains { serviceDomains { domain } } } } } } } } } }"}'
-          
+
           # Call Railway API
           RESPONSE=$(curl -s -X POST "$RAILWAY_API" \
             -H "Authorization: Bearer $RAILWAY_TOKEN" \
             -H "Content-Type: application/json" \
             -d "$QUERY")
-          
+
           echo "Railway API Response:"
           echo "$RESPONSE" | jq '.'
-          
+
           # Extract domains - Updated to match actual Railway service names
           # Service name: "HAFJET CLOUD ACCOUNTING SYSTEM" (case-insensitive match)
           BACKEND_DOMAIN=$(echo "$RESPONSE" | jq -r '.data.me.projects.edges[0].node.services.edges[] | select(.node.name | test("HAFJET|CLOUD|ACCOUNTING|backend|api"; "i")) | .node.domains.serviceDomains[0].domain' | head -n1)
-          
+
           # Use same domain for frontend since HAFJET serves both backend + frontend
           # If you have separate frontend service, adjust the filter accordingly
           FRONTEND_DOMAIN=$(echo "$RESPONSE" | jq -r '.data.me.projects.edges[0].node.services.edges[] | select(.node.name | test("frontend|web|HAFJET"; "i")) | .node.domains.serviceDomains[0].domain' | head -n1)
-          
+
           # If frontend domain not found, use backend domain (same service)
           FRONTEND_DOMAIN=${FRONTEND_DOMAIN:-$BACKEND_DOMAIN}
-          
+
           SERVICE_NAME=$(echo "$RESPONSE" | jq -r '.data.me.projects.edges[0].node.services.edges[0].node.name' | head -n1)
-          
+
           # Fallback to placeholder if not found
           BACKEND_DOMAIN=${BACKEND_DOMAIN:-"backend-not-found.railway.app"}
           FRONTEND_DOMAIN=${FRONTEND_DOMAIN:-"frontend-not-found.railway.app"}
           SERVICE_NAME=${SERVICE_NAME:-"HAFJET CLOUD ACCOUNTING SYSTEM"}
-          
-          echo "✅ Discovered:"
+
+          echo "? Discovered:"
           echo "  Backend Domain: $BACKEND_DOMAIN"
           echo "  Frontend Domain: $FRONTEND_DOMAIN"
           echo "  Service Name: $SERVICE_NAME"
-          
+
           # Set outputs for next steps
           echo "backend_domain=$BACKEND_DOMAIN" >> $GITHUB_OUTPUT
           echo "frontend_domain=$FRONTEND_DOMAIN" >> $GITHUB_OUTPUT
@@ -79,7 +79,7 @@ jobs:
       - name: Update .env.example
         run: |
           echo "Updating .env.example with discovered Railway URLs..."
-          
+
           # For now, we'll point both to the same backend URL as an example
           sed -i "s|^RAILWAY_FRONTEND_URL=.*|RAILWAY_FRONTEND_URL=${{ github.event.deployment_status.environment_url }}|" .env.example
           echo "Updated .env.example"

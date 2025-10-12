@@ -42,9 +42,9 @@ jobs:
         run: |
           URL="${{ steps.env_url.outputs.url }}/health"
           echo "Checking health endpoint: $URL"
-          
+
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || echo "000")
-          
+
           if [ "$RESPONSE" = "200" ]; then
             echo "✓ Health check passed (HTTP 200)"
             echo "status=success" >> $GITHUB_OUTPUT
@@ -58,9 +58,9 @@ jobs:
         run: |
           URL="${{ steps.env_url.outputs.url }}/health/db"
           echo "Checking database connection: $URL"
-          
+
           RESPONSE=$(curl -s "$URL" || echo '{"status":"error"}')
-          
+
           if echo "$RESPONSE" | grep -q '"status":"ok"'; then
             echo "✓ Database connection OK"
           else
@@ -92,26 +92,26 @@ jobs:
       - name: Test API Endpoints
         run: |
           BASE_URL="${{ steps.env_url.outputs.url }}"
-          
+
           echo "Testing public endpoints..."
-          
+
           # Test health endpoint
           curl -f "$BASE_URL/health" || exit 1
           echo "✓ Health endpoint OK"
-          
+
           # Test API info
           curl -f "$BASE_URL/api" || exit 1
           echo "✓ API info endpoint OK"
-          
+
           echo "✓ All smoke tests passed"
 
       - name: Verify API Response Structure
         run: |
           BASE_URL="${{ steps.env_url.outputs.url }}"
-          
+
           # Check API returns valid JSON
           RESPONSE=$(curl -s "$BASE_URL/api")
-          
+
           if echo "$RESPONSE" | jq -e '.name' >/dev/null 2>&1; then
             echo "✓ API returns valid JSON structure"
           else
@@ -132,13 +132,13 @@ jobs:
           echo "Environment: **${{ inputs.environment }}**" >> $GITHUB_STEP_SUMMARY
           echo "Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           if [ "${{ needs.healthcheck.result }}" = "success" ]; then
             echo "✅ Health Check: PASSED" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ Health Check: FAILED" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           if [ "${{ needs.smoke-tests.result }}" = "success" ]; then
             echo "✅ Smoke Tests: PASSED" >> $GITHUB_STEP_SUMMARY
           else
