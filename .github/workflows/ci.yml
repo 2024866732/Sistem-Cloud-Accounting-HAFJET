@@ -13,21 +13,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run secret-check template
+      - name: Check optional secrets
         id: secretcheck
-        uses: ./.github/workflows/ci-templates/secret-check.yml
+        run: |
+          echo "Checking optional secrets..."
+          if [ -n "${{ secrets.GHCRPAT }}" ]; then
+            echo "ghcrpat=true" >> $GITHUB_OUTPUT
+            echo "✓ GHCRPAT secret available"
+          else
+            echo "ghcrpat=false" >> $GITHUB_OUTPUT
+            echo "⚠ GHCRPAT secret not set (optional)"
+          fi
+          if [ -n "${{ secrets.KUBECONFIG }}" ]; then
+            echo "kubeconfig=true" >> $GITHUB_OUTPUT
+            echo "✓ KUBECONFIG secret available"
+          else
+            echo "kubeconfig=false" >> $GITHUB_OUTPUT
+            echo "⚠ KUBECONFIG secret not set (optional)"
+          fi
 
       - name: Verify backend lockfile
         run: |
           cd backend
-          ../../scripts/verify-lockfile.sh
+          bash ../scripts/verify-lockfile.sh
 
       - name: Verify frontend lockfile
+        continue-on-error: true
         run: |
           cd frontend
-          ../../scripts/verify-lockfile.sh || true
+          bash ../scripts/verify-lockfile.sh || echo "Frontend lockfile verification failed (non-fatal)"
 
       - name: Validate required environment (non-fatal in CI)
+        continue-on-error: true
         run: |
           bash ./scripts/validate-env.sh || echo "Environment validation returned non-zero (CI may not have production env vars)"
 
