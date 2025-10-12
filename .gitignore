@@ -39,3 +39,11 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Temporary files
+tmp_*
+run-*
+services-*.txt
+whoami.txt
+runpage.html
+*.tmp
