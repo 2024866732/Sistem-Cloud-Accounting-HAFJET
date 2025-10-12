@@ -1,0 +1,146 @@
+name: Post-Deployment Verification
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to verify'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to verify'
+        required: true
+        type: string
+
+jobs:
+  healthcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set environment URL
+        id: env_url
+        run: |
+          if [ "${{ inputs.environment }}" = "production" ]; then
+            echo "url=${{ secrets.RAILWAY_BACKEND_URL }}" >> $GITHUB_OUTPUT
+          else
+            echo "url=${{ secrets.RAILWAY_STAGING_URL }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Wait for deployment to stabilize
+        run: sleep 30
+
+      - name: Health Check
+        id: health
+        run: |
+          URL="${{ steps.env_url.outputs.url }}/health"
+          echo "Checking health endpoint: $URL"
+          
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || echo "000")
+          
+          if [ "$RESPONSE" = "200" ]; then
+            echo "✓ Health check passed (HTTP 200)"
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Health check failed (HTTP $RESPONSE)"
+            echo "status=failure" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Database Connection Check
+        run: |
+          URL="${{ steps.env_url.outputs.url }}/health/db"
+          echo "Checking database connection: $URL"
+          
+          RESPONSE=$(curl -s "$URL" || echo '{"status":"error"}')
+          
+          if echo "$RESPONSE" | grep -q '"status":"ok"'; then
+            echo "✓ Database connection OK"
+          else
+            echo "⚠ Database check returned: $RESPONSE"
+          fi
+        continue-on-error: true
+
+  smoke-tests:
+    runs-on: ubuntu-latest
+    needs: healthcheck
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set environment URL
+        id: env_url
+        run: |
+          if [ "${{ inputs.environment }}" = "production" ]; then
+            echo "url=${{ secrets.RAILWAY_BACKEND_URL }}" >> $GITHUB_OUTPUT
+          else
+            echo "url=${{ secrets.RAILWAY_STAGING_URL }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Test API Endpoints
+        run: |
+          BASE_URL="${{ steps.env_url.outputs.url }}"
+          
+          echo "Testing public endpoints..."
+          
+          # Test health endpoint
+          curl -f "$BASE_URL/health" || exit 1
+          echo "✓ Health endpoint OK"
+          
+          # Test API info
+          curl -f "$BASE_URL/api" || exit 1
+          echo "✓ API info endpoint OK"
+          
+          echo "✓ All smoke tests passed"
+
+      - name: Verify API Response Structure
+        run: |
+          BASE_URL="${{ steps.env_url.outputs.url }}"
+          
+          # Check API returns valid JSON
+          RESPONSE=$(curl -s "$BASE_URL/api")
+          
+          if echo "$RESPONSE" | jq -e '.name' >/dev/null 2>&1; then
+            echo "✓ API returns valid JSON structure"
+          else
+            echo "⚠ API response validation failed"
+            echo "$RESPONSE"
+          fi
+        continue-on-error: true
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [healthcheck, smoke-tests]
+    if: always()
+    steps:
+      - name: Post-deployment summary
+        run: |
+          echo "## Post-Deployment Verification Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Environment: **${{ inputs.environment }}**" >> $GITHUB_STEP_SUMMARY
+          echo "Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.healthcheck.result }}" = "success" ]; then
+            echo "✅ Health Check: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Health Check: FAILED" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.smoke-tests.result }}" = "success" ]; then
+            echo "✅ Smoke Tests: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Smoke Tests: FAILED" >> $GITHUB_STEP_SUMMARY
+          fi

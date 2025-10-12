@@ -1,0 +1,72 @@
+name: Backup & Restore Test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0' # Run weekly on Sunday
+
+jobs:
+  test-backup-restore:
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Seed Database for Test
+        env:
+          MONGO_URI: mongodb://localhost:27017/hafjet-test-backup
+        run: npm run build:backend && node backend/dist/utils/seed.js
+
+      - name: Run Backup Script
+        env:
+          MONGO_URI: mongodb://localhost:27017/hafjet-test-backup
+          BACKUP_DIR: ./test-backups
+        run: bash ./scripts/backup_restore.sh backup
+
+      - name: Verify Backup File
+        run: |
+          if [ -z "$(ls -A ./test-backups)" ]; then
+            echo "❌ Backup directory is empty!"
+            exit 1
+          fi
+          echo "✅ Backup file created successfully."
+
+      - name: Drop Database to Simulate Restore Scenario
+        env:
+          MONGO_URI: mongodb://localhost:27017/hafjet-test-backup
+        run: |
+          npm install -g mongodb-shell
+          mongosh "$MONGO_URI" --eval "db.dropDatabase()"
+          echo "Database dropped."
+
+      - name: Run Restore Script
+        env:
+          MONGO_URI: mongodb://localhost:27017/hafjet-test-backup
+          BACKUP_DIR: ./test-backups
+        run: bash ./scripts/backup_restore.sh restore
+
+      - name: Verify Restored Data
+        env:
+          MONGO_URI: mongodb://localhost:27017/hafjet-test-backup
+        run: |
+          user_count=$(mongosh "$MONGO_URI" --eval "db.getCollection('users').countDocuments()")
+          if [ "$user_count" -gt 0 ]; then
+            echo "✅ Data restored successfully. Found $user_count users."
+          else
+            echo "❌ Restore failed. No users found in database."
+            exit 1
+          fi

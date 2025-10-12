@@ -1,0 +1,112 @@
+---
+name: Docker Build & Push
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'Dockerfile'
+      - '.github/workflows/docker-build.yml'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  check-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      has-ghcr-access: ${{ steps.check.outputs.has-ghcr-access }}
+    steps:
+      - name: Check GHCRPAT availability
+        id: check
+        run: |
+          if [ -n "${{ secrets.GHCRPAT }}" ]; then
+            echo "has-ghcr-access=true" >> $GITHUB_OUTPUT
+            echo "✅ GHCRPAT available - will use GitHub Container Registry cache"
+          else
+            echo "has-ghcr-access=false" >> $GITHUB_OUTPUT
+            echo "⚠️  GHCRPAT not set - will use local cache only"
+          fi
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: check-secrets
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry (conditional)
+        if: needs.check-secrets.outputs.has-ghcr-access == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCRPAT }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image (with GHCR cache)
+        if: needs.check-secrets.outputs.has-ghcr-access == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          platforms: linux/amd64
+
+      - name: Build Docker image (local cache only)
+        if: needs.check-secrets.outputs.has-ghcr-access == 'false'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          platforms: linux/amd64
+
+      - name: Move cache (local cache only)
+        if: needs.check-secrets.outputs.has-ghcr-access == 'false'
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache || echo "No cache to move"
+
+      - name: Report build status
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Docker Build Complete"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "Cache Strategy: ${{ needs.check-secrets.outputs.has-ghcr-access == 'true' && 'GHCR Remote Cache' || 'Local Cache Only' }}"
+          echo "Push to Registry: ${{ github.event_name != 'pull_request' }}"
+          echo ""
+          if [ "${{ needs.check-secrets.outputs.has-ghcr-access }}" = "false" ]; then
+            echo "💡 Tip: Set GHCRPAT secret for faster builds with remote cache"
+          fi

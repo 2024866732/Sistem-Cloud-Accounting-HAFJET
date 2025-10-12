@@ -1,10 +1,10 @@
 ﻿---
 name: Release
+
 on:
-
   push:
-    branches: [ "main" ]
-
+    tags:
+      - 'v*.*.*'
 
 jobs:
   release:
@@ -12,20 +12,31 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for semantic-release to analyze commits
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
+          cache: 'npm'
 
-      - name: Install dependencies (frontend)
-        run: |
-          cd frontend || exit 0
-          npm ci
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
 
-      - name: Build frontend (if present)
+      - name: Verify Git status
         run: |
-          cd frontend || exit 0
-          npm run build || echo 'no frontend build step'
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "Git directory is not clean after npm ci. Aborting."
+            git status
+            exit 1
+          fi
+          echo "Git directory is clean."
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
 
 
