@@ -32,16 +32,16 @@ jobs:
             echo "⚠ KUBECONFIG secret not set (optional)"
           fi
 
-      - name: Verify backend lockfile
+      - name: Verify workspace lockfile
         run: |
-          cd backend
-          bash ../scripts/verify-lockfile.sh
-
-      - name: Verify frontend lockfile
-        continue-on-error: true
-        run: |
-          cd frontend
-          bash ../scripts/verify-lockfile.sh || echo "Frontend lockfile verification failed (non-fatal)"
+          echo "Verifying npm workspace lockfile..."
+          npm_output=$(npm install --dry-run --package-lock-only 2>&1)
+          if [ $? -ne 0 ]; then
+            echo "❌ Lockfile verification failed"
+            echo "$npm_output"
+            exit 1
+          fi
+          echo "✓ Workspace lockfile is valid"
 
       - name: Validate required environment (non-fatal in CI)
         continue-on-error: true
@@ -57,12 +57,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install frontend deps
-        working-directory: frontend
-        run: npm ci --ignore-scripts --legacy-peer-deps
+          cache: 'npm'
+      - name: Install workspace dependencies
+        run: npm ci --ignore-scripts
       - name: Build frontend
-        working-directory: frontend
-        run: npm run build
+        run: npm run build:frontend
 
   test-backend:
     runs-on: ubuntu-latest
@@ -73,14 +72,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install backend deps
-        working-directory: backend
-        run: npm ci --ignore-scripts --legacy-peer-deps
+          cache: 'npm'
+      - name: Install workspace dependencies
+        run: npm ci --ignore-scripts
+      - name: Build backend
+        run: npm run build:backend
       - name: Run backend tests (if exist)
-        working-directory: backend
-        run: |
-          if [ -f package.json ] && jq -e '.scripts.test' package.json >/dev/null 2>&1; then
-            npm test || true
-          else
-            echo "No tests defined"
-          fi
+        run: npm run test:backend || echo "No tests or tests failed (non-fatal)"
+        continue-on-error: true
