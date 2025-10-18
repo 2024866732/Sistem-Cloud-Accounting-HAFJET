@@ -123,7 +123,7 @@ router.post('/:id/submit-einvoice', authenticateToken, authorize('invoice.submit
     const supplier = buildSupplier();
     const einvoiceDoc: EInvoiceDoc = {
       id: invoice.invoiceNumber,
-      issueDate: invoice.issueDate,
+      issueDate: invoice.issueDate instanceof Date ? invoice.issueDate.toISOString().split('T')[0] : invoice.issueDate,
       issueTime: '12:00:00',
       invoiceType: '01',
       invoiceNumber: invoice.invoiceNumber,
@@ -171,7 +171,7 @@ router.post('/:id/validate-einvoice', authenticateToken, async (req, res) => {
     const supplier = buildSupplier();
     const einvoiceDoc: EInvoiceDoc = {
       id: invoice.invoiceNumber,
-      issueDate: invoice.issueDate,
+      issueDate: invoice.issueDate instanceof Date ? invoice.issueDate.toISOString().split('T')[0] : invoice.issueDate,
       issueTime: '12:00:00',
       invoiceType: '01',
       invoiceNumber: invoice.invoiceNumber,

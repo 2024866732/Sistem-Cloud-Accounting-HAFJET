@@ -120,7 +120,7 @@ router.post('/', authenticateToken, authorize('admin.manage_users'), async (req:
     });
 
     // Return user without password
-    const userResponse = user.toObject();
+    const userResponse: any = user.toObject();
     delete userResponse.password;
     delete userResponse.twoFactorSecret;
 
