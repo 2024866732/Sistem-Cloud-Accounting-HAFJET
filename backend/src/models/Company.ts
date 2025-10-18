@@ -2,18 +2,18 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ICompany extends Document {
   name: string;
-  registrationNumber: string;
-  taxNumber: string;
+  registrationNumber?: string; // Optional
+  taxNumber?: string; // Optional
   address: {
-    street: string;
-    city: string;
-    state: string;
-    postalCode: string;
+    street?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
     country: string;
   };
   contact: {
-    phone: string;
-    email: string;
+    phone?: string;
+    email: string; // Required
     website?: string;
   };
   settings: {
@@ -27,18 +27,18 @@ export interface ICompany extends Document {
 
 const CompanySchema = new Schema<ICompany>({
   name: { type: String, required: true },
-  registrationNumber: { type: String, required: true, unique: true },
-  taxNumber: { type: String, required: true },
+  registrationNumber: { type: String, required: false }, // Optional during registration
+  taxNumber: { type: String, required: false }, // Can be added later
   address: {
-    street: { type: String, required: true },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    postalCode: { type: String, required: true },
+    street: { type: String, required: false, default: '' },
+    city: { type: String, required: false, default: '' },
+    state: { type: String, required: false, default: '' },
+    postalCode: { type: String, required: false, default: '' },
     country: { type: String, default: 'Malaysia' }
   },
   contact: {
-    phone: { type: String, required: true },
-    email: { type: String, required: true },
+    phone: { type: String, required: false, default: '' },
+    email: { type: String, required: true }, // Keep email required
     website: { type: String }
   },
   settings: {

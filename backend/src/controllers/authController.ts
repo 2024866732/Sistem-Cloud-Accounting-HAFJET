@@ -120,10 +120,8 @@ export const authController = {
       // Create company first
       const company = await Company.create({
         name: companyName,
-        email: email.toLowerCase(),
         registrationNumber: `REG-${Date.now()}`,
-        taxId: `TAX-${Date.now()}`,
-        sstNumber: '',
+        taxNumber: `TAX-${Date.now()}`,
         address: {
           street: '',
           city: '',
@@ -131,12 +129,16 @@ export const authController = {
           postalCode: '',
           country: 'Malaysia'
         },
-        phone: '',
-        industry: 'General',
-        fiscalYearEnd: { month: 12, day: 31 },
-        currency: 'MYR',
-        timezone: 'Asia/Kuala_Lumpur',
-        active: true
+        contact: {
+          email: email.toLowerCase(),
+          phone: '',
+          website: ''
+        },
+        settings: {
+          currency: 'MYR',
+          language: 'en',
+          taxType: 'SST'
+        }
       });
 
       // Hash password
