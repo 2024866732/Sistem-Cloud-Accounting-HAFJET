@@ -1,26 +1,10 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import { config } from '../config/config.js';
-
-// Temporary user data for testing
-const tempUsers = [
-  {
-    id: '1',
-    email: 'admin@hafjet.com',
-    password: 'admin123',
-    name: 'Administrator',
-    role: 'admin',
-    companyId: '1'
-  },
-  {
-    id: '2',
-    email: 'user@hafjet.com', 
-    password: 'user123',
-    name: 'Test User',
-    role: 'user',
-    companyId: '1'
-  }
-];
+import User from '../models/User.js';
+import { Company } from '../models/Company.js';
+import mongoose from 'mongoose';
 
 export const authController = {
   // Login user
@@ -36,8 +20,8 @@ export const authController = {
         });
       }
 
-      // Find user (temporary implementation)
-      const user = tempUsers.find(u => u.email === email);
+      // Find user in MongoDB
+      const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
       if (!user) {
         return res.status(401).json({
           success: false,
@@ -45,8 +29,17 @@ export const authController = {
         });
       }
 
-      // Check password (temporary - plain text comparison)
-      if (user.password !== password) {
+      // Check if user is active
+      if (user.status !== 'active') {
+        return res.status(403).json({
+          success: false,
+          message: 'Account is disabled. Please contact support.'
+        });
+      }
+
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
         return res.status(401).json({
           success: false,
           message: 'Invalid email or password'
@@ -56,16 +49,19 @@ export const authController = {
       // Generate JWT token
       const token = jwt.sign(
         { 
-          id: user.id, 
+          id: user._id.toString(), 
           email: user.email, 
           role: user.role,
-          companyId: user.companyId
+          companyId: user.companyId.toString()
         },
         config.JWT_SECRET as string,
         { expiresIn: '7d' }
       );
 
-      // Update last login (would update database in real implementation)
+      // Update last login
+      user.lastLogin = new Date();
+      await user.save();
+
       console.log(`User ${user.email} logged in at ${new Date()}`);
 
       res.json({
@@ -74,11 +70,11 @@ export const authController = {
         data: {
           token,
           user: {
-            id: user.id,
+            id: user._id.toString(),
             email: user.email,
             name: user.name,
             role: user.role,
-            companyId: user.companyId
+            companyId: user.companyId.toString()
           }
         }
       });
@@ -104,8 +100,16 @@ export const authController = {
         });
       }
 
+      // Validate password strength
+      if (password.length < 8) {
+        return res.status(400).json({
+          success: false,
+          message: 'Password must be at least 8 characters long'
+        });
+      }
+
       // Check if user already exists
-      const existingUser = tempUsers.find(u => u.email === email);
+      const existingUser = await User.findOne({ email: email.toLowerCase() });
       if (existingUser) {
         return res.status(409).json({
           success: false,
@@ -113,29 +117,57 @@ export const authController = {
         });
       }
 
-      // Create new user (temporary implementation)
-      const newUser = {
-        id: String(tempUsers.length + 1),
-        email,
-        password, // In real implementation, this would be hashed
-        name,
-        role: 'user' as const,
-        companyId: '1' // Would create/assign company in real implementation
-      };
+      // Create company first
+      const company = await Company.create({
+        name: companyName,
+        email: email.toLowerCase(),
+        registrationNumber: `REG-${Date.now()}`,
+        taxId: `TAX-${Date.now()}`,
+        sstNumber: '',
+        address: {
+          street: '',
+          city: '',
+          state: '',
+          postalCode: '',
+          country: 'Malaysia'
+        },
+        phone: '',
+        industry: 'General',
+        fiscalYearEnd: { month: 12, day: 31 },
+        currency: 'MYR',
+        timezone: 'Asia/Kuala_Lumpur',
+        active: true
+      });
 
-      tempUsers.push(newUser);
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create new user
+      const newUser = await User.create({
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        name,
+        role: 'admin', // First user is admin of their company
+        companyId: company._id as mongoose.Types.ObjectId,
+        permissions: ['*'], // Full permissions for company admin
+        status: 'active',
+        twoFactorEnabled: false,
+        lastLogin: new Date()
+      });
 
       // Generate JWT token
       const token = jwt.sign(
         { 
-          id: newUser.id, 
+          id: newUser._id.toString(), 
           email: newUser.email, 
           role: newUser.role,
-          companyId: newUser.companyId
+          companyId: (company._id as mongoose.Types.ObjectId).toString()
         },
         config.JWT_SECRET as string,
         { expiresIn: '7d' }
       );
+
+      console.log(`New user registered: ${newUser.email} for company: ${company.name}`);
 
       res.status(201).json({
         success: true,
@@ -143,11 +175,11 @@ export const authController = {
         data: {
           token,
           user: {
-            id: newUser.id,
+            id: newUser._id.toString(),
             email: newUser.email,
             name: newUser.name,
             role: newUser.role,
-            companyId: newUser.companyId
+            companyId: (company._id as mongoose.Types.ObjectId).toString()
           }
         }
       });
@@ -173,8 +205,8 @@ export const authController = {
         });
       }
 
-      // Find user (temporary implementation)
-      const user = tempUsers.find(u => u.id === userId);
+      // Find user in MongoDB
+      const user = await User.findById(userId).select('-password -twoFactorSecret');
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -185,11 +217,13 @@ export const authController = {
       res.json({
         success: true,
         data: {
-          id: user.id,
+          id: user._id.toString(),
           email: user.email,
           name: user.name,
           role: user.role,
-          companyId: user.companyId
+          companyId: user.companyId.toString(),
+          status: user.status,
+          permissions: user.permissions
         }
       });
     } catch (error) {
