@@ -296,8 +296,14 @@ InvoiceSchema.statics.getStatistics = async function(companyId: string, period?:
   return result;
 };
 
+// Define interface for model with static methods
+interface IInvoiceModel extends mongoose.Model<IInvoice> {
+  generateInvoiceNumber(companyId: string): Promise<string>;
+  getStatistics(companyId: string, period?: string): Promise<any>;
+}
+
 // Export the model
-export const InvoiceModel = mongoose.model<IInvoice>('Invoice', InvoiceSchema);
+export const InvoiceModel = mongoose.model<IInvoice, IInvoiceModel>('Invoice', InvoiceSchema);
 
 // Type guard
 export function isInvoiceDocument(doc: any): doc is IInvoice {

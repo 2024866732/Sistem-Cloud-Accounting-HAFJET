@@ -94,5 +94,10 @@ BillSchema.statics.generateBillNumber = async function(companyId: string): Promi
   return `BILL-${year}${month}-${String(sequence).padStart(4, '0')}`;
 };
 
-export const BillModel = mongoose.model<IBill>('Bill', BillSchema);
+// Define interface for model with static methods
+interface IBillModel extends mongoose.Model<IBill> {
+  generateBillNumber(companyId: string): Promise<string>;
+}
+
+export const BillModel = mongoose.model<IBill, IBillModel>('Bill', BillSchema);
 

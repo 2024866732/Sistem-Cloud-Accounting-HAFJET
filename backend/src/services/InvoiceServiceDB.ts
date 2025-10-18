@@ -53,7 +53,7 @@ function calcLine(it: Partial<IInvoiceItem>): IInvoiceItem {
 function calcTotals(items: Partial<IInvoiceItem>[]) {
   const lines = items.map(calcLine);
   const subtotal = Number(lines.reduce((s, l) => s + l.amount, 0).toFixed(2));
-  const taxAmount = Number(lines.reduce((s, l) => s + l.taxAmount, 0).toFixed(2));
+  const taxAmount = Number(lines.reduce((s, l) => s + (l.taxAmount || 0), 0).toFixed(2));
   const total = Number((subtotal + taxAmount).toFixed(2));
   const taxRate = subtotal > 0 ? taxAmount / subtotal : 0;
   

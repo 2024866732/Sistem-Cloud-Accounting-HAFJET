@@ -33,9 +33,10 @@ const buildSupplier = () => ({
 // List invoices
 router.get('/', authenticateToken, async (req, res) => {
   try {
+    const companyId = (req as any).user?.companyId || '';
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 20);
-    const list = await InvoiceService.list(page, limit);
+    const list = await InvoiceService.list(companyId, page, limit);
     res.json({ success: true, ...list });
   } catch (err) {
     console.error('List invoices error:', err);
@@ -146,7 +147,7 @@ router.post('/:id/submit-einvoice', authenticateToken, authorize('invoice.submit
     if (!validation.valid) return res.status(400).json({ success: false, message: 'E-Invoice validation failed', errors: validation.errors });
     const result = await lhdn.submitEInvoice(einvoiceDoc);
     const mappedStatus = result.status === 'Valid' ? 'approved' : result.status.toLowerCase();
-    await InvoiceService.upsertEinvoice(id, { status: mappedStatus, submissionDate: result.submissionDateTime, uuid: result.uuid });
+    await InvoiceService.upsertEinvoice(id, { status: mappedStatus, submissionDate: result.submissionDateTime || new Date().toISOString(), uuid: result.uuid });
     const updated = await InvoiceService.get(id);
     if (mappedStatus === 'approved') {
       try {

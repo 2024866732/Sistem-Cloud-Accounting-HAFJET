@@ -221,7 +221,7 @@ router.get('/stats', authenticateToken, async (req: any, res) => {
     // ========================================
     // 8. RECENT ACTIVITY (from multiple sources)
     // ========================================
-    const recentActivity = [];
+    const recentActivity: any[] = [];
     
     // Recent invoices
     const recentInvoices = await InvoiceModel.find({ companyId })

@@ -333,8 +333,17 @@ TransactionSchema.statics.reconcile = async function(id: string) {
   );
 };
 
+// Define interface for model with static methods
+interface ITransactionModel extends mongoose.Model<ITransaction> {
+  generateReferenceNumber(type: 'income' | 'expense'): string;
+  getStatistics(companyId: string, filters?: { startDate?: Date; endDate?: Date; type?: 'income' | 'expense'; category?: string }): Promise<any>;
+  getCategoryBreakdown(companyId: string, type: 'income' | 'expense', startDate?: Date, endDate?: Date): Promise<any>;
+  markAsCompleted(id: string, userId: string): Promise<any>;
+  reconcile(id: string): Promise<any>;
+}
+
 // Export the model
-export const TransactionModel = mongoose.model<ITransaction>('Transaction', TransactionSchema);
+export const TransactionModel = mongoose.model<ITransaction, ITransactionModel>('Transaction', TransactionSchema);
 
 // Type guard
 export function isTransactionDocument(doc: any): doc is ITransaction {

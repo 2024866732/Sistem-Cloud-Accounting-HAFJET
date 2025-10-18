@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth.js';
 import { authorize } from '../middleware/rbac.js';
-import { User } from '../models/User.js';
+import User from '../models/User.js';
 import { Types } from 'mongoose';
 import bcrypt from 'bcrypt';
 
