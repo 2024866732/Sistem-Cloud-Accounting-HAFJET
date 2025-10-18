@@ -22,15 +22,20 @@ export const authController = {
 
       // Find user in MongoDB
       const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+      
       if (!user) {
+        console.log(`[AUTH] Login failed: User not found for email ${email}`);
         return res.status(401).json({
           success: false,
           message: 'Invalid email or password'
         });
       }
 
+      console.log(`[AUTH] User found: ${user.email}, status: ${user.status}, hasPassword: ${!!user.password}`);
+
       // Check if user is active
       if (user.status !== 'active') {
+        console.log(`[AUTH] Login failed: User ${user.email} is ${user.status}`);
         return res.status(403).json({
           success: false,
           message: 'Account is disabled. Please contact support.'
@@ -39,6 +44,8 @@ export const authController = {
 
       // Verify password
       const isValidPassword = await bcrypt.compare(password, user.password);
+      console.log(`[AUTH] Password verification for ${user.email}: ${isValidPassword}`);
+      
       if (!isValidPassword) {
         return res.status(401).json({
           success: false,
