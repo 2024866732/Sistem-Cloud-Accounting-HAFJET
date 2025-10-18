@@ -6,7 +6,7 @@ import { audit } from '../middleware/audit.js';
 import { authorize } from '../middleware/rbac.js';
 import LedgerPostingService from '../services/LedgerPostingService.js';
 import LHDNEInvoiceService, { EInvoiceDoc } from '../services/EInvoiceService.js';
-import InvoiceService from '../services/InvoiceService.js';
+import InvoiceService from '../services/InvoiceServiceDB.js'; // UPDATED: MongoDB service
 
 const router = Router();
 

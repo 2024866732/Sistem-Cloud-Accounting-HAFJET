@@ -18,14 +18,14 @@ interface AuthenticatedSocket extends Socket {
 }
 
 import authRoutes from './routes/auth.js';
-import userRoutes from './routes/users.js';
-import companyRoutes from './routes/companies.js';
+import userRoutes from './routes/usersDB.js'; // UPDATED: Full user management
+import companyRoutes from './routes/companiesDB.js'; // UPDATED: Full company management
 import invoiceRoutes from './routes/invoices.js';
-import transactionRoutes from './routes/transactions.js';
+import transactionRoutes from './routes/transactionsDB.js'; // UPDATED: MongoDB persistent transactions
 import reportRoutes from './routes/reports.js';
 import taxRoutes from './routes/tax.js';
-import inventoryRoutes from './routes/inventory.js';
-import dashboardRoutes from './routes/dashboard.js';
+import inventoryRoutes from './routes/inventoryDB.js'; // UPDATED: Full inventory tracking
+import dashboardRoutes from './routes/dashboardDB.js'; // UPDATED: Real-time database queries
 import settingsRoutes from './routes/settings.js';
 import bankingRoutes from './routes/banking.js';
 import einvoiceRoutes from './routes/einvoice.js';
@@ -36,6 +36,11 @@ import receiptRoutes from './routes/receipts.js';
 import telegramRoutes from './routes/telegram.js';
 import posRoutes from './routes/pos.js';
 import systemRoutes from './routes/system.js';
+// NEW ROUTES: Full modules
+import purchaseRoutes from './routes/purchasesDB.js'; // NEW: Bills/Purchases module
+import productRoutes from './routes/productsDB.js'; // NEW: Product catalog
+import contactRoutes from './routes/contactsDB.js'; // NEW: CRM (customers/suppliers)
+import salesRoutes from './routes/sales.js'; // Existing sales module
 import PosSyncScheduler from './services/PosSyncScheduler.js';
 import loyversePosService from './services/LoyversePosService.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -181,16 +186,20 @@ app.head('/', (req, res) => {
   return res.status(200).end();
 });
 
-// Routes
+// Routes (UPDATED: Now 100% database-driven!)
 app.use('/api/auth', authRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/companies', companyRoutes);
-app.use('/api/invoices', invoiceRoutes);
-app.use('/api/transactions', transactionRoutes);
+app.use('/api/dashboard', dashboardRoutes); // Real-time KPIs from database
+app.use('/api/users', userRoutes); // Full user management
+app.use('/api/companies', companyRoutes); // Full company management
+app.use('/api/invoices', invoiceRoutes); // MongoDB invoices
+app.use('/api/transactions', transactionRoutes); // Persistent transactions
+app.use('/api/purchases', purchaseRoutes); // NEW: Bills/AP module
+app.use('/api/products', productRoutes); // NEW: Product catalog
+app.use('/api/contacts', contactRoutes); // NEW: CRM module
+app.use('/api/sales', salesRoutes); // Existing sales orders
 app.use('/api/reports', reportRoutes);
 app.use('/api/tax', taxRoutes);
-app.use('/api/inventory', inventoryRoutes);
+app.use('/api/inventory', inventoryRoutes); // Full inventory tracking
 app.use('/api/settings', settingsRoutes);
 app.use('/api/banking', bankingRoutes);
 app.use('/api/einvoice', einvoiceRoutes);
