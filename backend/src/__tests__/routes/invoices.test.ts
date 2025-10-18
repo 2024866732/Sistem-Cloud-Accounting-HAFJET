@@ -1,14 +1,14 @@
 /**
  * Invoices Routes Test Suite
  * Tests all invoice endpoints with proper mocking and error handling
- * Uses file-backed InvoiceService (no MongoDB dependency for invoices)
+ * Uses MongoDB-backed InvoiceServiceDB
  */
 
 import request from 'supertest';
 import express, { Express } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../../config/config.js';
-import InvoiceService from '../../services/InvoiceService.js';
+import InvoiceService from '../../services/InvoiceServiceDB.js'; // UPDATED: Use DB service
 import LHDNEInvoiceService from '../../services/EInvoiceService.js';
 import LedgerPostingService from '../../services/LedgerPostingService.js';
 
@@ -183,7 +183,7 @@ describe('Invoices Routes - Complete Test Suite', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(InvoiceService.list).toHaveBeenCalledWith(2, 10);
+      expect(InvoiceService.list).toHaveBeenCalledWith('test-company-id-456', 2, 10);
     });
   });
 
