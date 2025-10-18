@@ -167,7 +167,7 @@ export const authController = {
         { expiresIn: '7d' }
       );
 
-      console.log(`New user registered: ${newUser.email} for company: ${company.name}`);
+      console.log(`[AUTH-v2] New user registered: ${newUser.email} for company: ${company.name}`);
 
       res.status(201).json({
         success: true,
