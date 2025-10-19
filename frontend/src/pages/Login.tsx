@@ -21,8 +21,13 @@ export default function Login() {
     setSuccessMsg(null);
     
     try {
-      // Use environment variable for API URL
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+      // Auto-detect environment: if hostname is Railway, use production URL, else localhost
+      const isProduction = window.location.hostname.includes('railway.app');
+      const apiUrl = isProduction 
+        ? 'https://hafjet-cloud-accounting-system-production.up.railway.app/api'
+        : (import.meta.env.VITE_API_URL || 'http://localhost:3001/api');
+      
+      console.log(`🌐 Connecting to: ${apiUrl}`);
       const response = await fetch(`${apiUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

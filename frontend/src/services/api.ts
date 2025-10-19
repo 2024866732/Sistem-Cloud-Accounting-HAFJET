@@ -2,9 +2,19 @@ import axios from 'axios'
 import type { AxiosResponse } from 'axios'
 import type { ApiResponse } from '../types'
 
+// Auto-detect environment and set correct API URL
+const getApiUrl = () => {
+  // If running on Railway production, use production API URL
+  if (typeof window !== 'undefined' && window.location.hostname.includes('railway.app')) {
+    return 'https://hafjet-cloud-accounting-system-production.up.railway.app/api';
+  }
+  // Otherwise use environment variable or default to localhost
+  return import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+};
+
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
+  baseURL: getApiUrl(),
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
