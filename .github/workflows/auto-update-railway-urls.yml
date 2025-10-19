@@ -53,15 +53,15 @@ jobs:
           # Extract domains - Updated to match actual Railway service names
           # Service name: "HAFJET CLOUD ACCOUNTING SYSTEM" (case-insensitive match)
           BACKEND_DOMAIN=$(echo "$RESPONSE" | jq -r \
-            '.data.me.projects.edges[0].node.services.edges[] | 
-             select(.node.name | test("HAFJET|CLOUD|ACCOUNTING|backend|api"; "i")) | 
+            '.data.me.projects.edges[0].node.services.edges[] |
+             select(.node.name | test("HAFJET|CLOUD|ACCOUNTING|backend|api"; "i")) |
              .node.domains.serviceDomains[0].domain' | head -n1)
 
           # Use same domain for frontend since HAFJET serves both backend + frontend
           # If you have separate frontend service, adjust the filter accordingly
           FRONTEND_DOMAIN=$(echo "$RESPONSE" | jq -r \
-            '.data.me.projects.edges[0].node.services.edges[] | 
-             select(.node.name | test("frontend|web|HAFJET"; "i")) | 
+            '.data.me.projects.edges[0].node.services.edges[] |
+             select(.node.name | test("frontend|web|HAFJET"; "i")) |
              .node.domains.serviceDomains[0].domain' | head -n1)
 
           # If frontend domain not found, use backend domain (same service)
