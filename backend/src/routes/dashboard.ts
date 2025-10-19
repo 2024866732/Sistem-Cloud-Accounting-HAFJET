@@ -140,7 +140,6 @@ const getDashboardData = () => {
         einvoiceErrors: 0
       }
     };
-  };
 };
 
 // Base route - return dashboard stats
