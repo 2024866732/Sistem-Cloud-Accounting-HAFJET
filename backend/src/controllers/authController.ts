@@ -42,9 +42,14 @@ export const authController = {
         });
       }
 
-      // Verify password
-      const isValidPassword = await bcrypt.compare(password, user.password);
-      console.log(`[AUTH] Password verification for ${user.email}: ${isValidPassword}`);
+      // Verify password using User model method
+      console.log(`[AUTH] About to verify password for ${user.email}`);
+      console.log(`[AUTH] Plain password length: ${password.length}`);
+      console.log(`[AUTH] Hashed password length: ${user.password.length}`);
+      console.log(`[AUTH] Hashed password starts with: ${user.password.substring(0, 10)}`);
+      
+      const isValidPassword = await user.comparePassword(password);
+      console.log(`[AUTH] Password verification result for ${user.email}: ${isValidPassword}`);
       
       if (!isValidPassword) {
         return res.status(401).json({
