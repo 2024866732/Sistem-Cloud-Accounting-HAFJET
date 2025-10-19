@@ -142,10 +142,39 @@ io.on('connection', (socket: AuthenticatedSocket) => {
 });
 
 // Middleware
-app.use(helmet());
+// Configure helmet with relaxed CSP for API and frontend communication
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      connectSrc: [
+        "'self'",
+        "http://localhost:3001",
+        "http://localhost:5173",
+        "https://sistema-kewangan-hafjet-bukku-production.up.railway.app",
+        "https://*.railway.app",
+        "ws://localhost:3001",
+        "wss://sistema-kewangan-hafjet-bukku-production.up.railway.app"
+      ],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      frameSrc: ["'self'"]
+    }
+  },
+  crossOriginEmbedderPolicy: false
+}));
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3001', 
+    'https://sistema-kewangan-hafjet-bukku-production.up.railway.app',
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
