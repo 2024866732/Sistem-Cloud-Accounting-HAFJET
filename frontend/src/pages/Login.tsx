@@ -240,7 +240,7 @@ export default function Login() {
           {/* Footer */}
           <div className="mt-6 pt-6 border-t border-gray-100 w-full">
             <p className="text-center text-xs text-gray-500">
-              © 2025 HAFJET Bukku. Sistem Perakaunan Malaysia.
+              © 2025 HAFJET Bukku. Sistem Perakaunan Awan Malaysia.
             </p>
             <p className="text-center text-xs text-gray-400 mt-1">
               🔒 Dilindungi dengan teknologi enkripsi terkini
