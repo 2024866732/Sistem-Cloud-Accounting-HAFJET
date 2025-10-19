@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }} # Use GitHub token to push to the repo
+          token: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token to push to the repo
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -52,11 +52,17 @@ jobs:
 
           # Extract domains - Updated to match actual Railway service names
           # Service name: "HAFJET CLOUD ACCOUNTING SYSTEM" (case-insensitive match)
-          BACKEND_DOMAIN=$(echo "$RESPONSE" | jq -r '.data.me.projects.edges[0].node.services.edges[] | select(.node.name | test("HAFJET|CLOUD|ACCOUNTING|backend|api"; "i")) | .node.domains.serviceDomains[0].domain' | head -n1)
+          BACKEND_DOMAIN=$(echo "$RESPONSE" | jq -r \
+            '.data.me.projects.edges[0].node.services.edges[] | 
+             select(.node.name | test("HAFJET|CLOUD|ACCOUNTING|backend|api"; "i")) | 
+             .node.domains.serviceDomains[0].domain' | head -n1)
 
           # Use same domain for frontend since HAFJET serves both backend + frontend
           # If you have separate frontend service, adjust the filter accordingly
-          FRONTEND_DOMAIN=$(echo "$RESPONSE" | jq -r '.data.me.projects.edges[0].node.services.edges[] | select(.node.name | test("frontend|web|HAFJET"; "i")) | .node.domains.serviceDomains[0].domain' | head -n1)
+          FRONTEND_DOMAIN=$(echo "$RESPONSE" | jq -r \
+            '.data.me.projects.edges[0].node.services.edges[] | 
+             select(.node.name | test("frontend|web|HAFJET"; "i")) | 
+             .node.domains.serviceDomains[0].domain' | head -n1)
 
           # If frontend domain not found, use backend domain (same service)
           FRONTEND_DOMAIN=${FRONTEND_DOMAIN:-$BACKEND_DOMAIN}
@@ -100,5 +106,3 @@ jobs:
             git commit -m "ci: auto-update Railway production URLs"
             git push
           fi
-
-
