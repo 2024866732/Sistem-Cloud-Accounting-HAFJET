@@ -3,11 +3,9 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = Router();
 
-// Get dashboard data with Malaysian KPIs
-router.get('/stats', authenticateToken, (req, res) => {
-  try {
-    // Calculate Malaysian business metrics
-    const dashboardData = {
+// Dashboard data generator function
+const getDashboardData = () => {
+  return {
       // Main KPIs
       revenue: {
         total: 127500.00,
