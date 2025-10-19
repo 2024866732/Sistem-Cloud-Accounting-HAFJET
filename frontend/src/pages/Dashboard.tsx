@@ -178,11 +178,17 @@ export default function Dashboard() {
       try {
         setLoading(true)
         
+        // Auto-detect environment and use correct API URL
+        const isProduction = window.location.hostname.includes('railway.app');
+        const apiUrl = isProduction 
+          ? 'https://hafjet-cloud-accounting-system-production.up.railway.app/api'
+          : (import.meta.env.VITE_API_URL || 'http://localhost:3001/api');
+        
         // First try to fetch from backend API
-        console.log('🔄 Fetching dashboard data from backend...')
+        console.log('🔄 Fetching dashboard data from:', apiUrl)
         
         try {
-          const response = await fetch('http://localhost:3001/api/dashboard', {
+          const response = await fetch(`${apiUrl}/dashboard`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',

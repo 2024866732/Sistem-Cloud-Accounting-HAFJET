@@ -65,8 +65,11 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     if (token && user) {
       console.log('🔌 Connecting to notification service...')
       
-      // Try to connect to the notification server
-      const serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      // Auto-detect environment and use correct server URL
+      const isProduction = typeof window !== 'undefined' && window.location.hostname.includes('railway.app');
+      const serverUrl = isProduction 
+        ? 'https://hafjet-cloud-accounting-system-production.up.railway.app'
+        : (import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001');
       console.log('🌐 Connecting to:', serverUrl)
       
       const newSocket = io(serverUrl, {
