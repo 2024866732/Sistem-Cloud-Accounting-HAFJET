@@ -188,7 +188,7 @@ export default function Dashboard() {
         console.log('🔄 Fetching dashboard data from:', apiUrl)
         
         try {
-          const response = await fetch(`${apiUrl}/dashboard`, {
+          const response = await fetch(`${apiUrl}/dashboard/stats`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
