@@ -1,9 +1,10 @@
 name: Backup Restore Verify
 
 on:
-  schedule:
-    - cron: '0 3 * * 0' # Weekly on Sunday at 03:00 UTC
-  workflow_dispatch: {}
+  # Disabled scheduled runs - can be run manually if needed
+  # schedule:
+  #   - cron: '0 3 * * 0' # Weekly on Sunday at 03:00 UTC
+  workflow_dispatch: {}  # Manual trigger only
 
 jobs:
   restore-verify:
