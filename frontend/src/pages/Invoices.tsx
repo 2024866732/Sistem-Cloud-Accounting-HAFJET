@@ -110,15 +110,15 @@ export default function Invoices() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white p-8 rounded-3xl">
-        <div className="flex justify-between items-center">
+      <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-4xl font-bold mb-2">🧾 Invois Malaysia</h1>
-            <p className="text-green-100">Sistem pengurusan invois dengan pematuhan SST dan E-Invoice LHDN</p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">🧾 Invois Malaysia</h1>
+            <p className="text-green-100 text-sm sm:text-base">Sistem pengurusan invois dengan pematuhan SST dan E-Invoice LHDN</p>
           </div>
           <button
             onClick={() => setShowCreateForm(true)}
-            className="bg-white text-green-600 px-6 py-3 rounded-xl font-semibold hover:bg-green-50 transition-all duration-300"
+            className="w-full sm:w-auto bg-white text-green-600 px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:bg-green-50 transition-all duration-300 text-sm sm:text-base whitespace-nowrap"
           >
             + Cipta Invois Baru
           </button>
@@ -185,11 +185,12 @@ export default function Invoices() {
 
       {/* Invoice List */}
       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
-          <h3 className="text-xl font-semibold text-gray-900">Senarai Invois</h3>
+        <div className="p-4 sm:p-6 border-b border-gray-100">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Senarai Invois</h3>
         </div>
         
-        <div className="overflow-x-auto">
+        {/* Desktop Table View - Hidden on mobile */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
@@ -264,6 +265,64 @@ export default function Invoices() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card View - Shown only on mobile */}
+        <div className="md:hidden divide-y divide-gray-200">
+          {invoices.map((invoice) => (
+            <div key={invoice.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <div className="space-y-3">
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="font-medium text-gray-900 text-sm">{invoice.invoiceNumber}</div>
+                    <div className="text-sm text-gray-600 mt-1">{invoice.customerName}</div>
+                  </div>
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(invoice.status)}`}>
+                    {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                  </span>
+                </div>
+
+                {/* Details Grid */}
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <div className="text-gray-500 text-xs">Tarikh</div>
+                    <div className="text-gray-900">{new Date(invoice.date).toLocaleDateString('ms-MY')}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 text-xs">Due Date</div>
+                    <div className="text-gray-900">{new Date(invoice.dueDate).toLocaleDateString('ms-MY')}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 text-xs">Jumlah</div>
+                    <div className="text-gray-900 font-semibold">{formatMYR(invoice.grandTotal)}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 text-xs">E-Invoice</div>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getEInvoiceStatusColor(invoice.einvoiceStatus)}`}>
+                      {invoice.einvoiceStatus.charAt(0).toUpperCase() + invoice.einvoiceStatus.slice(1)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex space-x-2 pt-2 border-t border-gray-100">
+                  <button
+                    onClick={() => setSelectedInvoice(invoice)}
+                    className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                  >
+                    Lihat
+                  </button>
+                  <button className="flex-1 px-3 py-2 text-sm font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                    PDF
+                  </button>
+                  <button className="flex-1 px-3 py-2 text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                    E-Invoice
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

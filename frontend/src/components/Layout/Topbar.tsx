@@ -7,11 +7,18 @@ import {
   LogOut,
   User,
   ChevronDown,
+  Menu,
+  X,
 } from 'lucide-react';
 
-const Topbar: React.FC = () => {
+interface TopbarProps {
+  onMenuToggle?: () => void;
+}
+
+const Topbar: React.FC<TopbarProps> = ({ onMenuToggle }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   const notifications = [
     {
@@ -40,28 +47,53 @@ const Topbar: React.FC = () => {
   const unreadCount = notifications.filter((n) => n.unread).length;
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-30">
-      {/* Search Bar */}
-      <div className="flex-1 max-w-xl">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-          <input
-            type="text"
-            placeholder="Search invoices, customers, products..."
-            className="
-              w-full pl-10 pr-4 py-2 
-              bg-slate-50 border border-slate-200 rounded-lg
-              focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent
-              text-sm
-            "
-          />
+    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30">
+      {/* Left Section - Mobile Menu + Search */}
+      <div className="flex items-center flex-1 space-x-2 sm:space-x-4">
+        {/* Mobile Menu Button */}
+        {onMenuToggle && (
+          <button
+            onClick={onMenuToggle}
+            className="lg:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            <Menu size={20} className="text-slate-600" />
+          </button>
+        )}
+
+        {/* Search Bar - Desktop */}
+        <div className="hidden md:flex flex-1 max-w-xl">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search invoices, customers, products..."
+              className="
+                w-full pl-10 pr-4 py-2 
+                bg-slate-50 border border-slate-200 rounded-lg
+                focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent
+                text-sm
+              "
+            />
+          </div>
         </div>
+
+        {/* Mobile Search Button */}
+        <button
+          onClick={() => setShowMobileSearch(!showMobileSearch)}
+          className="md:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors"
+        >
+          {showMobileSearch ? (
+            <X size={20} className="text-slate-600" />
+          ) : (
+            <Search size={20} className="text-slate-600" />
+          )}
+        </button>
       </div>
 
       {/* Right Section */}
-      <div className="flex items-center space-x-4 ml-6">
-        {/* Help Button */}
-        <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors relative">
+      <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
+        {/* Help Button - Hidden on mobile */}
+        <button className="hidden sm:block p-2 hover:bg-slate-100 rounded-lg transition-colors relative">
           <HelpCircle size={20} className="text-slate-600" />
         </button>
 
@@ -128,8 +160,8 @@ const Topbar: React.FC = () => {
           )}
         </div>
 
-        {/* Settings */}
-        <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+        {/* Settings - Hidden on mobile */}
+        <button className="hidden sm:block p-2 hover:bg-slate-100 rounded-lg transition-colors">
           <Settings size={20} className="text-slate-600" />
         </button>
 
@@ -179,6 +211,26 @@ const Topbar: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Mobile Search Dropdown */}
+      {showMobileSearch && (
+        <div className="absolute top-16 left-0 right-0 p-4 bg-white border-b border-slate-200 md:hidden shadow-lg animate-fade-in">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search..."
+              autoFocus
+              className="
+                w-full pl-10 pr-4 py-2 
+                bg-slate-50 border border-slate-200 rounded-lg
+                focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent
+                text-sm
+              "
+            />
+          </div>
+        </div>
+      )}
     </header>
   );
 };

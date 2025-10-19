@@ -442,27 +442,27 @@ export default function Dashboard() {
               {dashboardData.recentActivity.map((activity, index) => (
                 <div 
                   key={activity.id} 
-                  className="flex items-center justify-between p-4 rounded-xl bg-futuristic-gray-800/50 border border-futuristic-gray-700/50 hover:border-futuristic-blue-500/30 transition-all duration-300 animate-fade-in-up"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl bg-futuristic-gray-800/50 border border-futuristic-gray-700/50 hover:border-futuristic-blue-500/30 transition-all duration-300 animate-fade-in-up space-y-2 sm:space-y-0"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <div className="flex-1">
-                    <p className="text-white font-medium text-sm mb-1">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-medium text-sm mb-1 break-words">
                       {activity.description}
                     </p>
                     <p className="text-futuristic-gray-400 text-xs">
                       {new Date(activity.date).toLocaleDateString('ms-MY')}
                     </p>
                   </div>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 sm:space-x-3 self-start sm:self-auto">
                     {activity.amount && (
-                      <span className={`font-semibold text-sm ${
+                      <span className={`font-semibold text-sm whitespace-nowrap ${
                         activity.amount > 0 ? 'text-green-400' : 'text-red-400'
                       }`}>
                         {activity.amount > 0 ? '+' : ''}{formatMYR(Math.abs(activity.amount))}
                       </span>
                     )}
                     <span className={`
-                      px-2 py-1 rounded-full text-xs font-medium
+                      px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap
                       ${activity.status === 'completed' ? 'bg-green-500/20 text-green-400' :
                         activity.status === 'approved' ? 'bg-blue-500/20 text-blue-400' :
                         activity.status === 'submitted' ? 'bg-yellow-500/20 text-yellow-400' :

@@ -183,15 +183,15 @@ export default function Transactions() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-yellow-600 to-orange-600 text-white p-8 rounded-3xl">
-        <div className="flex justify-between items-center">
+      <div className="bg-gradient-to-r from-yellow-600 to-orange-600 text-white p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-4xl font-bold mb-2">💰 Transaksi Malaysia</h1>
-            <p className="text-yellow-100">Pengurusan transaksi pendapatan dan perbelanjaan dengan SST</p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">💰 Transaksi Malaysia</h1>
+            <p className="text-yellow-100 text-sm sm:text-base">Pengurusan transaksi pendapatan dan perbelanjaan dengan SST</p>
           </div>
           <button
             onClick={() => setShowAddForm(true)}
-            className="bg-white text-orange-600 px-6 py-3 rounded-xl font-semibold hover:bg-orange-50 transition-all duration-300"
+            className="w-full sm:w-auto bg-white text-orange-600 px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:bg-orange-50 transition-all duration-300 text-sm sm:text-base whitespace-nowrap"
           >
             + Tambah Transaksi
           </button>
@@ -274,12 +274,12 @@ export default function Transactions() {
       </div>
 
       {/* Filters and Controls */}
-      <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex space-x-2">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all text-xs sm:text-sm ${
                 filter === 'all' 
                   ? 'bg-blue-100 text-blue-700' 
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -289,40 +289,43 @@ export default function Transactions() {
             </button>
             <button
               onClick={() => setFilter('income')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all text-xs sm:text-sm ${
                 filter === 'income' 
                   ? 'bg-green-100 text-green-700' 
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              Pendapatan ({transactions.filter(t => t.type === 'income').length})
+              <span className="hidden sm:inline">Pendapatan</span>
+              <span className="sm:hidden">+</span> ({transactions.filter(t => t.type === 'income').length})
             </button>
             <button
               onClick={() => setFilter('expense')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all text-xs sm:text-sm ${
                 filter === 'expense' 
                   ? 'bg-red-100 text-red-700' 
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              Perbelanjaan ({transactions.filter(t => t.type === 'expense').length})
+              <span className="hidden sm:inline">Perbelanjaan</span>
+              <span className="sm:hidden">-</span> ({transactions.filter(t => t.type === 'expense').length})
             </button>
             <button
               onClick={() => setFilter('transfer')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all text-xs sm:text-sm ${
                 filter === 'transfer' 
                   ? 'bg-blue-100 text-blue-700' 
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              Pindahan ({transactions.filter(t => t.type === 'transfer').length})
+              <span className="hidden sm:inline">Pindahan</span>
+              <span className="sm:hidden">↔</span> ({transactions.filter(t => t.type === 'transfer').length})
             </button>
           </div>
 
           <select
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
           >
             <option value="this-month">Bulan Ini</option>
             <option value="last-month">Bulan Lepas</option>
@@ -335,13 +338,14 @@ export default function Transactions() {
 
       {/* Transactions List */}
       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
-          <h3 className="text-xl font-semibold text-gray-900">
+        <div className="p-4 sm:p-6 border-b border-gray-100">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
             Senarai Transaksi ({filteredTransactions.length})
           </h3>
         </div>
         
-        <div className="overflow-x-auto">
+        {/* Desktop Table View - Hidden on mobile */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
@@ -440,6 +444,77 @@ export default function Transactions() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card View - Shown only on mobile */}
+        <div className="md:hidden divide-y divide-gray-200">
+          {filteredTransactions.map((transaction) => (
+            <div key={transaction.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <div className="space-y-3">
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-900 text-sm truncate">{transaction.description}</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {new Date(transaction.date).toLocaleDateString('ms-MY')} • {transaction.reference}
+                    </div>
+                  </div>
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ml-2 ${getTypeColor(transaction.type)}`}>
+                    {transaction.type === 'income' ? '↑' : transaction.type === 'expense' ? '↓' : '↔'}
+                  </span>
+                </div>
+
+                {/* Amount - Prominent */}
+                <div className={`text-lg font-bold ${
+                  transaction.type === 'income' ? 'text-green-600' : 
+                  transaction.type === 'expense' ? 'text-red-600' : 'text-blue-600'
+                }`}>
+                  {transaction.type === 'income' ? '+' : transaction.type === 'expense' ? '-' : ''}
+                  {formatMYR(transaction.totalAmount)}
+                </div>
+
+                {/* Details Grid */}
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <div className="text-gray-500 text-xs">Kategori</div>
+                    <div className="text-gray-900 truncate">{transaction.category}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 text-xs">Kaedah</div>
+                    <div className="text-gray-900 truncate">{transaction.paymentMethod}</div>
+                  </div>
+                  {transaction.sstAmount && (
+                    <>
+                      <div>
+                        <div className="text-gray-500 text-xs">SST</div>
+                        <div className="text-gray-900">{formatMYR(transaction.sstAmount)}</div>
+                      </div>
+                    </>
+                  )}
+                  <div>
+                    <div className="text-gray-500 text-xs">Status</div>
+                    <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(transaction.status)}`}>
+                      {transaction.status === 'completed' ? 'Selesai' : 
+                       transaction.status === 'pending' ? 'Pending' : 'Batal'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex space-x-2 pt-2 border-t border-gray-100">
+                  <button className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                    Edit
+                  </button>
+                  <button className="flex-1 px-3 py-2 text-sm font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                    Lihat
+                  </button>
+                  <button className="flex-1 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                    Padam
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

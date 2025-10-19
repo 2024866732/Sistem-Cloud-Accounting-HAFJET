@@ -150,7 +150,13 @@ const menuItems: MenuItem[] = [
   },
 ];
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  isMobile?: boolean;
+  isMobileMenuOpen?: boolean;
+  onClose?: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isMobile = false, isMobileMenuOpen = false, onClose }) => {
   const location = useLocation();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['sales', 'purchases']);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -173,13 +179,22 @@ const Sidebar: React.FC = () => {
     return submenu.some((item) => isActive(item.path));
   };
 
+  // On mobile, auto-close collapsed sidebar
+  React.useEffect(() => {
+    if (isMobile) {
+      setIsCollapsed(false);
+    }
+  }, [isMobile]);
+
   return (
     <aside
       className={`
         fixed left-0 top-0 h-screen bg-slate-900 text-slate-300
         transition-all duration-300 ease-in-out z-40
-        ${isCollapsed ? 'w-16' : 'w-64'}
+        ${isCollapsed && !isMobile ? 'w-16' : 'w-64'}
         flex flex-col
+        ${isMobile ? (isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full') : ''}
+        lg:translate-x-0
       `}
     >
       {/* Header */}
@@ -248,6 +263,7 @@ const Sidebar: React.FC = () => {
                         <li key={subItem.id}>
                           <Link
                             to={subItem.path || '#'}
+                            onClick={() => isMobile && onClose?.()}
                             className={`
                               block px-3 py-2 rounded-lg text-sm
                               transition-colors
@@ -269,6 +285,7 @@ const Sidebar: React.FC = () => {
                 // Menu without submenu
                 <Link
                   to={item.path || '#'}
+                  onClick={() => isMobile && onClose?.()}
                   className={`
                     flex items-center space-x-3 px-3 py-2.5 rounded-lg
                     transition-colors text-sm
