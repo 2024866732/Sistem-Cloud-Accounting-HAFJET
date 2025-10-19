@@ -148,13 +148,10 @@ export const authController = {
         }
       });
 
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Create new user
+      // Create new user (password will be hashed by pre-save hook)
       const newUser = await User.create({
         email: email.toLowerCase(),
-        password: hashedPassword,
+        password: password, // Will be hashed by pre-save hook with 12 rounds
         name,
         role: 'admin', // First user is admin of their company
         companyId: company._id as mongoose.Types.ObjectId,
