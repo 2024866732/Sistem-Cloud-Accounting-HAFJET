@@ -4,12 +4,21 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
-    <script type="module" crossorigin src="/assets/index-79LI_bQh.js"></script>
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      connect-src 'self' http://localhost:3001 https://hafjet-cloud-accounting-system-production.up.railway.app https://sistema-kewangan-hafjet-bukku-production.up.railway.app https://*.railway.app ws://localhost:3001 wss://hafjet-cloud-accounting-system-production.up.railway.app;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval';
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: https: blob:;
+      frame-src 'self';
+    ">
+    <title>HAFJET Bukku - Cloud Accounting System</title>
+    <script type="module" crossorigin src="/assets/index-BIvlxZKK.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime-DGruFWvd.js">
     <link rel="modulepreload" crossorigin href="/assets/charts-CsPrSeQA.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-C1UjBRMx.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-Ci5VkmZK.css">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-cVok5HuT.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-C4xo6Dny.css">
   </head>
   <body>
     <div id="root"></div>
