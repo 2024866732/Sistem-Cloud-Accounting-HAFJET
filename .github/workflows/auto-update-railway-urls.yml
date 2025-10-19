@@ -4,6 +4,10 @@ name: Auto-Update Railway URLs
 on:
   deployment_status:
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
   update-urls:
     if: github.event.deployment_status.state == 'success' && contains(github.event.deployment_status.environment, 'production')
@@ -12,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GHCRPAT }} # Use a PAT to be able to push to the repo
+          token: ${{ secrets.GITHUB_TOKEN }} # Use GitHub token to push to the repo
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
