@@ -219,22 +219,32 @@ export default function Dashboard() {
                   growth: 22.1 
                 },
                 tax: { 
-                  sstCollected: backendData.data.sstCollected, 
-                  sstPayable: backendData.data.sstCollected * 0.36, 
+                  sstCollected: backendData.data.sstCollected || 0, 
+                  sstPayable: (backendData.data.sstCollected || 0) * 0.36, 
                   taxRate: 6,
                 },
                 einvoice: { 
-                  submitted: backendData.data.invoices.total, 
-                  approved: backendData.data.invoices.paid, 
-                  complianceRate: backendData.data.einvoiceCompliance 
+                  submitted: backendData.data.invoices?.total || 0, 
+                  approved: backendData.data.invoices?.paid || 0, 
+                  complianceRate: backendData.data.einvoiceCompliance || 0
                 },
                 customers: { 
                   total: 48, 
                   active: 35, 
                   newThisMonth: 8 
                 },
-                invoices: backendData.data.invoices,
-                bills: backendData.data.bills,
+                invoices: backendData.data.invoices || { 
+                  total: 0, 
+                  paid: 0, 
+                  pending: 0, 
+                  overdue: 0 
+                },
+                bills: backendData.data.bills || { 
+                  total: 0, 
+                  paid: 0, 
+                  pending: 0, 
+                  overdue: 0 
+                },
                 recentActivity: backendData.data.recentActivity || [],
                 monthlyRevenue: backendData.data.monthlyRevenue || []
               }
