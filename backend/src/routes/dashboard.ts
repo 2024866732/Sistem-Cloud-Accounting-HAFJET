@@ -140,10 +140,31 @@ const getDashboardData = () => {
         einvoiceErrors: 0
       }
     };
+  };
+};
 
+// Base route - return dashboard stats
+router.get('/', authenticateToken, (req, res) => {
+  try {
     res.json({
       success: true,
-      data: dashboardData
+      data: getDashboardData()
+    });
+  } catch (error) {
+    console.error('Dashboard error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch dashboard data'
+    });
+  }
+});
+
+// Get dashboard data with Malaysian KPIs
+router.get('/stats', authenticateToken, (req, res) => {
+  try {
+    res.json({
+      success: true,
+      data: getDashboardData()
     });
   } catch (error) {
     console.error('Dashboard stats error:', error);
