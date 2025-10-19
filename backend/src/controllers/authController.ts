@@ -149,6 +149,7 @@ export const authController = {
       });
 
       // Create new user (password will be hashed by pre-save hook)
+      console.log(`[AUTH-REG] Creating user with email: ${email.toLowerCase()}, password length: ${password.length}`);
       const newUser = await User.create({
         email: email.toLowerCase(),
         password: password, // Will be hashed by pre-save hook with 12 rounds
@@ -160,6 +161,7 @@ export const authController = {
         twoFactorEnabled: false,
         lastLogin: new Date()
       });
+      console.log(`[AUTH-REG] User created with hashed password length: ${newUser.password.length}`);
 
       // Generate JWT token
       const token = jwt.sign(
