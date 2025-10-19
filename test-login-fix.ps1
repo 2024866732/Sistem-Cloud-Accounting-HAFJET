@@ -128,7 +128,7 @@ if ($loginToken) {
 }
 
 # Test 6: Dashboard Access
-$dashboardResult = Test-Endpoint "Dashboard Access" "GET" "/api/dashboard" -token $(if($loginToken){$loginToken}else{$registrationToken})
+$dashboardResult = Test-Endpoint "Dashboard Access" "GET" "/api/dashboard/stats" -token $(if($loginToken){$loginToken}else{$registrationToken})
 
 # Test 7: Invoices List
 $invoicesResult = Test-Endpoint "Invoices List" "GET" "/api/invoices" -token $(if($loginToken){$loginToken}else{$registrationToken})
@@ -140,7 +140,7 @@ $transactionsResult = Test-Endpoint "Transactions List" "GET" "/api/transactions
 $productsResult = Test-Endpoint "Products List" "GET" "/api/products" -token $(if($loginToken){$loginToken}else{$registrationToken})
 
 # Test 10: Auth Protection Test (no token)
-$authProtectResult = Test-Endpoint "Auth Protection" "GET" "/api/dashboard" -expectedCode 401
+$authProtectResult = Test-Endpoint "Auth Protection" "GET" "/api/dashboard/stats" -expectedCode 401
 
 # Summary
 Write-Host "`n============================================================" -ForegroundColor Cyan
