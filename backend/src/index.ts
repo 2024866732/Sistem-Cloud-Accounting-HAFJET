@@ -170,8 +170,8 @@ app.use(cors({
     'http://localhost:5173',
     'http://localhost:3001', 
     'https://sistema-kewangan-hafjet-bukku-production.up.railway.app',
-    process.env.FRONTEND_URL
-  ].filter(Boolean),
+    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
