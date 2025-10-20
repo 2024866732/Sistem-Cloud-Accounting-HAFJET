@@ -263,7 +263,8 @@ app.get('/api/health', (_req, res) => {
     status: 'OK',
     message: 'HAFJET Bukku API is running',
     timestamp: new Date().toISOString(),
-    version: '1.0.0',
+    version: '1.0.1-model-fixes-deployed',
+    buildDate: '2025-10-20T03:12:00Z',
     uptimeSeconds: Math.round((Date.now() - started) / 1000),
     db: dbStatus
   });

@@ -128,12 +128,14 @@ router.post('/', authenticateToken, async (req: any, res) => {
       message: 'Transaction created successfully',
       data: transaction
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Create transaction error:', error);
+    console.error('Transaction validation errors:', error.errors);
     res.status(500).json({
       success: false,
       message: 'Failed to create transaction',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
+      details: error.errors || error.message || 'Unknown validation error'
     });
   }
 });

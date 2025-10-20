@@ -62,9 +62,15 @@ router.post('/', authenticateToken, async (req: any, res) => {
     const bill = await BillModel.create({ ...req.body, companyId, createdBy: userId, billNumber });
 
     res.status(201).json({ success: true, message: 'Bill created successfully', data: bill });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Create bill error:', error);
-    res.status(500).json({ success: false, message: 'Failed to create bill' });
+    console.error('Bill validation errors:', error.errors);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to create bill',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      details: error.errors || error.message || 'Unknown validation error'
+    });
   }
 });
 
