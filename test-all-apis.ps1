@@ -123,12 +123,13 @@ Test-API "List Bills" "GET" "/purchases" -Token $token
 
 $billData = @{
     supplierName = "Test Supplier"
-    billDate = (Get-Date).ToString("yyyy-MM-dd")
+    issueDate = (Get-Date).ToString("yyyy-MM-dd")
     dueDate = (Get-Date).AddDays(30).ToString("yyyy-MM-dd")
     items = @(@{
         description = "Test Purchase"
         quantity = 1
         unitPrice = 500
+        amount = 500
     })
 }
 
