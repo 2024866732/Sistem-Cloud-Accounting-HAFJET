@@ -141,10 +141,16 @@ const Settings: React.FC = () => {
 
   const saveSettings = async (type: string, data: unknown) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/settings/${type}`, {
+      // Use environment-aware API URL
+      const apiUrl = window.location.hostname.includes('railway.app') 
+        ? 'https://hafjet-cloud-accounting-system-production.up.railway.app/api'
+        : 'http://localhost:3001/api';
+      
+      const response = await fetch(`${apiUrl}/settings/${type}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`,
         },
         body: JSON.stringify(data)
       })
