@@ -31,10 +31,10 @@ export interface IProduct extends Document {
 
 const ProductSchema = new Schema<IProduct>({
   companyId: { type: Schema.Types.ObjectId, ref: 'Company', required: true, index: true },
-  code: { type: String, required: true, index: true },
+  code: { type: String, index: true },
   name: { type: String, required: true, index: true },
   description: { type: String },
-  category: { type: String, required: true, index: true },
+  category: { type: String, default: 'General', index: true },
   type: { type: String, enum: ['product', 'service'], default: 'product', required: true },
   unit: { type: String, required: true },
   price: { type: Number, required: true, min: 0 },
@@ -59,6 +59,16 @@ const ProductSchema = new Schema<IProduct>({
 ProductSchema.index({ companyId: 1, code: 1 }, { unique: true });
 ProductSchema.index({ companyId: 1, name: 1 });
 ProductSchema.index({ companyId: 1, category: 1, active: 1 });
+
+// Pre-save hook to generate product code if not provided
+ProductSchema.pre('save', function(next) {
+  if (!this.code || this.code === '') {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+    this.code = `PRD-${timestamp}-${random}`;
+  }
+  next();
+});
 
 export const ProductModel = mongoose.model<IProduct>('Product', ProductSchema);
 

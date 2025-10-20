@@ -80,6 +80,28 @@ const BillSchema = new Schema<IBill>({
 BillSchema.index({ companyId: 1, status: 1, issueDate: -1 });
 BillSchema.index({ companyId: 1, supplierName: 1 });
 
+// Pre-save hook to calculate totals
+BillSchema.pre('save', function(next) {
+  if (this.items && this.items.length > 0) {
+    let subtotal = 0;
+    let taxAmount = 0;
+    
+    this.items.forEach(item => {
+      item.amount = item.quantity * item.unitPrice;
+      subtotal += item.amount;
+      if (item.taxRate && item.taxRate > 0) {
+        item.taxAmount = item.amount * item.taxRate;
+        taxAmount += item.taxAmount;
+      }
+    });
+    
+    this.subtotal = subtotal;
+    this.taxAmount = taxAmount;
+    this.total = subtotal + taxAmount;
+  }
+  next();
+});
+
 BillSchema.statics.generateBillNumber = async function(companyId: string): Promise<string> {
   const date = new Date();
   const year = date.getFullYear();

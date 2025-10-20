@@ -73,12 +73,12 @@ const TransactionSchema = new Schema<ITransaction>({
   referenceNumber: { 
     type: String, 
     unique: true, 
-    required: true,
+    sparse: true,
     index: true 
   },
   paymentMethod: { 
     type: String,
-    required: true 
+    default: 'cash'
   },
   taxAmount: { 
     type: Number, 

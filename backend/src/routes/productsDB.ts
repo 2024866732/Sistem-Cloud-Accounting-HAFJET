@@ -60,7 +60,12 @@ router.post('/', authenticateToken, async (req: any, res) => {
       return res.status(400).json({ success: false, message: 'Valid companyId required' });
     }
 
-    const product = await ProductModel.create({ ...req.body, companyId, createdBy: userId });
+    // Map alternative field names for compatibility
+    const productData: any = { ...req.body, companyId, createdBy: userId };
+    if (req.body.sellingPrice) productData.price = req.body.sellingPrice;
+    if (req.body.costPrice) productData.cost = req.body.costPrice;
+
+    const product = await ProductModel.create(productData);
 
     res.status(201).json({ success: true, message: 'Product created successfully', data: product });
   } catch (error) {
