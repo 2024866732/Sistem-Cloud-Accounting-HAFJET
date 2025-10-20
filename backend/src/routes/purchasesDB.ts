@@ -58,8 +58,32 @@ router.post('/', authenticateToken, async (req: any, res) => {
       return res.status(400).json({ success: false, message: 'Valid companyId required' });
     }
 
+    // Calculate totals explicitly
+    const billData = { ...req.body };
+    if (billData.items && billData.items.length > 0) {
+      let subtotal = 0;
+      let taxAmount = 0;
+      
+      billData.items = billData.items.map((item: any) => {
+        const amount = item.quantity * item.unitPrice;
+        const itemTaxAmount = item.taxRate ? amount * item.taxRate : 0;
+        subtotal += amount;
+        taxAmount += itemTaxAmount;
+        
+        return {
+          ...item,
+          amount,
+          taxAmount: itemTaxAmount
+        };
+      });
+      
+      billData.subtotal = subtotal;
+      billData.taxAmount = taxAmount;
+      billData.total = subtotal + taxAmount;
+    }
+
     const billNumber = await BillModel.generateBillNumber(companyId);
-    const bill = await BillModel.create({ ...req.body, companyId, createdBy: userId, billNumber });
+    const bill = await BillModel.create({ ...billData, companyId, createdBy: userId, billNumber });
 
     res.status(201).json({ success: true, message: 'Bill created successfully', data: bill });
   } catch (error: any) {
