@@ -3,6 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
+import { Readable } from 'stream';
 import { authenticateToken } from '../middleware/auth.js';
 import { authorize } from '../middleware/rbac.js';
 import { audit } from '../middleware/audit.js';
@@ -38,9 +39,15 @@ router.post('/upload', authenticateToken, authorize('invoice.create'), upload.si
   try {
     if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
     const { originalname, mimetype, size, filename } = req.file;
-    // Compute file hash (sha256) for dedupe
-    const fileBuffer = fs.readFileSync(req.file.path);
-    const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+    // Compute file hash (sha256) for dedupe without blocking the event loop
+    const hash = await new Promise<string>((resolve, reject) => {
+      const sha = crypto.createHash('sha256');
+      const stream = fs.createReadStream(req.file.path);
+      stream.on('error', reject);
+      sha.on('error', reject);
+      stream.on('data', (chunk) => sha.update(chunk));
+      stream.on('end', () => resolve(sha.digest('hex')));
+    });
 
     // Simple currency & metadata from body (optional client hints)
     const { currency, documentDate } = req.body;
